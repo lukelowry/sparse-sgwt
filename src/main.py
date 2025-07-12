@@ -1,8 +1,7 @@
 from sksparse.cholmod import analyze
-
-import numpy as np
 from scipy.sparse import csc_matrix
 
+import numpy as np
 
 class FastSGWT:
     '''
