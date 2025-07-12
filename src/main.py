@@ -51,7 +51,7 @@ class FastSGWT:
     
     def singleton(self, f, n):
         '''
-        Returns:
+        Returns
             Coefficients of f localized at n
         '''
         

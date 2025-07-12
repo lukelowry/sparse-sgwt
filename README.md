@@ -14,5 +14,4 @@ More details will be added on specific versions for this python implementation.
 - scikit-sparse 
 - numpy
 - scipy
-- pandas (remove use of this)
 

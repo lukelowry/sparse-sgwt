@@ -24,7 +24,7 @@ class AbstractKernel:
     def g(self, x):
         '''
         Description:
-            The wavelet generating kerenl g(x) evaluating the un-scaled wavelet
+            The wavelet generating kernel g(x) evaluating the un-scaled wavelet
         Parameters:
             Vector x, the spectrum domain to evaluate.
         Returns:

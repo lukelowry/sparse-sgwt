@@ -1,7 +1,7 @@
 
 import time
-from scipy.sparse import load_npz, csc_matrix
-from numpy import load, save
+from scipy.sparse import load_npz
+from numpy import save
 from pandas import read_csv
 from main import FastSGWT
 

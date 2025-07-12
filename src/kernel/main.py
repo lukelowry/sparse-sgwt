@@ -1,6 +1,5 @@
 
 # This is the main class the user interacts with.
-from typing import override
 from kernel import AbstractKernel
 from fitting import WaveletFitting
 from numpy import log, savez, geomspace
