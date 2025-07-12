@@ -1,9 +1,10 @@
 from abc import ABC, abstractmethod
 
-
-# An Abstract SGWT Kernel incase multiple version of the transformation are implemented
-
 class AbstractKernel:
+    '''
+    An Abstract SGWT Kernel incase multiple version of the 
+    SGWT transformation are implemented
+    '''
 
     def __init__(self) -> None:
         pass

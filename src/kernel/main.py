@@ -1,5 +1,6 @@
 
 # This is the main class the user interacts with.
+from typing import override
 from kernel import AbstractKernel
 from fitting import WaveletFitting
 from numpy import log, savez, geomspace
@@ -66,6 +67,7 @@ class KernelDesign(AbstractKernel):
             Samples array: shape is  (N x 1)
         '''
         return geomspace(start, [end],N)
+    
     
     def g(self, x, order=1):
         '''

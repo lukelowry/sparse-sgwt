@@ -5,8 +5,12 @@ from scipy.linalg import pinv
 # No pole allocation in this version.
 
 class WaveletFitting:
-    '''A Helper class that determines the residues and poles of a discrete
-    set of frequnecy-domain wavelet kernels'''
+    '''
+    Native vector fitting tool.
+
+    Determines the residues and poles of a discrete
+    set of frequnecy-domain wavelet kernels
+    '''
 
     def __init__(self, domain, samples, initial_poles):
         '''
