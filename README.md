@@ -10,8 +10,23 @@ Currently under construction at the moment, but a minimum viable code example is
 
 More details will be added on specific versions for this python implementation.
 
-- Python 3.7
+- Python 3.8
 - scikit-sparse 
-- numpy
-- scipy
 
+
+https://github.com/scikit-sparse/scikit-sparse
+
+
+First
+
+conda install -c conda-forge scikit-sparse
+
+Then we need to enfore these versions for now
+- scipy
+```
+pip install --force-reinstall "scipy<=1.9.1"
+```
+- numpy
+```
+pip install --force-reinstall "numpy<=1.23.2"
+```

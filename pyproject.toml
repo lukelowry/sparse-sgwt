@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sgwt"
+version = "0.1.0"
+description = "A Spectral Graph Wavelet module for sparse networks"
+readme = "README.md"
+license = {file = "LICENSE"}
+authors = [{name = "Luke Lowery", email = "lukel@tamu.edu"}]
+requires-python = ">=3.7"
+dependencies = []
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]

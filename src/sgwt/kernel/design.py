@@ -1,7 +1,7 @@
 
 # This is the main class the user interacts with.
-from kernel import AbstractKernel
-from fitting import WaveletFitting
+from .kernel import AbstractKernel
+from .fitting import WaveletFitting
 from numpy import log, savez, geomspace
 
 class KernelDesign(AbstractKernel):

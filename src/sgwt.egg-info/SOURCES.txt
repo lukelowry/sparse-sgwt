@@ -1,0 +1,13 @@
+LICENSE
+README.md
+pyproject.toml
+src/sgwt/__init__.py
+src/sgwt/main.py
+src/sgwt.egg-info/PKG-INFO
+src/sgwt.egg-info/SOURCES.txt
+src/sgwt.egg-info/dependency_links.txt
+src/sgwt.egg-info/top_level.txt
+src/sgwt/kernel/__init__.py
+src/sgwt/kernel/design.py
+src/sgwt/kernel/fitting.py
+src/sgwt/kernel/kernel.py

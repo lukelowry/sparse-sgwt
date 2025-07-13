@@ -1,13 +1,13 @@
-from ...src.kernel.main import KernelDesign
+from sgwt.kernel import KernelDesign
 from scipy.sparse import csc_matrix, save_npz
 
 # Example to demonstrate how to design the SGWT kernel
 
 # Graph Laplacian
-L = None # wb.length_laplacian()*(1/2)
+#L = None # wb.length_laplacian()*(1/2)
 
 # Save 
-save_npz('LAP.npz', csc_matrix(L))
+#save_npz('LAP.npz', csc_matrix(L))
 
 # Design the Kernel
 kern = KernelDesign(
