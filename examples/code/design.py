@@ -1,5 +1,4 @@
 from sgwt.kernel import KernelDesign
-from scipy.sparse import csc_matrix, save_npz
 
 # Example to demonstrate how to design the SGWT kernel
 

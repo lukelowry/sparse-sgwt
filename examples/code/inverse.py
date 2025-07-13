@@ -6,7 +6,6 @@ from sgwt import FastSGWT
 KERNEL_NAME = '..\kernels\kernel_model.npz'
 LAP_NAME    = '..\laplacians\texas_2000.npz'
 
-
 # Load laplacian, old coefficients, and signal
 L = load_npz(LAP_NAME)
 W = load(f'coefficients.npy') # (Bus, Time, Scale)
