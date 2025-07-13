@@ -1,8 +1,8 @@
 Metadata-Version: 2.1
 Name: sgwt
 Version: 0.1.0
-Summary: A Spectral Graph Wavelet module for sparse networks
-Author-email: Luke Lowery <lukel@tamu.edu>
+Summary: Tools for the Spectral Graph Wavelet Transformation
+Author: Luke Lowery
 License:                                  Apache License
                                    Version 2.0, January 2004
                                 http://www.apache.org/licenses/
@@ -208,36 +208,38 @@ License:                                  Apache License
 Requires-Python: >=3.7
 Description-Content-Type: text/markdown
 License-File: LICENSE
+Requires-Dist: scipy<=1.9.1
+Requires-Dist: numpy<=1.23.2
 
-# sparse-sgwt
+# Spectral Graph Wavelet Transformation (SGWT)
 
 A Collection of SGWT Functions for Large Sparse Networks
 
-## About
+## Introduction
 
-Currently under construction at the moment, but a minimum viable code example is available.
+A highly customizable, sparse-friendly SGWT module. Existing GSP tools for the SGWT over sparse networks is limited. This package provides tools to design, approximate, and implement a custom SGWT kernel for use over sparse networks.
 
-## Installation
+The specific implementation is adventagous, as it does not require any modification if the graph itself changes.
+
+
+No documentation available yet, available soon.
+
+## Installation Notes
 
 More details will be added on specific versions for this python implementation.
 
-- Python 3.8
+- Python 3.8.2
 - scikit-sparse 
 
+See below for instruction on scikit-sparse.
 
 https://github.com/scikit-sparse/scikit-sparse
 
 
-First
-
-conda install -c conda-forge scikit-sparse
-
-Then we need to enfore these versions for now
-- scipy
+We enforce the following for compatability
 ```
 pip install --force-reinstall "scipy<=1.9.1"
-```
-- numpy
-```
 pip install --force-reinstall "numpy<=1.23.2"
 ```
+
+

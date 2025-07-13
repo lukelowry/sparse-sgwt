@@ -2,11 +2,16 @@
 
 A Collection of SGWT Functions for Large Sparse Networks
 
-## About
+## Introduction
 
-A highly customizable, sparse-friendly SGWT module. Package is at minimum viable stage. No documentation available yet.
+A highly customizable, sparse-friendly SGWT module. Existing GSP tools for the SGWT over sparse networks is limited. This package provides tools to design, approximate, and implement a custom SGWT kernel for use over sparse networks.
 
-## Installation
+The specific implementation is adventagous, as it does not require any modification if the graph itself changes.
+
+
+No documentation available yet, available soon.
+
+## Installation Notes
 
 More details will be added on specific versions for this python implementation.
 
@@ -24,7 +29,4 @@ pip install --force-reinstall "scipy<=1.9.1"
 pip install --force-reinstall "numpy<=1.23.2"
 ```
 
-However, the following can be used if these specifications are already met.
-```
-pip install sgwt
-```
+
