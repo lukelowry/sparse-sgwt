@@ -5,12 +5,16 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "sgwt"
 version = "0.1.0"
-description = "A Spectral Graph Wavelet module for sparse networks"
+description = "Tools for the Spectral Graph Wavelet Transformation"
 readme = "README.md"
 license = {file = "LICENSE"}
-authors = [{name = "Luke Lowery", email = "lukel@tamu.edu"}]
+authors = [{name = "Luke Lowery"}]
 requires-python = ">=3.7"
-dependencies = []
+dependencies = [
+# "scikit-sparse",
+"scipy<=1.9.1",
+"numpy<=1.23.2"
+]
 
 [tool.setuptools]
 package-dir = {"" = "src"}
