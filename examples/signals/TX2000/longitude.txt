@@ -1,0 +1,6 @@
+Note:
+
+Obviously do not use text file in actual
+
+Use the longitude/latitude as the 'static' example for 
+non-time depednent signals using SGWT 

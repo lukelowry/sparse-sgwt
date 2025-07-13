@@ -1,10 +1,13 @@
+"""
+design.py
+
+An example to demonstrate how to design the SGWT kernel.
+
+Author: Luke Lowery (lukel@tamu.edu)
+"""
+
 from sgwt.kernel import KernelDesign
 
-# Example to demonstrate how to design the SGWT kernel
-
-# TODO Re-render laplacians to be certain constructed as intended
-
-# Design the Kernel
 kern = KernelDesign(
     spectrum_range = (1e-7, 1e1),
     scale_range    = (1e2, 5e5), # (5e3, 1e5),
@@ -15,5 +18,4 @@ kern = KernelDesign(
     order = 1
 )
 
-# Save the Kernel
 kern.write('kernel_model')

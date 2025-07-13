@@ -1,3 +1,12 @@
+"""
+main.py
+
+Will be obstracted eventually. Core class for now, implementing
+the VF version of the SGWT.
+
+Author: Luke Lowery (lukel@tamu.edu)
+"""
+
 from sksparse.cholmod import analyze
 from scipy.sparse import csc_matrix
 
