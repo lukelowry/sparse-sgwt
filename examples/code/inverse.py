@@ -1,19 +1,18 @@
 
 from scipy.sparse import load_npz
 from numpy import load, save
-from main import FastSGWT
+from sgwt import FastSGWT
 
-# Interpreter: sgwt_sparse3
+KERNEL_NAME = '..\kernels\kernel_model.npz'
+LAP_NAME    = '..\laplacians\texas_2000.npz'
 
-# Temp: Working Directory
-dir = r'C:\Users\wyattluke.lowery\OneDrive - Texas A&M University\Research\Oscillations'
 
 # Load laplacian, old coefficients, and signal
-L = load_npz(f'{dir}\Laplacians\LAP.npz')
-W = load(f'{dir}\coefficients.npy') # (Bus, Time, Scale)
+L = load_npz(LAP_NAME)
+W = load(f'coefficients.npy') # (Bus, Time, Scale)
 
-# Make SGWT Object
-sgwt = FastSGWT(L, f'{dir}\kernel_model')
+# Load SGWT Object from kernel file
+sgwt = FastSGWT(L, KERNEL_NAME)
 
 # Perform Reconstruction, measure performance
 f_recon = sgwt.inv(W)
@@ -22,5 +21,5 @@ f_recon = sgwt.inv(W)
 SAVE_INV = False
 if SAVE_INV:
     print('Writing....', end='')
-    save(f'{dir}\sig_recon.npy', f_recon)
+    save('sig_recon.npy', f_recon)
     print('Complete!')

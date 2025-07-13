@@ -3,11 +3,7 @@ from scipy.sparse import csc_matrix, save_npz
 
 # Example to demonstrate how to design the SGWT kernel
 
-# Graph Laplacian
-#L = None # wb.length_laplacian()*(1/2)
-
-# Save 
-#save_npz('LAP.npz', csc_matrix(L))
+# TODO Re-render laplacians to be certain constructed as intended
 
 # Design the Kernel
 kern = KernelDesign(
