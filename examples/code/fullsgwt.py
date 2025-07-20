@@ -32,6 +32,7 @@ print(f'{dt:.4f} s')
 
 SAVE_SGWT = True
 if SAVE_SGWT:
+    fname = 'coefficients.npy'
     print('Writing....', end='')
-    save(f'coefficients.npy', W)
-    print('Complete!')
+    save(fname, W)
+    print(f'Complete!\n Saved to {fname}')

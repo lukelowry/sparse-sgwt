@@ -3,3 +3,10 @@ examples/signals/TX2000/vangle.csv
 examples/signals/TX2000/vmagnitude.csv
 *.pyc
 coefficients.npy
+PLOT_TEMP.ipynb
+temp/
+tempq/
+Ii_coeff.npy
+Ir_coeff.npy
+Vi_coeff.npy
+Vr_coeff.npy
