@@ -13,6 +13,7 @@ Only used when designing a kernel.
 from .kernel import AbstractKernel
 from .data import VFKernelData
 from numpy import log, geomspace
+from numpy.linalg import norm
 from scipy.linalg import pinv
 
 # This is the native vector fitting tool.
@@ -136,6 +137,7 @@ class KernelFactory:
             self,
             kernfuncs:     AbstractKernel,
             pole_min: float          = 1e-5,
+            pole_max: float          = None,
             npoles:   int            = 10
         ):
 
@@ -143,13 +145,17 @@ class KernelFactory:
         x = self.domain 
         s = self.scales 
 
+        if pole_max is None:
+            pole_max = self.spectrum_range[1]*2
+
         # Initial Poles
         Q0 = self.logsamp(
             start = pole_min,
-            end   = self.spectrum_range[1], 
+            end   = pole_max, 
             N     = npoles
         ) 
 
+        
         # Sample the function for all scales (nScales x lambda)
         G = kernfuncs.g(x*s.T)
 

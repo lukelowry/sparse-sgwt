@@ -12,20 +12,13 @@ Author: Luke Lowery (lukel@tamu.edu)
 """
 
 from scipy.sparse import load_npz
-from numpy import save, zeros
+from numpy import save, zeros, sqrt, log
 from sgwt import FastSGWT, VFKernelData
 
 
-KERNEL = r'C:\Users\wyattluke.lowery\Documents\GitHub\sparse-sgwt\examples\kernels\kernel_model.npz'
-
-
-KERNEL_NAME = r'C:\Users\wyattluke.lowery\Documents\GitHub\sparse-sgwt\examples\kernels\kernel_model'
+KERNEL      = r'C:\Users\wyattluke.lowery\Documents\GitHub\sparse-sgwt\examples\kernels\kernel_model.npz'
 LAP_NAME    = r'C:\Users\wyattluke.lowery\Documents\GitHub\sparse-sgwt\examples\laplacians\TX2000.npz'
 SIGNAL_NAME = r'C:\Users\wyattluke.lowery\Documents\GitHub\sparse-sgwt\examples\signals\TX2000\frequency.csv'
-
-# Load laplacian, old coefficients, and signal
-
-
 
 # Data and format for use # (Bus x Time)
 nbuses  = 2000
@@ -41,7 +34,7 @@ L = load_npz(LAP_NAME)
 sgwt = FastSGWT(L, kern)
 
 # Compute SGWT
-W = sgwt(f)
+W = sgwt(f)#*log(kern.S)#sqrt(kern.S)#/sqrt(kern.S)
 
 # Output
 fname = 'coefficients.npy'
