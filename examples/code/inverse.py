@@ -1,17 +1,21 @@
 
 from scipy.sparse import load_npz
 from numpy import load, save
-from sgwt import FastSGWT
+from sgwt import FastSGWT, VFKernelData
 
-KERNEL_NAME = '..\kernels\kernel_model.npz'
-LAP_NAME    = '..\laplacians\texas_2000.npz'
 
-# Load laplacian, old coefficients, and signal
-L = load_npz(LAP_NAME)
+KERNEL = r'C:\Users\wyattluke.lowery\Documents\GitHub\sparse-sgwt\examples\kernels\kernel_model.npz'
+LAP_NAME    = r'C:\Users\wyattluke.lowery\Documents\GitHub\sparse-sgwt\examples\laplacians\TX2000.npz'
+
+# Kernel File & Laplacian
+kern = VFKernelData.from_file(KERNEL)
+L    = load_npz(LAP_NAME)
+
+# SGWT Model
+sgwt = FastSGWT(L, kern)
+
+# Load Coeficients
 W = load(f'coefficients.npy') # (Bus, Time, Scale)
-
-# Load SGWT Object from kernel file
-sgwt = FastSGWT(L, KERNEL_NAME)
 
 # Perform Reconstruction, measure performance
 f_recon = sgwt.inv(W)

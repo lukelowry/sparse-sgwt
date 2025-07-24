@@ -4,10 +4,10 @@ from scipy.sparse import load_npz
 from numpy import save, sin, cos, pi, empty_like
 from pandas import read_csv
 
-from sgwt import FastSGWT
+from sgwt import FastSGWT, VFKernelData
 
 DIR = r'C:\Users\wyattluke.lowery\Documents\GitHub\sparse-sgwt\examples'
-KERNEL_NAME = r'C:\Users\wyattluke.lowery\Documents\GitHub\sparse-sgwt\examples\kernels\kernel_model'
+KERNEL = r'C:\Users\wyattluke.lowery\Documents\GitHub\sparse-sgwt\examples\kernels\kernel_model.npz'
 LAP_NAME    = r'C:\Users\wyattluke.lowery\Documents\GitHub\sparse-sgwt\examples\laplacians\TX2000.npz'
 YBUS_NAME    = r'C:\Users\wyattluke.lowery\Documents\GitHub\sparse-sgwt\examples\laplacians\TX_Ybus.npz'
 
@@ -16,39 +16,30 @@ YBUS_NAME    = r'C:\Users\wyattluke.lowery\Documents\GitHub\sparse-sgwt\examples
 L = load_npz(LAP_NAME)
 Y = load_npz(YBUS_NAME)
 
-# Data and format for use # (Bus x Time)
-VMAG_NAME = f'{DIR}\signals\TX2000\\vmagnitude.csv'
-VANG_NAME = f'{DIR}\signals\TX2000\\vangle.csv'
+# Load Bus Signal (Bus x Time)
+VMAG_NAME = f'{DIR}\signals\TX2000\\forced\\fo_bus_vmag.csv'
+VANG_NAME = f'{DIR}\signals\TX2000\\forced\\fo_bus_vang.csv'
 Vmag = (read_csv(VMAG_NAME).set_index('Time').to_numpy()-1).T
 Vang = (read_csv(VANG_NAME).set_index('Time').to_numpy()-1).T
 
-# Down Sample
-samples = 400
-njump = int(Vmag.shape[1]/samples)
-Vmag = Vmag[:,::njump]
-Vang = Vang[:,::njump]
+# Kernel File
+kern = VFKernelData.from_file(KERNEL)
 
+# Load SGWT Object from kernel file
+sgwt = FastSGWT(L, kern)
 
-
-# Transform
+# Transform to complex format
+# NOTE only convert if stored in degrees 
 Vang *= pi/180
 Vr = Vmag*cos(Vang)
 Vi = Vmag*sin(Vang)
+
 V = Vr + 1j*Vi
-
-# Calculate Current
-I = Y@V
-Ir = I.real
-Ii = I.imag
-
-# Load SGWT Object from kernel file
-sgwt = FastSGWT(L, KERNEL_NAME)
 
 # SGWT of Voltage
 W_vr = sgwt(Vr)
-print('Vr Done')
 W_vi = sgwt(Vi)
-print('Vi Done')
+print('V real and imag: Done')
 
 # SGWT of Admittance 
 Ynp = Y.toarray()
@@ -62,7 +53,8 @@ print('Susceptance (B) Done')
 # NOTE I want to make a function
 #      that lets me call sgwt() but pick a scale, instead of all scales.
 
-# TODO need forced oscillation simulation
+# TODO Need to consider current from impendence modeled loads, in additiona to 
+# network, so that the ONLY current we observe is caused by losses.
 
 # Compute the current induced
 # By the scale-dependent voltage

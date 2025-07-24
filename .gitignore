@@ -10,3 +10,6 @@ Ii_coeff.npy
 Ir_coeff.npy
 Vi_coeff.npy
 Vr_coeff.npy
+kernel_model.npz
+examples/signals/TX2000/forced/fo_bus_vang.csv
+.gitignore

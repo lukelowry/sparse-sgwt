@@ -13,23 +13,32 @@ Author: Luke Lowery (lukel@tamu.edu)
 
 from scipy.sparse import load_npz
 from numpy import save, zeros
+from sgwt import FastSGWT, VFKernelData
 
-from sgwt import FastSGWT
+
+KERNEL = r'C:\Users\wyattluke.lowery\Documents\GitHub\sparse-sgwt\examples\kernels\kernel_model.npz'
+
 
 KERNEL_NAME = r'C:\Users\wyattluke.lowery\Documents\GitHub\sparse-sgwt\examples\kernels\kernel_model'
 LAP_NAME    = r'C:\Users\wyattluke.lowery\Documents\GitHub\sparse-sgwt\examples\laplacians\TX2000.npz'
 SIGNAL_NAME = r'C:\Users\wyattluke.lowery\Documents\GitHub\sparse-sgwt\examples\signals\TX2000\frequency.csv'
 
 # Load laplacian, old coefficients, and signal
-L = load_npz(LAP_NAME)
-f = zeros((2000, 1))
+
+
 
 # Data and format for use # (Bus x Time)
+nbuses  = 2000
 impulse = 1200
+f = zeros((nbuses, 1))
 f[impulse] = 1
 
-# Make SGWT operator
-sgwt = FastSGWT(L, KERNEL_NAME)
+# Kernel File & Laplacian
+kern = VFKernelData.from_file(KERNEL)
+L = load_npz(LAP_NAME)
+
+# SGWT Model
+sgwt = FastSGWT(L, kern)
 
 # Compute SGWT
 W = sgwt(f)

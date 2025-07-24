@@ -1,1 +1,3 @@
-from .design import KernelDesign
+from .factory import KernelFactory
+from .kernel import KernelSmoothRational
+from .data import VFKernelData

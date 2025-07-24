@@ -1,9 +1,16 @@
+
+'''
+Analytical representations of wavelet 
+scaling and generating functions to pass to
+the KernelFactory
+'''
+
 from abc import ABC, abstractmethod
 
 class AbstractKernel:
     '''
-    An Abstract SGWT Kernel incase multiple version of the 
-    SGWT transformation are implemented
+    An Abstract SGWT Kernel with callable functions g(x) and h(x)
+    that have can be evaluated in the spectrum of the graph laplacian.
     '''
 
     def __init__(self) -> None:
@@ -31,5 +38,36 @@ class AbstractKernel:
             Spectral domain wavelet kerenel
         '''
 
+class KernelSmoothRational(AbstractKernel):
+    '''
+    A specific SGWT analytical function representation.
+    '''
 
-
+    def __init__(self, order=1) -> None:
+        self.order = order
+        super().__init__()
+    
+    def g(self, x):
+        '''
+        Description:
+            Default kernel function evaluator
+        Parameters:
+            x: domain to evaluate (array)
+            order: higher order -> narrower bandwidth
+        Returns:
+            g(x): same shape as x
+        '''
+        f = 2*x/(1+x**2)
+        return f**self.order
+    
+    def h(self, x):
+        '''
+        Description:
+            The scaling kerenl h(x) evaluating the 'DC-like' spectrum
+        Parameters:
+            x: domain to evaluate (array)
+        Returns:
+           h(x): same shape as x
+        '''
+        f = 1/(1+x**2)
+        return f

@@ -11,28 +11,27 @@ from sksparse.cholmod import analyze
 from scipy.sparse import csc_matrix
 
 import numpy as np
+from .kernel import VFKernelData
 
 class FastSGWT:
     '''
     A rational-approximation approach to the SGWT
     '''
 
-    def __init__(self, L: csc_matrix, kern: str):
+    def __init__(self, L: csc_matrix, kern: VFKernelData):
 
         # Sparse Laplacian
         self.L = L
 
         # Load Residues, Poles, Scales
-        npzfile = np.load(f'{kern}.npz')
-        self.R, self.Q, self.scales = npzfile['R'], npzfile['Q'], npzfile['S']
-        npzfile.close()
+        self.R, self.Q, self.S = kern.R, kern.Q, kern.S
 
         # Wavelet Constant (scalar mult)
-        ds = np.log(self.scales[1]/self.scales[0])[0]
+        ds = np.log(self.S[1]/self.S[0])[0]
         self.C = 1/ds
 
         # Number of scales
-        self.nscales = len(self.scales)
+        self.nscales = len(self.S)
 
         # Pre-Factor (Symbolic)
         self.factor = analyze(L)
