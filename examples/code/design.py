@@ -11,16 +11,16 @@ from sgwt.kernel import KernelFactory, KernelSmoothRational
 # General Kernel Specifications
 factory = KernelFactory(
     spectrum_range = (1e-8, 1e3),
-    scale_range    = (1e4, 3e5),#(1e2, 5e5), # (5e3, 1e5),
+    scale_range    = (1e2, 3e5),#(1e2, 5e5), # (5e3, 1e5),
     nscales = 65,
-    nsamples = 800,
+    nsamples = 500,
 )
 
 # VF Based Kernel Model
 kern = factory.makeVF(
     kernfuncs = KernelSmoothRational(),
     pole_min  = 1e-8,
-    npoles    = 35 # 45
+    npoles    = 65 # 45
 )
 
 # Write

@@ -15,3 +15,5 @@ examples/signals/TX2000/forced/fo_bus_vang.csv
 .gitignore
 P.npy
 Q.npy
+FOSL_TEMP.ipynb
+PRONY_TEMP.ipynb
