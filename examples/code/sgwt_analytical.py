@@ -16,7 +16,7 @@ L = load_npz(LAP_NAME)
 # Data and format for use # (Bus x Time)
 f = (read_csv(SIGNAL_NAME).set_index('Time').to_numpy()-1).T
 
-# Kernel File
+# Kernel File NOTE not actually using here
 kern = VFKernelData.from_file(KERNEL)
 
 # Load SGWT Object from kernel file
@@ -26,14 +26,16 @@ sgwt = FastSGWT(L, kern)
 print('SGWT: ')
 start = time.time()
 
-W = sgwt(f)
+# Preliminary tests on 2k bus case shows ~90% speedup
+W = sgwt.analytical_wavelet_coeffs(f, scales= kern.S)
 
 end = time.time()
 dt = (end - start) 
 print(f'{dt:.4f} s')
 
 
-SAVE_SGWT = True
+
+SAVE_SGWT = False
 if SAVE_SGWT:
     fname = 'coefficients.npy'
     print('Writing....', end='')

@@ -17,3 +17,8 @@ P.npy
 Q.npy
 FOSL_TEMP.ipynb
 PRONY_TEMP.ipynb
+P2.npy
+Q2.npy
+scaling_funcs.npy
+wavelet_funcs.npy
+examples/kernels/scaling_model.npz

@@ -18,8 +18,8 @@ L = load_npz(LAP_NAME)
 Y = load_npz(YBUS_NAME)
 
 # Load Bus Signal (Bus x Time)
-Vmag = (read_csv(VMAG_NAME).set_index('Time').to_numpy()-1).T
-Vang = (read_csv(VANG_NAME).set_index('Time').to_numpy()-1).T
+Vmag = (read_csv(VMAG_NAME).set_index('Time').to_numpy()).T
+Vang = (read_csv(VANG_NAME).set_index('Time').to_numpy()).T
 Vang *= pi/180
 
 # Transform to complex format
@@ -40,12 +40,15 @@ sgwt = FastSGWT(L, kern)
 
 
 # SGWT of Voltage
-W_P = sgwt(S.real)
-print('Real Power: Done')
+#W_P = sgwt(S.real)
+#W_Q = sgwt(S.imag)
 
-W_Q = sgwt(S.imag)
-print('Reactive Power: Done')
+# This works so much faster.
+W_P = sgwt.analytical_wavelet_coeffs(S.real, kern.S)
+W_Q = sgwt.analytical_wavelet_coeffs(S.imag, kern.S)
 
-save('P.npy', W_P)
-save('Q.npy', W_Q)
 print(f'Complete!')
+
+save('P2.npy', W_P)
+save('Q2.npy', W_Q)
+print(f'Written.')

@@ -69,5 +69,14 @@ class KernelSmoothRational(AbstractKernel):
         Returns:
            h(x): same shape as x
         '''
+        # NOTE
+        # The scaling function CAN still have negative parts in the vertex-domain,
+        # at the edge, making it look slightly ac.
         f = 1/(1+x**2)
+
+        # NOTE the above should theoretically be better but wow the below
+        # works SO much better in practice. Probably
+        # related to the fact that 'x' here is actually k^2
+        # so the above is functionally k^4 which is not ideal
+        #f = 1/(1+x)
         return f

@@ -12,14 +12,14 @@ Only used when designing a kernel.
 # This is the main class the user interacts with.
 from .kernel import AbstractKernel
 from .data import VFKernelData
-from numpy import log, geomspace
+from numpy import log, geomspace, array
 from numpy.linalg import norm
 from scipy.linalg import pinv
 
 # This is the native vector fitting tool.
 # No pole allocation in this version.
 
-class WaveletFitting:
+class KernelFitting:
     '''
     Native vector fitting tool.
 
@@ -93,26 +93,18 @@ class KernelFactory:
     def __init__(
             self, 
             spectrum_range = (1e-7, 1e2),
-            scale_range    = (1e-2, 1e5),
-            nscales        = 10, 
             nsamples       = 300
         ):
 
         
-        # Scales and Domain Vectors
-        self.scales = self.logsamp(*scale_range   , nscales ) 
+        # Domain Vector
         self.domain = self.logsamp(*spectrum_range, nsamples)  
 
-        # Calculate the interval of scales on log scale
-        self.ds = log(self.scales[1]/self.scales[0])[0]
 
         # Meta Information
-        self.nscales  = nscales 
         self.nsamples = nsamples
         self.spectrum_range = spectrum_range
 
-
-    # TODO REMOVE
     def logsamp(self, start, end, N=5):
         '''
         Description:
@@ -133,17 +125,37 @@ class KernelFactory:
 
         return V@R
     
-    def makeVF(
+    # Returns a data model for wavelet functions at all scales
+    def make_wavelet(
             self,
-            kernfuncs:     AbstractKernel,
-            pole_min: float          = 1e-5,
-            pole_max: float          = None,
-            npoles:   int            = 10
-        ):
+            kernfuncs: AbstractKernel,
+            scale_range               = (1e-2, 1e5),
+            pole_min:  float          = 1e-5,
+            pole_max:  float          = None,
+            nscales                   = 10, 
+            npoles:    int            = 10
+        ) -> VFKernelData:
+        '''
+        Description:
+            Creates a VF wavelet kernel model based on parameters.
+        Returns:
+            VFKernelData object, a model that can be used to perform SGWT.
+        '''
 
         # Extract Variables
         x = self.domain 
-        s = self.scales 
+
+        ''' SCALE DISCRETIZATION '''
+
+        # Discrete set of scales
+        s =  self.logsamp(*scale_range, nscales) 
+        self.nscales  = nscales 
+        self.scales   = s
+        
+        # Calculate the interval of scales on log scale
+        self.ds = log(self.scales[1]/self.scales[0])[0]
+
+        ''' POLE DISCRETIZATION '''
 
         if pole_max is None:
             pole_max = self.spectrum_range[1]*2
@@ -155,12 +167,13 @@ class KernelFactory:
             N     = npoles
         ) 
 
+        ''' WAVELET FITTING '''
         
         # Sample the function for all scales (nScales x lambda)
         G = kernfuncs.g(x*s.T)
 
         # Wavelet Fitting object
-        wf = WaveletFitting(
+        wf = KernelFitting(
             domain        = x, 
             samples       = G, 
             initial_poles = Q0
@@ -169,6 +182,7 @@ class KernelFactory:
         # Fit and return pole and residues of apporimation
         R, Q = wf.fit()
 
+        ''' DATA STORAGE '''
 
         # VF Kernel Dataclass
         kern = VFKernelData(
@@ -183,4 +197,53 @@ class KernelFactory:
         self.kern = kern 
 
         return kern
+    
+    # Returns scaling function at default scale
+    def make_scaling(
+            self,
+            kernfuncs:     AbstractKernel,
+            scale:    float          = 1,
+            pole_min: float          = 1e-5,
+            pole_max: float          = None,
+            npoles:   int            = 10
+        ):
+
+        # Extract Variables
+        x = self.domain 
+        s = array([scale])
+
+        ''' POLE DISCRETIZATION '''
+
+        if pole_max is None:
+            pole_max = self.spectrum_range[1]*2
+
+        # Initial Poles
+        Q0 = self.logsamp(
+            start = pole_min,
+            end   = pole_max, 
+            N     = npoles
+        ) 
+
+        ''' SCALING KERNEL FITTING '''
+
+        # Fitting object, with domain scaled by base scale
+        wf = KernelFitting(
+            domain        = x, 
+            samples       = kernfuncs.h(x*s.T), 
+            initial_poles = Q0
+        )
+
+        # Fit and return pole and residues of apporimation
+        R, Q = wf.fit()
+
+        ''' DATA STORAGE '''
+
+        # VF Kernel Dataclass
+        scaling_kern = VFKernelData(
+            R = R,
+            Q = Q,
+            S = s
+        )
+
+        return scaling_kern
   
