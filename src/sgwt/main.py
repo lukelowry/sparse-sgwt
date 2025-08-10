@@ -18,10 +18,20 @@ class FastSGWT:
     A rational-approximation approach to the SGWT
     '''
 
-    def __init__(self, L: csc_matrix, kern: VFKernelData):
+    def __init__(self, L: csc_matrix, kern: VFKernelData = None):
 
         # Sparse Laplacian
         self.L = L
+
+        # Pre-Factor (Symbolic)
+        self.factor = analyze(L)
+
+        # Initialize kernel if passed
+        if kern is not None:
+            self.init_kern(kern)
+            self.kern = kern
+
+    def init_kern(self, kern: VFKernelData):
 
         # Load Residues, Poles, Scales
         self.R, self.Q, self.S = kern.R, kern.Q, kern.S
@@ -36,8 +46,6 @@ class FastSGWT:
         # Number of scales
         self.nscales = len(self.S)
 
-        # Pre-Factor (Symbolic)
-        self.factor = analyze(L)
 
     def allocate(self, f, n=None):
         if n is None:
@@ -190,8 +198,7 @@ class FastSGWT:
     the above must be used.
     '''
     
-        
-    def analytical_scaling_funcs(self, anchor_indecies, scale=None):
+    def analytical_scaling_funcs(self, anchor_indecies, scale):
         '''
         Returns
             Scaling functions of indicated scale using the analytical form.
@@ -202,14 +209,6 @@ class FastSGWT:
         
         F = self.factor
         L = self.L
-        
-
-        # Get the default/reference scale
-        base_scale = self.S[0]
-
-        # Use default scale if none given
-        if scale is None:
-            scale = base_scale
 
         # Create the LOCALIZATION VECTOR
         # Number of Rows = Number of true verticies
@@ -222,9 +221,12 @@ class FastSGWT:
 
         # Analytical solution to scaling function
         F.cholesky_inplace(L, 1/scale)
-        S = F(anchors)/scale
+        S = F(anchors)
 
-        return S
+        # Sovle again, temp test
+        S = F(S)/scale
+
+        return S/scale##/np.sqrt(2*np.pi*scale)
     
     def analytical_wavelet_funcs(self, anchor_indecies, scale=None):
         '''
@@ -282,7 +284,7 @@ class FastSGWT:
         F = self.factor
         L = self.L
 
-        # TODO for each scale....
+        # TODO Divide by scale
         # could do a yeild so the user can handle it real-time. 
         for i, scale in enumerate(scales):
 

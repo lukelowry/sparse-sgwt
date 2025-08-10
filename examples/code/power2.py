@@ -1,13 +1,13 @@
 
 from scipy.sparse import load_npz
-from numpy import save, sin, cos, pi
+from numpy import save, sin, cos, pi, load
 from pandas import read_csv
 
 from sgwt import FastSGWT, VFKernelData
 
 # Files
 DIR = r'C:\Users\wyattluke.lowery\Documents\GitHub\sparse-sgwt\examples'
-KERNEL = r'C:\Users\wyattluke.lowery\Documents\GitHub\sparse-sgwt\examples\kernels\kernel_model.npz'
+SCALES_NAME = r'C:\Users\wyattluke.lowery\Documents\GitHub\sparse-sgwt\examples\kernels\scales.npy'
 LAP_NAME    = r'C:\Users\wyattluke.lowery\Documents\GitHub\sparse-sgwt\examples\laplacians\TX2000.npz'
 YBUS_NAME    = r'C:\Users\wyattluke.lowery\Documents\GitHub\sparse-sgwt\examples\laplacians\TX_Ybus.npz'
 VMAG_NAME = f'{DIR}\signals\TX2000\\forced\\fo_bus_vmag.csv'
@@ -26,29 +26,22 @@ Vang *= pi/180
 V = Vmag*(cos(Vang) + 1j*sin(Vang))
 I = Y@V
 
-# Different from power.py, 
-# We first calculate power and then take coefficients.
-# Unsure which is better just yet
+# Power Flow
 S = V * I.conj()
 
-
-# Kernel File
-kern = VFKernelData.from_file(KERNEL)
+# Scales (loaded from file for consistancy here)
+scales = load(SCALES_NAME)
 
 # Load SGWT Object from kernel file
-sgwt = FastSGWT(L, kern)
-
-
-# SGWT of Voltage
-#W_P = sgwt(S.real)
-#W_Q = sgwt(S.imag)
+sgwt = FastSGWT(L)
 
 # This works so much faster.
-W_P = sgwt.analytical_wavelet_coeffs(S.real, kern.S)
-W_Q = sgwt.analytical_wavelet_coeffs(S.imag, kern.S)
+W_P = sgwt.analytical_wavelet_coeffs(S.real, scales)
+W_Q = sgwt.analytical_wavelet_coeffs(S.imag, scales)
 
 print(f'Complete!')
 
-save('P2.npy', W_P)
-save('Q2.npy', W_Q)
+save('P.npy', W_P)
+save('Q.npy', W_Q)
+
 print(f'Written.')

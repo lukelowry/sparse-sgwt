@@ -22,3 +22,4 @@ Q2.npy
 scaling_funcs.npy
 wavelet_funcs.npy
 examples/kernels/scaling_model.npz
+SCALING_TEMP.ipynb
