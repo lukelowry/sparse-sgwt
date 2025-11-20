@@ -1,9 +1,30 @@
 
+
+'''
+Description
+
+    This script uses nodal voltage and nodal current
+    to calculate the nodal power injected by the network.
+    Then, the SGWT coefficients are calculated for this time-varying
+    nodal power.
+
+    The core idea here is that static power (omega=0) is the dispatch,
+    while the oscillating power (omega > 0) corresponds to losses
+    and can identify sources. Some research shows that
+    the dispatch typically does not follow a given pattern
+    for the power, because it is 'random' in the spatial sense.
+
+    The mismatch/losses of a non-synchrnous source however
+    will follow a SGWT pattern since it is a sigular unstable source.
+    (that is the hypothesis, atleast)
+
+'''
+
 from scipy.sparse import load_npz
 from numpy import save, sin, cos, pi, load
 from pandas import read_csv
 
-from sgwt import FastSGWT, VFKernelData
+from sgwt import FastSGWT
 
 # Files
 DIR = r'C:\Users\wyattluke.lowery\Documents\GitHub\sparse-sgwt\examples'
