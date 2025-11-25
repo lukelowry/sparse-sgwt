@@ -221,12 +221,35 @@ class FastSGWT:
 
         # Analytical solution to scaling function
         F.cholesky_inplace(L, 1/scale)
-        S = F(anchors)
+        S = F(anchors)/scale
 
-        # Sovle again, temp test
-        S = F(S)/scale
+        return S
+    
+    def analytical_scaling_coeffs(self, f, scales=[1]):
+        '''
+        Description
+            Scaling coefficnets at indicated scales using the analytical form
+            I/(aL+I)
+        Parameters
+            f: Signal array (numVerticies x numFeatures) to calculate scaling coeffs.
+            scales: list (numScales) of scales to compute scaling coefficents for.
+        Returns
+            Scaling coefficients for each scale (numVerticies x numScales)
+        '''
+        
+        W = self.allocate(f, len(scales))
+        F = self.factor
 
-        return S/scale##/np.sqrt(2*np.pi*scale)
+        # Calculate Scaling Coefficients of 'f' for each scale
+        for i, scale in enumerate(scales):
+
+            # Step 1 -> Set Scale
+            F.cholesky_inplace(self.L, 1/scale)
+
+            # Step 2 -> Solve and Divide by squared scale for normalization
+            W[:,:,i] = F(f)/scale 
+
+        return W
     
     def analytical_wavelet_funcs(self, anchor_indecies, scale=None):
         '''
@@ -274,10 +297,10 @@ class FastSGWT:
         '''
         Returns
             Wavelet functions of indicated scale using the analytical form.
-            L/(L+I/s)^2
+            (1/s)  L/(L+I/s)^2
         Parameters:
             f: Function to transform (can be 2d for multiple vectors)
-            scale: scale of the wavelet
+            scales: python array of wavelet scales
         '''
         
         W = self.allocate(f, len(scales))
@@ -296,59 +319,6 @@ class FastSGWT:
             # Step 3 -> Second Solve and Laplacian product
             W[:,:,i] = L@F(S)/scale 
 
-
-        return W
-    
-    def analytical_scaling_coeffs(self, f, scales=[1]):
-        '''
-        Description
-            Scaling coefficnets at indicated scales using the analytical form
-            I/(aL+I)^2
-        Parameters
-            f: Signal array (numVerticies x numFeatures) to calculate scaling coeffs.
-            scales: list (numScales) of scales to compute scaling coefficents for.
-        Returns
-            Scaling coefficients for each scale (numVerticies x numScales)
-        '''
-        
-        W = self.allocate(f, len(scales))
-        F = self.factor
-
-        # Calculate Scaling Coefficients of 'f' for each scale
-        for i, scale in enumerate(scales):
-
-            # Step 1 -> Set Scale
-            F.cholesky_inplace(self.L, 1/scale)
-
-            # Step 2 -> First Sovle (Scaling coeffs!)
-            S = F(f)
-
-            # Step 3 -> Divide by squared scale for normalization
-            W[:,:,i] = F(S)/scale**2 
-
-    def analytical_scaling_coeffs_ONE_SOLVE(self, f, scales=[1]):
-        '''
-        Description
-            Scaling coefficnets at indicated scales using the analytical form
-            I/(aL+I)
-        Parameters
-            f: Signal array (numVerticies x numFeatures) to calculate scaling coeffs.
-            scales: list (numScales) of scales to compute scaling coefficents for.
-        Returns
-            Scaling coefficients for each scale (numVerticies x numScales)
-        '''
-        
-        W = self.allocate(f, len(scales))
-        F = self.factor
-
-        # Calculate Scaling Coefficients of 'f' for each scale
-        for i, scale in enumerate(scales):
-
-            # Step 1 -> Set Scale
-            F.cholesky_inplace(self.L, 1/scale)
-
-            # Step 2 -> Solve and Divide by squared scale for normalization
-            W[:,:,i] = F(f)/scale 
 
         return W
     
