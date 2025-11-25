@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "sgwt"
-version = "0.1.1"
-description = "Tools for the Spectral Graph Wavelet Transformation"
+version = "0.1.2"
+description = "Tools for the Spectral Graph Wavelet Transformation and other GSP operations"
 readme = "README.md"
 license = {file = "LICENSE"}
 authors = [{name = "Luke Lowery"}]

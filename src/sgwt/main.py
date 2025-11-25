@@ -1,7 +1,7 @@
 """
 main.py
 
-Will be obstracted eventually. Core class for now, implementing
+Will be abstracted eventually. Core class for now, implementing
 the VF version of the SGWT.
 
 Author: Luke Lowery (lukel@tamu.edu)
@@ -15,7 +15,12 @@ from .kernel import VFKernelData
 
 class FastSGWT:
     '''
-    A rational-approximation approach to the SGWT
+    Description: 
+        A class that computes rational-approximation approach to the SGWT
+        and various analytical versions of filters.
+    Parameters:
+        L: sparse csc_matrix form of Graph Laplacian (real valued)
+        kern: optional, VF data of spectral function
     '''
 
     def __init__(self, L: csc_matrix, kern: VFKernelData = None):
