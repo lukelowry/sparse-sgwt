@@ -112,20 +112,21 @@ class CholWrapper:
             raise TypeError("values must be a numpy.ndarray")
 
         # Ensure correct dtype
-        if b.dtype != np.float64:
-            b = b.astype(np.float64, copy=False)
+        #if b.dtype != np.float64:
+        #    b = b.astype(np.float64, copy=False)
 
         # Ensure contiguous memory
-        if not b.flags["C_CONTIGUOUS"]:
-            b = np.ascontiguousarray(b)
+        #if not b.flags["C_CONTIGUOUS"]:
+        #    b = np.ascontiguousarray(b)
         #b = np.asfortranarray(b)
 
         # Ensure 1D
-        if b.ndim != 1:
-            raise ValueError("values must be a 1D array")
+        print(b.ndim)
+        if b.ndim != 2:
+            raise ValueError("values must be a 2D array")
 
         n = b.size
-
+        '''
         # Allocate CHOLMOD dense
         D = self.dll.cholmod_allocate_dense(
             c_size_t(n), c_size_t(1), c_size_t(n), c_int(1), 
@@ -134,20 +135,22 @@ class CholWrapper:
         '''
         D = cholmod_dense()
         D.nrow = b.shape[0]
-        D.ncol = 0#b.shape[1]
+        D.ncol = b.shape[1]
         D.nzmax = b.size
+        D.d = b.shape[0]
         D.x = b.ctypes.data_as(c_void_p)
-        D.dtype = c_int(1)#c_double
         D.xtype = 1 # real
-        '''
+        D.dtype = 0 # c_double, real
+
+        
         # if not D:
         #    raise MemoryError("CHOLMOD allocate dense failed")
 
         # Zero-copy pointer assignment
-        D.contents.x = b.ctypes.data_as(c_void_p)
+        #D.contents.x = b.ctypes.data_as(c_void_p)
 
         # CRITICAL: keep NumPy array alive to prevent segfault
-        self._dense_ref = b
+        #self._dense_ref = b
 
         return D
     
@@ -208,15 +211,18 @@ class CholWrapper:
         Description
             Equivilent to choldmod_spsolve in CHOLMOD
         Parameters
-            b: (N, ) 1D numpy array exlusively, for now 
+            b: (N, M) 2D numpy array exlusively, for now 
         '''
 
-        x = self.dll.cholmod_solve(
+        x_ptr = self.dll.cholmod_solve(
             self.MODE, 
             self.fact, 
             self.to_dense_vector(b), # TODO improve, slow
             self.common_ptr
         )
+
+        self.status()
+
 
         # TODO we can support sparse input B
         # if we use cholmod_spsolve
@@ -224,8 +230,9 @@ class CholWrapper:
         # it returns choldmod_sparse so I need to
         # change how I read the results here I read dense result)
 
-        nsol = x.contents.nrow
-        sol = np.ctypeslib.as_array(cast(x.contents.x, POINTER(c_double)), shape=(nsol,))
+        # TODO okay Technically I should clear memory
+        nsol = x_ptr.contents.nrow
+        sol = np.ctypeslib.as_array(cast(x_ptr.contents.x, POINTER(c_double)), shape=(nsol,1))
 
         return sol
 

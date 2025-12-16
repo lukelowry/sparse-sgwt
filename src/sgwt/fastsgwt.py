@@ -142,11 +142,9 @@ class FastSGWT2:
             # Step 1 -> Set Scale
             C.num_factor(1/scale)
 
-            # Step 2 -> Solve and Divide by squared scale for normalization
-            W[:,i] = C.solve(f)/scale 
 
-            # TODO support higher dims
-            #W[:,:,i] = C.solve(f)/scale 
+            # Step 2 -> Solve and Divide by squared scale for normalization
+            W[:,:,i] = C.solve(f)/scale 
 
         return W
     
