@@ -133,17 +133,20 @@ class FastSGWT2:
         
         scales = self.scales if scales is None else scales
         W = self.allocate(f, len(scales))
-        F = self.factor
+        C = self.chol
         L = self.L
 
         # Calculate Scaling Coefficients of 'f' for each scale
         for i, scale in enumerate(scales):
 
             # Step 1 -> Set Scale
-            F.cholesky_inplace(L, 1/scale)
+            C.num_factor(1/scale)
 
             # Step 2 -> Solve and Divide by squared scale for normalization
-            W[:,:,i] = F(f)/scale 
+            W[:,i] = C.solve(f)/scale 
+
+            # TODO support higher dims
+            #W[:,:,i] = C.solve(f)/scale 
 
         return W
     

@@ -46,6 +46,9 @@ class CholWrapper:
         # TODO Support other solve types
         self.MODE = CHOLMOD_A
 
+        # Start Cholesky by default
+        self.start()
+
     def status(self):
         ''' 
         Cholmod Status: 
@@ -94,7 +97,7 @@ class CholWrapper:
         cholA.i = i_ptr
         cholA.x = x_ptr
         cholA.z = None             # None if real
-        cholA.stype = 0            # 0 = general
+        cholA.stype = 1            # 0 = general, 1 = symmetric store upper part
         cholA.itype = itype
         cholA.xtype = 1            # 1 = real
         cholA.dtype = dtype
@@ -103,6 +106,7 @@ class CholWrapper:
         
         return cholA
     
+    # TODO improve, slow
     def to_dense_vector(self, b: np.ndarray):
         if not isinstance(b, np.ndarray):
             raise TypeError("values must be a numpy.ndarray")
@@ -114,6 +118,7 @@ class CholWrapper:
         # Ensure contiguous memory
         if not b.flags["C_CONTIGUOUS"]:
             b = np.ascontiguousarray(b)
+        #b = np.asfortranarray(b)
 
         # Ensure 1D
         if b.ndim != 1:
@@ -126,8 +131,17 @@ class CholWrapper:
             c_size_t(n), c_size_t(1), c_size_t(n), c_int(1), 
             self.common_ptr
         )
-        if not D:
-            raise MemoryError("CHOLMOD allocate dense failed")
+        '''
+        D = cholmod_dense()
+        D.nrow = b.shape[0]
+        D.ncol = 0#b.shape[1]
+        D.nzmax = b.size
+        D.x = b.ctypes.data_as(c_void_p)
+        D.dtype = c_int(1)#c_double
+        D.xtype = 1 # real
+        '''
+        # if not D:
+        #    raise MemoryError("CHOLMOD allocate dense failed")
 
         # Zero-copy pointer assignment
         D.contents.x = b.ctypes.data_as(c_void_p)
@@ -137,63 +151,17 @@ class CholWrapper:
 
         return D
     
-    def solve(self, b):
-
-        x = self.dll.cholmod_solve(
-            self.MODE, 
-            self.fact, 
-            self.to_dense_vector(b), 
-            self.common_ptr
-        )
-
-        nsol = x.contents.nrow
-        sol = np.ctypeslib.as_array(cast(x.contents.x, POINTER(c_double)), shape=(nsol,))
-
-        return sol
-
-    def sym_factor(self):
-        ''' 
-        Performs symbolic factorization using cholmod_analyze
-        '''
-        self.fact = self.dll.cholmod_analyze(self.A_ptr, self.common_ptr)
-        self.fact_ptr = byref(self.fact)
-        
-    def num_factor(self, beta, fset=None, fsize=0):
-        ''' 
-        The matrix is assumed to be the same that underwent symbolic factorization.
-        '''
-
-        # Must be complex for DLL use
-        beta_cmplx = (c_double * 2)(beta, 0.0) 
-
-        self.dll.cholmod_factorize_p(
-            self.A_ptr,
-            beta_cmplx,
-            fset,
-            fsize,
-            self.fact,
-            self.common_ptr
-        )
-
     def start(self):
-
+        '''
+        Starts cholmod.
+        '''
         self.dll.cholmod_start(byref(self.common))
 
     def finish(self):
-
-        self.dll.cholmod_finish(byref(self.common))
-
-
-    
-    def __enter__(self):
-
-        # Start up CHOLMOD
-        self.start()
-
-        return self
-    
-    def __exit__(self, type, value, traceback):
-
+        '''
+        Finish the cholmod usage. 
+        TODO determine when to call, uncertain for python implementation.
+        '''
         # Free Factored Object
         self.dll.cholmod_free_factor(self.fact, self.common_ptr)
 
@@ -203,9 +171,63 @@ class CholWrapper:
         # WARNING make sure this does not conflict with Numpy memory. 
         # Don't think it will
         #libcholmod.cholmod_free_dense(byref(b), byref(common))
+        self.dll.cholmod_finish(byref(self.common))
 
-        # Finish
-        self.finish()
+
+    def sym_factor(self):
+        ''' 
+        Performs symbolic factorization using cholmod_analyze
+        '''
+        self.fact = self.dll.cholmod_analyze(self.A_ptr, self.common_ptr)
+        self.fact_ptr = byref(self.fact)
+        
+    def num_factor(self, beta):
+        ''' 
+        Description
+            Equivilent to choldmod_factorize_p in CHOLMOD.
+            The matrix is assumed to be the same that underwent symbolic factorization.
+        Parameters
+            beta: real number (for the GSP application, must be positive)
+        '''
+
+        # Must be complex for DLL use
+        beta_cmplx = (c_double * 2)(beta, 0.0) 
+
+        self.dll.cholmod_factorize_p(
+            self.A_ptr,
+            beta_cmplx,
+            None, # fset
+            0,    # fisze
+            self.fact,
+            self.common_ptr
+        )
+
+
+    def solve(self, b):
+        '''
+        Description
+            Equivilent to choldmod_spsolve in CHOLMOD
+        Parameters
+            b: (N, ) 1D numpy array exlusively, for now 
+        '''
+
+        x = self.dll.cholmod_solve(
+            self.MODE, 
+            self.fact, 
+            self.to_dense_vector(b), # TODO improve, slow
+            self.common_ptr
+        )
+
+        # TODO we can support sparse input B
+        # if we use cholmod_spsolve
+        # But for a general signal b will be dense
+        # it returns choldmod_sparse so I need to
+        # change how I read the results here I read dense result)
+
+        nsol = x.contents.nrow
+        sol = np.ctypeslib.as_array(cast(x.contents.x, POINTER(c_double)), shape=(nsol,))
+
+        return sol
 
     
     def config_function_args(self, dll):
@@ -218,16 +240,14 @@ class CholWrapper:
             c_int, c_int, c_int, c_int,
             POINTER(cholmod_common)
         ]
+
+        # Symbolic Factorization
         dll.cholmod_analyze.argtypes = [
             POINTER(cholmod_sparse),
             POINTER(cholmod_common)
         ]
-        dll.cholmod_factorize.argtypes = [
-            POINTER(cholmod_sparse),
-            POINTER(cholmod_factor),
-            POINTER(cholmod_common)
-        ]
-        # NOTE This is the shifting numeric factorization
+
+        # Numeric factorization w/ Shifting
         dll.cholmod_factorize_p.argtypes = [
             POINTER(cholmod_sparse),          # A
             POINTER(c_double),                # beta[2]
@@ -237,12 +257,23 @@ class CholWrapper:
             POINTER(cholmod_common)            # Common
         ]
 
+        # For a general 'b' vector, lots of data
         dll.cholmod_solve.argtypes = [
             c_int,
             POINTER(cholmod_factor),
             POINTER(cholmod_dense),
             POINTER(cholmod_common)
         ]
+
+        # For sparse 'b' vector, like an impulse
+        dll.cholmod_spsolve.argtypes = [
+            c_int,
+            POINTER(cholmod_factor),
+            POINTER(cholmod_dense),
+            POINTER(cholmod_common)
+        ]
+
+
         dll.cholmod_allocate_dense.argtypes = [
             c_size_t, c_size_t, c_size_t, c_int,
             POINTER(cholmod_common)
@@ -269,10 +300,12 @@ class CholWrapper:
         dll.cholmod_start.restype = None
         dll.cholmod_finish.restype = None
         dll.cholmod_allocate_sparse.restype = POINTER(cholmod_sparse)
+
         dll.cholmod_analyze.restype = POINTER(cholmod_factor)
-        dll.cholmod_factorize.restype = c_int
         dll.cholmod_factorize_p.restype = c_int
         dll.cholmod_solve.restype = POINTER(cholmod_dense)
+        dll.cholmod_spsolve.restype = POINTER(cholmod_sparse)
+
         dll.cholmod_allocate_dense.restype = POINTER(cholmod_dense)
         dll.cholmod_free_sparse.restype = None
         dll.cholmod_free_dense.restype = None
