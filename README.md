@@ -19,4 +19,20 @@ pip install sgwt
 The CHOLMOD library can be used by installing `scikit-sparse` or using the a compiled CHOLMOD `.dll` file.
 
 
+## Quick-Staart
 
+```
+import sgwt
+
+L = sgwt.data.DELAY_TEXAS.laplacian()
+
+scales = np.logspace(1e-2, 1e1, nscales)
+
+with sgwt.FiltersDLL(L, scales) as gsp:
+
+    LP = gsp.scaling_coeffs(b)
+```
+
+## Motivation
+
+Given a rational approximation of some kernel function, we are able to implement graph convolutions using the Cholesky Decomposition.
