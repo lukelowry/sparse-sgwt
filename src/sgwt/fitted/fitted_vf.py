@@ -11,9 +11,7 @@ from sksparse.cholmod import analyze
 from scipy.sparse import csc_matrix
 
 import numpy as np
-from ..kernel import VFKernelData
-
-
+from .kernel import VFKernelData
 
 class VectorFitSGWT:
     '''
@@ -64,7 +62,7 @@ class VectorFitSGWT:
     GENERATLIZED SGWT
     '''
 
-    def __call__(self, f):
+    def wavelet_coeffs(self, f):
         '''
         Returns
             W:  Array size (Bus, Time, Scale)
@@ -124,77 +122,4 @@ class VectorFitSGWT:
 
         return f/self.C
     
-    ''' GENERALIZED SCALING COEFFS '''
 
-    def scaling_coeffs(self, f, s):
-        '''
-        Returns
-            ALL Scaling Coefficients of f at scale S
-        '''
-        
-        F = self.factor
-        L = self.L
-
-        # TODO determine ideal scaling of poles based on 
-        # the VF form of scaling function
-
-
-        # Singleton Matrix
-        W = np.zeros((L.shape[0], self.nscales))
-
-        # Compute
-        for q, r in zip(self.Q, self.R):
-
-            F.cholesky_inplace(L, q) 
-            W += F(f)*r.T  
-
-        return f.T@W 
-    
-    def scaling_funcs(self, anchor_indecies, scale=None):
-        '''
-        Returns
-            Scaling functions of indicated scale
-            at specified anchors (localizations)
-        Parameters:
-            anchor_indicies: nodes at which to return scaling functions
-            scale: scale of the scaling functions
-        '''
-        
-        F = self.factor
-        L = self.L
-        
-
-        # Get the default/reference scale
-        base_scale = self.S[0]
-
-        # Use default scale if none given
-        if scale is None:
-            scale = base_scale
-
-        # Create the LOCALIZATION VECTOR
-        # Number of Rows = Number of true verticies
-        # Number of Cols = Number of Reduced vertices
-        nLocal = len(anchor_indecies)
-        anchors = np.zeros((L.shape[0], nLocal))
-
-        for i, node_idx in enumerate(anchor_indecies):
-            anchors[node_idx, i] = 1
-
-        # Scaling Function Matrix (The columns vectors are each scaling function)
-        S = np.zeros_like(anchors)
-
-        # Iterate Scaling Kernel Poles
-        for q, r in zip(self.Q, self.R):
-
-            per_unit_scale = scale/base_scale
-            
-            # NOTE something weird happening, scales are inverse of what
-            # they should be!
-            # Dilate each pole to the new scale
-            qscaled = q/per_unit_scale
-
-            # Solve
-            F.cholesky_inplace(L, qscaled) 
-            S += F(anchors)*r.T  
-
-        return S

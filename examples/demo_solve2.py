@@ -1,6 +1,6 @@
 import sgwt 
 import numpy as np
-from sgwt.laplib import IMPEDANCE_EASTWEST as graph
+from sgwt.data import IMPEDANCE_EASTWEST as graph
 import time
 
 
@@ -8,8 +8,8 @@ L = graph.laplacian()
 
 
 # Dense signal input (nBus x nTime)
-ntime = 100
-nscales = 10
+ntime = 1
+nscales = 20
 b = np.zeros(
     shape = (L.shape[0], ntime),
     order="F"

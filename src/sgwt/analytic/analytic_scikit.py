@@ -17,17 +17,6 @@ class FiltersScikit(AnalyticFilters):
         scales: optional, default scales used
     '''
 
-    def __init__(self, L: csc_matrix, scales=[1]):
-
-        # Sparse Laplacian
-        self.L = L
-
-        # Discrete Scales
-        self.setscales(scales)
-
-        # Pre-Factor (Symbolic)
-        self.factor = analyze(L)
-
     def __call__(self, f):
         '''
         Description
@@ -38,9 +27,6 @@ class FiltersScikit(AnalyticFilters):
         
         return self.wavelet_coeffs(f)
 
-    def setscales(self, scales):
-        self.scales = scales
-        self.nscales = len(scales)
 
     def allocate(self, f, n=None):
         if n is None:
@@ -115,119 +101,35 @@ class FiltersScikit(AnalyticFilters):
     Convolutions
     '''
 
-    def scaling_coeffs(self, f, fset=None, scales=None):
-        '''
-        Description
-            Scaling coefficnets at indicated scales using the analytical form
-            I/(aL+I)
-        Parameters
-            f: Signal array (numVerticies x numFeatures) to calculate scaling coeffs.
-            scales: list (numScales) of scales to compute scaling coefficents for.
-        Returns
-            Scaling coefficients for each scale (numVerticies x numScales)
-        '''
-        
-        scales = self.scales if scales is None else scales
-        W = self.allocate(f, len(scales))
-        F = self.factor
-        L = self.L
-
-        # Calculate Scaling Coefficients of 'f' for each scale
-        for i, scale in enumerate(scales):
-
-            # Step 1 -> Set Scale
-            F.cholesky_inplace(L, 1/scale)
-
-            # Step 2 -> Solve and Divide by squared scale for normalization
-            W[:,:,i] = F(f)/scale 
-
-        return W
     
-    
-    def _allocate_results(self):
-        pass
+
+    def _allocate_results(self, b, scales):
+        return self.allocate(b, len(scales))
     
     def _format_rhs(self, b, bset):
         return b, bset
     
-    def _save_to_results(self, x, index):
-        pass
+    def _symbolic_factorization(self, L):
+        self.factor = analyze(L)
     
     def _numeric_factorization(self, beta):
-        pass
+        self.factor.cholesky_inplace(self.L, beta)
 
     def _solve(self, b, bset):
-        pass
+        return self.factor(b)
 
     def _solve_twice(self, b, bset):
-        pass
+        return self.factor(self.factor(b))
 
     def _mult(self, x, scalar):
-        pass
+        return x*scalar
 
     def _mult_lap(self, x, scalar):
-        pass
+        return scalar*(self.L@x)
 
-    
-    
-    def wavelet_coeffs(self, f, fset=None, scales=None):
-        '''
-        Returns
-            Wavelet functions of indicated scale using the analytical form.
-            (1/s)  L/(L+I/s)^2
-        Parameters
-            f: Signal array (numVerticies x numFeatures) to calculate wavelet coeffs.
-            scales: list (numScales) of scales to compute wavelet coefficents for.
-        Returns
-            Wavelet coefficients for each scale (numVerticies x numScales)
-        '''
-        
-        scales = self.scales if scales is None else scales
-        W = self.allocate(f,len(scales))
-        F = self.factor
-        L = self.L
+    def _save_to_results(self, x, index):
+        self.results[:,:,index] = x
 
-        for i, scale in enumerate(scales):
-
-            # Step 1 -> Set Scale
-            F.cholesky_inplace(L, 1/scale)
-
-            # Step 2 -> First Sovle (Scaling coeffs!)
-            S = F(f)
-
-            # Step 3 -> Second Solve and Laplacian product
-            W[:,:,i] = L@F(S)*(4/scale)
-
-        return W
-    
-    def highpass_coeffs(self, f, fset=None, scales=None):
-        '''
-        Description
-            Scaling coefficnets at indicated scales using the analytical form
-            aL/(aL+I)
-        Parameters
-            f: Signal array (numVerticies x numFeatures) to calculate HP coeffs.
-            scales: list (numScales) of scales to compute  HP coefficents for.
-        Returns
-            High-pass coefficients for each scale (numVerticies x numScales)
-        '''
-        
-        scales = self.scales if scales is None else scales
-        W = self.allocate(f, len(scales))
-        F = self.factor
-        L = self.L
-
-        # Calculate Scaling Coefficients of 'f' for each scale
-        for i, scale in enumerate(scales):
-
-            # Step 1 -> Set Scale
-            F.cholesky_inplace(L, 1/scale)
-
-            # Step 2 -> Solve and Divide by squared scale for normalization
-            W[:,:,i] = self.L@F(f)
-
-
-        return W
     
     '''
     Inverse Transformations

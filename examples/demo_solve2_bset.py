@@ -1,7 +1,7 @@
 import sgwt 
 import numpy as np
-from scipy.sparse import csc_matrix, csr_matrix
-from sgwt.laplib import IMPEDANCE_EASTWEST as graph
+from scipy.sparse import csc_matrix
+from sgwt.data import IMPEDANCE_EASTWEST as graph
 import time
 
 
@@ -32,8 +32,6 @@ bset[b!=0] = 1
 bset = csc_matrix(bset)
 
 
-
-
 # SCIT KIT VERSION
 fsgwt     = sgwt.FiltersScikit(L, scales)
 start = time.time()
@@ -52,12 +50,8 @@ with sgwt.FiltersDLL(L, scales) as fsgwt_DLL:
 print(f"Time: {(end  - start )*1000:.3f} ms (scikit)")
 print(f"Time: {(end3 - start3)*1000:.3f} ms (solve2)")
 
-#print(WAVS3[0])
-#print(WAVS[:,:,0])
 DIFF = WAVS[:,:,0]-WAVS3[0]
 DIFF = DIFF[0]
-# Select only the Bset rows
-#DIFF = DIFF[0]
 
 # Measure Error of DLL solve & scicit
 SOLVE2_ERR = np.max(np.abs(DIFF))

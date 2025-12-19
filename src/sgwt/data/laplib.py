@@ -2,7 +2,6 @@ from importlib_resources import files, as_file
 from scipy.sparse import load_npz
 from numpy import zeros
 
-from enum import Enum
 from dataclasses import dataclass
 
 

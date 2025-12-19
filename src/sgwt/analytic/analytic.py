@@ -13,6 +13,9 @@ class AnalyticFilters(ABC):
         self.scales = scales
         self.nscales = len(scales)
 
+        # Symbolic Factorization
+        self._symbolic_factorization(L)
+
     
     def scaling_coeffs(self, b, bset=None, scales=None):
         '''
@@ -31,7 +34,7 @@ class AnalyticFilters(ABC):
         scales = self.scales if scales is None else scales
 
         # List, malloc, numpy, etc.
-        self.results = self._allocate_results()
+        self.results = self._allocate_results(b, scales)
 
         # Process b and bset if needed
         B, Bset = self._format_rhs(b, bset)
@@ -73,7 +76,7 @@ class AnalyticFilters(ABC):
         scales = self.scales if scales is None else scales
 
         # List, malloc, numpy, etc.
-        self.results = self._allocate_results()
+        self.results = self._allocate_results(b, scales)
 
         # Process b and bset if needed
         B, Bset = self._format_rhs(b, bset)
@@ -96,12 +99,23 @@ class AnalyticFilters(ABC):
         return self.results
 
     def highpass_coeffs(self, b, bset=None, scales=None):
-        
+        '''
+        Description
+            High-pass coefficnets at indicated scales using the analytical form
+            aL/(aL+I)
+        Parameters
+            f: Signal array (numVerticies x numFeatures) to calculate HP coeffs.
+            fset: Pattern vector 
+            scales: list (numScales) of scales to compute  HP coefficents for.
+        Returns
+            High-pass coefficients for each scale (numVerticies x numScales)
+        '''
+                
         # Process Scales
         scales = self.scales if scales is None else scales
 
         # List, malloc, numpy, etc.
-        self.results = self._allocate_results()
+        self.results = self._allocate_results(b, scales)
 
         # Process b and bset if needed
         B, Bset = self._format_rhs(b, bset)
@@ -129,11 +143,15 @@ class AnalyticFilters(ABC):
         return self.results
 
     @abstractmethod
-    def _allocate_results(self):
+    def _allocate_results(self, b, scales):
         pass
     
     @abstractmethod
     def _format_rhs(self):
+        pass
+
+    @abstractmethod
+    def _symbolic_factorization(self, L):
         pass
 
     @abstractmethod
