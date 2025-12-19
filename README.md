@@ -25,19 +25,22 @@ import sgwt
 
 L = sgwt.data.DELAY_TEXAS.laplacian()
 
-scales = np.logspace(1e-2, 1e1, nscales)
+scales = np.logspace(smin, smax, nscales)
 
 with sgwt.FiltersDLL(L, scales) as gsp:
 
     LP = gsp.scaling_coeffs(b)
+    BP = gsp.wavelet_coeffs(b)
+    HP = gsp.highpass_coeffs(b)
+
 ```
 
-## Motivation
+## Cholesky Implementation
 
-Given a rational approximation of some kernel function, we are able to implement graph convolutions using the Cholesky Decomposition.
+Given a rational approximation of some kernel function, we are able to implement graph convolutions using the Cholesky Decomposition. To ensure scalability to signals of large sparse networks, time-varying graph signals must be as efficient as possible with memory.
 
-Kernel Fitted Functions
-------
+The `cholmod_solve2` function is the primary engine behind the fast reusable convolution environment. Access to the `cholmod` functions also means that this module is ideal for GSP of signals on dynamic graphs, using low-rank updates to change the factorization of the graph Laplacian.
+## Kernel Fitted Functions
 
 The kernel fitting representation (1) is more generally a vector fitted function
 ```math
