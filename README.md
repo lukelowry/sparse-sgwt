@@ -25,17 +25,25 @@ The module has a small repository of built in graph laplacians that are useful f
 import sgwt
 
 L = sgwt.data.DELAY_TEXAS.laplacian()
-nvertex = L.shape[0]
-nscales = 10
-scales  = np.logspace(smin, smax, nscales)
 
 ```
 
-Then, the filtration of a time-vertex function $X\in\mathbb{R}^{|N|\times|T|}` stored as a 2D numpy array can be computed efficiently as follows:
+Then, we create or import a time-vertex function $X\in\mathbb{R}^{|N|\times|T|}` stored as a 2D numpy array:
 
 ```python
-ntime = 100
+nvertex = L.shape[0]
+ntime   = 100
+
 X = np.random.random((nvertex, ntime))
+
+
+```
+
+The convolution of `X` with various graph filters can be computed efficiently as follows. We choose `nscales` at which to compute the filters.
+
+```python
+nscales = 10
+scales  = np.logspace(smin, smax, nscales)
 
 with sgwt.FiltersDLL(L, scales) as gsp:
 
