@@ -7,7 +7,6 @@ A Collection of Graph signal processing Functions for Large Sparse Networks
 A highly customizable, sparse-friendly SGWT/GSP module. Existing GSP tools for the SGWT over sparse networks is limited. This package provides tools to design, approximate, and implement a custom SGWT kernel for use over sparse networks.
 
 
-
 ## Installation Notes
 
 The package can be installed using:
@@ -24,7 +23,7 @@ The module has a small repository of built in graph laplacians that are useful f
 ```python
 import sgwt
 
-L = sgwt.data.DELAY_TEXAS.laplacian()
+L = sgwt.data.DELAY_TEXAS.get()
 
 ```
 
@@ -48,11 +47,11 @@ The convolution of `X` with various graph filters can be computed efficiently as
 nscales = 10
 scales  = np.logspace(smin, smax, nscales)
 
-with sgwt.FiltersDLL(L, scales) as gsp:
+with sgwt.FiltersDLL(L, scales) as g:
 
-    LP = gsp.scaling_coeffs(X)
-    BP = gsp.wavelet_coeffs(X)
-    HP = gsp.highpass_coeffs(X)
+    LP = g.scaling_coeffs(X)
+    BP = g.wavelet_coeffs(X)
+    HP = g.highpass_coeffs(X)
 
 ```
 
