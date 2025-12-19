@@ -28,30 +28,24 @@ Then, we create or import a time-vertex function $X\in\mathbb{R}^{|N|\times|T|}$
 import sgwt
 
 # Graph Laplacian
-L  = sgwt.data.DELAY_TX
+L = sgwt.data.DELAY_TX
 
-# Signal (nVert x nTime)
-X = np.random.random(
-    shape=(L.shape[0], 100),
-    order = 'F'
-)
+# Signal (e.g., Dirac Delta)
+X = sgwt.impulse(L, node=...)
 
 # Discrete Scales
-s  = np.logspace(...)
-
+s = np.logspace(...)
 ```
 
 
 The convolution of `X` with various graph filters can be computed efficiently as follows. We choose `nscales` at which to compute the filters. The purpose of the context manager is to provide safe re-use of `cholmod` workspace. While inside the context, the convolution procedure optimizes memory usage.
 
 ```python
-
 with sgwt.Filters(L) as filt:
 
     LP = filt.lowpass(X, s)
     BP = filt.bandpass(X, s)
     HP = filt.highpass(X, s)
-
 ```
 
 The numpy arrays `LP[i]`, `BP[i]`, and `HP[i]` correspond to a filtered signal `X` at the `i-th` scale.
@@ -79,6 +73,12 @@ L = sgwt.data.LENGTH_TEXAS
 
 # Kernel Function
 f = sgwt.data.MEXICAN_HAT
+
+# Signal (nVert x nTime)
+X = np.random.random(
+    shape=(L.shape[0], 100),
+    order = 'F'
+)
 
 ```
 
