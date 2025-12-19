@@ -20,20 +20,32 @@ The CHOLMOD library can be used by installing `scikit-sparse` or using the a com
 
 ## Quick-Start
 
+The module has a small repository of built in graph laplacians that are useful for quick start examples. The user can load any graph Laplacian in `csc_matrix` format.
 ```python
 import sgwt
 
 L = sgwt.data.DELAY_TEXAS.laplacian()
+nvertex = L.shape[0]
+nscales = 10
+scales  = np.logspace(smin, smax, nscales)
 
-scales = np.logspace(smin, smax, nscales)
+```
+
+Then, the filtration of a time-vertex function $X\in\mathbb{R}^{|N|\times|T|}` stored as a 2D numpy array can be computed efficiently as follows:
+
+```python
+ntime = 100
+X = np.random.random((nvertex, ntime))
 
 with sgwt.FiltersDLL(L, scales) as gsp:
 
-    LP = gsp.scaling_coeffs(b)
-    BP = gsp.wavelet_coeffs(b)
-    HP = gsp.highpass_coeffs(b)
+    LP = gsp.scaling_coeffs(X)
+    BP = gsp.wavelet_coeffs(X)
+    HP = gsp.highpass_coeffs(X)
 
 ```
+
+The numpy array at `LP[i]`, `BP[i]`, and `HP[i]` correspond to a filtered signal `X` at the `i-th` scale.
 
 ## Cholesky Implementation
 
