@@ -14,17 +14,17 @@ pip install sgwt
 
 The CHOLMOD library can be used by installing `scikit-sparse` or using the a compiled CHOLMOD `.dll` file.
 
-## Quick Start
-
-The module has a small repository of built in graph laplacians that are useful for quick start examples. The user can load any graph Laplacian in `csc_matrix` format.
+## Basic Usage
 
 
+
+### Quick Start
 Then, we create or import a time-vertex function $X\in\mathbb{R}^{|N|\times|T|}$ stored as a 2D numpy array in column-major ordering (i.e., fortran style). The convolution of `X` with various graph filters can be computed efficiently as follows.
 ```python
 import sgwt
 
 # Graph Laplacian
-L = sgwt.data.DELAY_TX
+L = sgwt.data.LENGTH_TX
 
 # Signal (e.g., Dirac Delta)
 X = sgwt.impulse(L, node=...)
@@ -33,16 +33,75 @@ X = sgwt.impulse(L, node=...)
 s = np.logspace(...)
 
 # Assign L as the convolution context
-with sgwt.Filters(L) as filt:
+with sgwt.Convolve(L) as conv:
 
     # Apply Low-Pass Filters
-    Y = filt.lowpass(X, s)
+    Y = conv.lowpass(X, s)
 ```
 
 The numpy arrays `Y[i]` correspond to a filtered signal `X` at the `i-th` scale.
 
 The purpose of the context manager is to provide safe re-use of `cholmod` workspace. While inside the context, the convolution procedure optimizes memory usage.
 
+### The Underlying Graph
+
+The module has a small repository of built in graph laplacians that are useful for quick start examples. 
+
+```python
+L = sgwt.data.LENGTH_TX
+L = sgwt.data.IMPEDANCE_HAWAII
+L = sgwt.data.STANFARD_BUNNY
+```
+
+The user can also load any graph Laplacian so long it is in the `csc_matrix` format.
+
+
+### Input Signals
+
+The signal in general is a time-vertex signal which is stored as a fortran order 2D numpy array. For example, a random signal meeting these specifications is generated like:
+
+```python
+# Signal (nVert x nTime)
+X = np.random.random(
+    shape=(L.shape[0], 100),
+    order = 'F'
+)
+```
+
+Although, a `(N,1)` array can also be used.
+
+### Analytical Kernels
+
+There are three convenience analytical filters available.
+```python
+# Assign L as the convolution context
+with sgwt.Convolve(L) as conv:
+
+    Y = conv.lowpass(X, s)
+    Y = conv.bandpass(X, s)
+    Y = conv.highpass(X, s)
+```
+
+### VF Kernels
+
+For more advanced functionality, the convolution is generalized using kernel fitting. 
+```python
+F = sgwt.data.MEXICAN_HAT
+F = sgwt.data.MODIFIED_MORLET
+F = sgwt.data.SHANNON
+```
+
+These kernels can also be scaled and modified before they are used.
+```
+Fnew = sgwt.scale_kernel(F, ...)
+```
+
+Same as before, the convolution is simply performed on our signal `X` as follows:
+```python
+with sgwt.Convolve(L) as conv:
+
+    Y = conv(X, F)
+```
 
 ## Kernel Fitting
 
@@ -58,34 +117,8 @@ An iterative pole realocation procedure is used to converge to a reduced order m
 
 ### Example Use
 
-For more advanced functionality, the convolution is generalized using kernel fitting. Same as before, we 
-```python
-import sgwt
 
-# Underlying Graph
-L = sgwt.data.LENGTH_TEXAS
-
-# Kernel Function
-F = sgwt.data.MEXICAN_HAT
-
-# Signal (nVert x nTime)
-X = np.random.random(
-    shape=(L.shape[0], 100),
-    order = 'F'
-)
-
-```
-
-Then the convolution is simply performed on our signal `X` as follows:
-
-```python
-with sgwt.Convolve(L) as conv:
-
-    Y = conv(X, F)
-
-```
-
-The convolutional kernel `f` can be a vector function, meaning multiple filters can be applied concurrently (i.e., you have have an SGWT kernel that compactly calculates all wavelet coefficients)
+The convolutional kernel `F` can be a vector function, meaning multiple filters can be applied concurrently (i.e., you have have an SGWT kernel that compactly calculates all wavelet coefficients)
 
 ### Rational Kernel JSON Format
 
