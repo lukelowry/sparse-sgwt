@@ -1,14 +1,14 @@
 
 from scipy.sparse import load_npz
 from numpy import load, save
-from sgwt import FastSGWT, VFKernelData
+from sgwt import FastSGWT, VFKern
 
 
 KERNEL = r'C:\Users\wyattluke.lowery\Documents\GitHub\sparse-sgwt\examples\kernels\kernel_model.npz'
 LAP_NAME    = r'C:\Users\wyattluke.lowery\Documents\GitHub\sparse-sgwt\examples\laplacians\TX2000.npz'
 
 # Kernel File & Laplacian
-kern = VFKernelData.from_file(KERNEL)
+kern = VFKern.from_file(KERNEL)
 L    = load_npz(LAP_NAME)
 
 # SGWT Model

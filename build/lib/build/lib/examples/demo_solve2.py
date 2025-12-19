@@ -27,7 +27,7 @@ WAVS  = fsgwt.wavelet_coeffs(b)
 end   = time.time()
 
 # DLL VERSION
-with sgwt.FiltersDLL(L, scales) as fsgwt:
+with sgwt.Filters(L, scales) as fsgwt:
 
     # DLL cholmod_solve
     start2 = time.time()

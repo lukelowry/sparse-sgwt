@@ -1,9 +1,12 @@
 
 import sgwt
-from sgwt.data import LENGTH_EASTWEST as graph
-from sgwt.data import MODIFIED_MORLET as kern
-from sgwt.data import COORD_EASTWEST as coords
+from sgwt.data import LENGTH_EASTWEST, COORD_EASTWEST, MODIFIED_MORLET
 import numpy as np
+
+# Graph & Kernel
+L = LENGTH_EASTWEST.get()
+K = MODIFIED_MORLET.get()
+C = COORD_EASTWEST.get()
 
 def plot_signal(f):
 
@@ -12,19 +15,13 @@ def plot_signal(f):
     import matplotlib.cm as cm
 
     # Coordinates
-    C = coords.get()
     L1, L2 = C['longitude'], C['latitude']
-
 
     mx = np.sort(np.abs(f))[-20] 
     norm = Normalize(-mx, mx)
     plt.scatter(L1, L2 , c=f, edgecolors='none', cmap=cm.get_cmap('Spectral'), norm=norm)
     plt.axis('scaled')   
     plt.show()
-
-# Graph & Kernel
-L = graph.get()
-K = kern.get()
 
 # Signal Input
 ntime = 2
@@ -35,9 +32,9 @@ X = np.zeros(
 X[-10000] = 1
 
 # Memory Efficient Context
-with sgwt.VFitDLL(L, K) as g:
+with sgwt.VFConvolve(L, K) as g:
 
-    g.Q /= 2000000 # TODO kernel scaling g.scale_kern(...)
+    g.Q /= 20000000 # TODO kernel scaling g.scale_kern(...)
 
     H = g.convolve(X)
 

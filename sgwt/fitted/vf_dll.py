@@ -14,9 +14,9 @@ from scipy.sparse import csc_matrix
 import numpy as np
 
 from ..cholesky import CholWrapper, CholeskyContextManager
-from .ration import VFKernelData
+from .ration import VFKern
 
-class VFitDLL(CholeskyContextManager):
+class VFConvolve(CholeskyContextManager):
     '''
     Description
         A class that computes rational-approximation approach to the SGWT
@@ -36,7 +36,7 @@ class VFitDLL(CholeskyContextManager):
         self.L = L
 
         # Kernel Function
-        kern = VFKernelData.from_json(K)
+        kern = VFKern.from_json(K)
         self.R = kern.R 
         self.Q = kern.Q
         self.D = kern.D

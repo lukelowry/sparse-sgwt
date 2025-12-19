@@ -13,7 +13,7 @@ Author: Luke Lowery (lukel@tamu.edu)
 
 from scipy.sparse import load_npz
 from numpy import save, zeros, sqrt, log
-from sgwt import FastSGWT, VFKernelData
+from sgwt import FastSGWT, VFKern
 
 
 KERNEL      = r'C:\Users\wyattluke.lowery\Documents\GitHub\sparse-sgwt\examples\kernels\kernel_model.npz'
@@ -27,7 +27,7 @@ f = zeros((nbuses, 1))
 f[impulse] = 1
 
 # Kernel File & Laplacian
-kern = VFKernelData.from_file(KERNEL)
+kern = VFKern.from_file(KERNEL)
 L = load_npz(LAP_NAME)
 
 # SGWT Model

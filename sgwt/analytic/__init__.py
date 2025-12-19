@@ -18,5 +18,5 @@ of the SGWT/GSP
 
 '''
 
-from .analytic_dll import FiltersDLL
+from .analytic_dll import Filters
 from .analytic_scikit import FiltersScikit

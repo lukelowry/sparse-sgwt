@@ -12,9 +12,9 @@ from sksparse.cholmod import analyze
 from scipy.sparse import csc_matrix
 
 import numpy as np
-from .kernel import VFKernelData
+from .ration import VFKern
 
-class VFitScikit(ABC):
+class VFConvolveScikit(ABC):
     '''
     Description: 
         A class that computes rational-approximation approach to the SGWT
@@ -24,7 +24,7 @@ class VFitScikit(ABC):
         kern: optional, VF data of spectral function
     '''
 
-    def __init__(self, L: csc_matrix, kern: VFKernelData = None):
+    def __init__(self, L: csc_matrix, kern: VFKern = None):
 
         # Sparse Laplacian
         self.L = L
@@ -37,7 +37,7 @@ class VFitScikit(ABC):
             self.init_kern(kern)
             self.kern = kern
 
-    def init_kern(self, kern: VFKernelData):
+    def init_kern(self, kern: VFKern):
 
         # Load Residues, Poles, Scales
         self.R, self.Q, self.S = kern.R, kern.Q, kern.S

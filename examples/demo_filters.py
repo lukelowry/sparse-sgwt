@@ -1,5 +1,5 @@
 
-from sgwt.analytic import FiltersDLL
+from sgwt.analytic import Filters
 from sgwt.data import IMPEDANCE_EASTWEST as graph
 import numpy as np
 
@@ -17,7 +17,7 @@ b[50] = 1
 scales = np.logspace(1e-2, 1e1, nscales)
 
 # Memory Efficient Context
-with FiltersDLL(L, scales) as gsp:
+with Filters(L, scales) as gsp:
 
     LP = gsp.scaling_coeffs(b)
 

@@ -6,7 +6,7 @@ from ..cholesky import CholWrapper, CholeskyContextManager
 from ctypes import byref
 
 
-class FiltersDLL(AnalyticFilters, CholeskyContextManager):
+class Filters(AnalyticFilters, CholeskyContextManager):
     '''
     A sparse memory efficient implementation
     that uses cholmod_solve2

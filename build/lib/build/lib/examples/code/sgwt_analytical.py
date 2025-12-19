@@ -4,7 +4,7 @@ from scipy.sparse import load_npz
 from numpy import save
 from pandas import read_csv
 
-from sgwt import FastSGWT, VFKernelData
+from sgwt import FastSGWT, VFKern
 
 KERNEL = r'C:\Users\wyattluke.lowery\Documents\GitHub\sparse-sgwt\examples\kernels\kernel_model.npz'
 LAP_NAME    = r'C:\Users\wyattluke.lowery\Documents\GitHub\sparse-sgwt\examples\laplacians\TX2000.npz'
@@ -17,7 +17,7 @@ L = load_npz(LAP_NAME)
 f = (read_csv(SIGNAL_NAME).set_index('Time').to_numpy()-1).T
 
 # Kernel File NOTE not actually using here
-kern = VFKernelData.from_file(KERNEL)
+kern = VFKern.from_file(KERNEL)
 
 # Load SGWT Object from kernel file
 sgwt = FastSGWT(L, kern)

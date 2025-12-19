@@ -47,7 +47,7 @@ The convolution of `X` with various graph filters can be computed efficiently as
 nscales = 10
 scales  = np.logspace(smin, smax, nscales)
 
-with sgwt.FiltersDLL(L, scales) as g:
+with sgwt.Filters(L, scales) as g:
 
     LP = g.scaling_coeffs(X)
     BP = g.wavelet_coeffs(X)

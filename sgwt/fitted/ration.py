@@ -3,10 +3,10 @@ from typing import TypeVar, Type
 from numpy import array
 import numpy.typing as npt
 
-T = TypeVar('T', bound='VFKernelData')
+T = TypeVar('T', bound='VFKern')
 
 @dataclass
-class VFKernelData:
+class VFKern:
 
     # Residual Matrix (nPoles x nScales)
     R: npt.NDArray

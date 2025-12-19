@@ -39,7 +39,7 @@ WAVS  = fsgwt.scaling_coeffs(b)
 end   = time.time()
 
 # DLL VERSION
-with sgwt.FiltersDLL(L, scales) as fsgwt_DLL:
+with sgwt.Filters(L, scales) as fsgwt_DLL:
 
     # DLL cholmod_solve2 (NOTE eventually can speed up by not copying data)
     start3 = time.time()

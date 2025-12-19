@@ -13,6 +13,6 @@ Vector Fit
 
 """
 
-from .analytic import FiltersScikit, FiltersDLL
-from .fitted import VFitDLL, VFitScikit, VFKernelData
+from .analytic import FiltersScikit, Filters
+from .fitted import VFConvolve, VFConvolveScikit, VFKern
 from .data import *

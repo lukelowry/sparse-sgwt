@@ -1,4 +1,4 @@
 
-from .vf_dll import VFitDLL
-from .vf_scikit import VFitScikit
-from .ration import VFKernelData
+from .vf_dll import VFConvolve
+from .vf_scikit import VFConvolveScikit
+from .ration import VFKern
