@@ -1,13 +1,10 @@
 # Sparse GSP & SGWT Tools
 
-A Collection of Graph signal processing Functions for Large Sparse Networks
+A highly customizable, sparse-friendly SGWT/GSP module. This package provides tools to design, approximate, and implement a custom SGWT kernel for use over sparse networks.
 
-## Introduction
+Intended for GSP of time-vertex signals over static and dynamic sparse graphs.
 
-A highly customizable, sparse-friendly SGWT/GSP module. Existing GSP tools for the SGWT over sparse networks is limited. This package provides tools to design, approximate, and implement a custom SGWT kernel for use over sparse networks.
-
-
-## Installation Notes
+## Installation
 
 The package can be installed using:
 
@@ -17,13 +14,12 @@ pip install sgwt
 
 The CHOLMOD library can be used by installing `scikit-sparse` or using the a compiled CHOLMOD `.dll` file.
 
-## Quick-Start
+## Quick Start
 
 The module has a small repository of built in graph laplacians that are useful for quick start examples. The user can load any graph Laplacian in `csc_matrix` format.
 
 
-Then, we create or import a time-vertex function $X\in\mathbb{R}^{|N|\times|T|}$ stored as a 2D numpy array in column-major ordering (i.e., fortran style)
-
+Then, we create or import a time-vertex function $X\in\mathbb{R}^{|N|\times|T|}$ stored as a 2D numpy array in column-major ordering (i.e., fortran style). The convolution of `X` with various graph filters can be computed efficiently as follows.
 ```python
 import sgwt
 
@@ -35,20 +31,18 @@ X = sgwt.impulse(L, node=...)
 
 # Discrete Scales
 s = np.logspace(...)
-```
 
-
-The convolution of `X` with various graph filters can be computed efficiently as follows. We choose `nscales` at which to compute the filters. The purpose of the context manager is to provide safe re-use of `cholmod` workspace. While inside the context, the convolution procedure optimizes memory usage.
-
-```python
+# Assign L as the convolution context
 with sgwt.Filters(L) as filt:
 
-    LP = filt.lowpass(X, s)
-    BP = filt.bandpass(X, s)
-    HP = filt.highpass(X, s)
+    # Apply Low-Pass Filters
+    Y = filt.lowpass(X, s)
 ```
 
-The numpy arrays `LP[i]`, `BP[i]`, and `HP[i]` correspond to a filtered signal `X` at the `i-th` scale.
+The numpy arrays `Y[i]` correspond to a filtered signal `X` at the `i-th` scale.
+
+The purpose of the context manager is to provide safe re-use of `cholmod` workspace. While inside the context, the convolution procedure optimizes memory usage.
+
 
 ## Kernel Fitting
 
@@ -62,7 +56,7 @@ g_a(\mathbf{\Lambda})\approx
 
 An iterative pole realocation procedure is used to converge to a reduced order model. The convolution of some function $\mathbf{f}*g_a$ is computed using the cholesky decomposition and memory efficient re-factors.
 
-### Usage
+### Example Use
 
 For more advanced functionality, the convolution is generalized using kernel fitting. Same as before, we 
 ```python
@@ -72,7 +66,7 @@ import sgwt
 L = sgwt.data.LENGTH_TEXAS
 
 # Kernel Function
-f = sgwt.data.MEXICAN_HAT
+F = sgwt.data.MEXICAN_HAT
 
 # Signal (nVert x nTime)
 X = np.random.random(
@@ -85,10 +79,9 @@ X = np.random.random(
 Then the convolution is simply performed on our signal `X` as follows:
 
 ```python
-
 with sgwt.Convolve(L) as conv:
 
-    H = conv(X, f)
+    Y = conv(X, F)
 
 ```
 
@@ -118,13 +111,6 @@ The convolutional kernel `f` can be a vector function, meaning multiple filters 
     ]
 }
 ```
-
-
-### Cholesky Implementation
-
-Given a rational approximation of some kernel function, we are able to implement graph convolutions using the Cholesky Decomposition. To ensure scalability to signals of large sparse networks, time-varying graph signals must be as efficient as possible with memory.
-
-The `cholmod_solve2` function is the primary engine behind the fast reusable convolution environment. Access to the `cholmod` functions also means that this module is ideal for GSP of signals on dynamic graphs, using low-rank updates to change the factorization of the graph Laplacian.
 
 ## Analytical Filters
 
@@ -161,4 +147,10 @@ This filter qualifies as a wavelet generating kernel for the SGWT, since $\Psi(0
 \Psi(0)=0  \qquad\text{and}\quad \int_0^{\infty}\dfrac{\Psi^2(x)}{x}\mathrm{d}x <\infty
 ```
 
+
+## Cholesky Implementation
+
+Given a rational approximation of some kernel function, we are able to implement graph convolutions using the Cholesky Decomposition. To ensure scalability to signals of large sparse networks, time-varying graph signals must be as efficient as possible with memory.
+
+The `cholmod_solve2` function is the primary engine behind the fast reusable convolution environment. Access to the `cholmod` functions also means that this module is ideal for GSP of signals on dynamic graphs, using low-rank updates to change the factorization of the graph Laplacian.
 
