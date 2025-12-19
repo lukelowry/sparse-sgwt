@@ -28,7 +28,7 @@ L = sgwt.data.DELAY_TEXAS.laplacian()
 
 ```
 
-Then, we create or import a time-vertex function $X\in\mathbb{R}^{|N|\times|T|}` stored as a 2D numpy array in column-major ordering (i.e., fortran style)
+Then, we create or import a time-vertex function $X\in\mathbb{R}^{|N|\times|T|}$ stored as a 2D numpy array in column-major ordering (i.e., fortran style)
 
 ```python
 nvertex = L.shape[0]
@@ -42,7 +42,7 @@ X = np.random.random(
 
 ```
 
-The convolution of `X` with various graph filters can be computed efficiently as follows. We choose `nscales` at which to compute the filters. The use of the context manager is required for safe re-use of `choldmod` workspace.
+The convolution of `X` with various graph filters can be computed efficiently as follows. We choose `nscales` at which to compute the filters. The use of the context manager is required for safe re-use of `cholmod` workspace.
 
 ```python
 nscales = 10

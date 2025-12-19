@@ -10,7 +10,7 @@ class LapID:
     kind: str
     region: str
 
-    def laplacian(self):
+    def get(self):
             # Weight Type
         B = self.kind
 

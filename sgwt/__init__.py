@@ -14,4 +14,5 @@ Vector Fit
 """
 
 from .analytic import FiltersScikit, FiltersDLL
+from .fitted import VFitDLL, VFitScikit, VFKernelData
 from .data import *

@@ -4,7 +4,7 @@ from sgwt.data import IMPEDANCE_EASTWEST as graph
 import time
 
 
-L = graph.laplacian()
+L = graph.get()
 
 
 # Dense signal input (nBus x nTime)

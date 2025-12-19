@@ -4,7 +4,7 @@ from sgwt.data import IMPEDANCE_EASTWEST as graph
 import numpy as np
 
 # Graph
-L = graph.laplacian()
+L = graph.get()
 ntime = 20
 nscales = 5
 

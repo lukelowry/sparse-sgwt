@@ -5,7 +5,7 @@ from sgwt.data import IMPEDANCE_EASTWEST as graph
 import time
 
 
-L = graph.laplacian()
+L = graph.get()
 
 '''
 NOTE In this case where we want to use Bset

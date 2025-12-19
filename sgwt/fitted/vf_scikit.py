@@ -14,7 +14,7 @@ from scipy.sparse import csc_matrix
 import numpy as np
 from .kernel import VFKernelData
 
-class VectorFitSGWT(ABC):
+class VFitScikit(ABC):
     '''
     Description: 
         A class that computes rational-approximation approach to the SGWT
