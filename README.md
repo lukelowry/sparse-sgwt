@@ -28,18 +28,21 @@ L = sgwt.data.DELAY_TEXAS.laplacian()
 
 ```
 
-Then, we create or import a time-vertex function $X\in\mathbb{R}^{|N|\times|T|}` stored as a 2D numpy array:
+Then, we create or import a time-vertex function $X\in\mathbb{R}^{|N|\times|T|}` stored as a 2D numpy array in column-major ordering (i.e., fortran style)
 
 ```python
 nvertex = L.shape[0]
 ntime   = 100
 
-X = np.random.random((nvertex, ntime))
+X = np.random.random(
+    shape=(nvertex, ntime),
+    order = 'F'
+)
 
 
 ```
 
-The convolution of `X` with various graph filters can be computed efficiently as follows. We choose `nscales` at which to compute the filters.
+The convolution of `X` with various graph filters can be computed efficiently as follows. We choose `nscales` at which to compute the filters. The use of the context manager is required for safe re-use of `choldmod` workspace.
 
 ```python
 nscales = 10
@@ -53,7 +56,7 @@ with sgwt.FiltersDLL(L, scales) as gsp:
 
 ```
 
-The numpy array at `LP[i]`, `BP[i]`, and `HP[i]` correspond to a filtered signal `X` at the `i-th` scale.
+The numpy arrays `LP[i]`, `BP[i]`, and `HP[i]` correspond to a filtered signal `X` at the `i-th` scale.
 
 ## Cholesky Implementation
 
