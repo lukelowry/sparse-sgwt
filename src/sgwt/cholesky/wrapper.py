@@ -1,5 +1,5 @@
 from .structs import *
-from ctypes import byref, cast, POINTER, CDLL, pointer
+from ctypes import byref, cast, POINTER, CDLL
 
 import numpy as np
 from importlib_resources import files, as_file
@@ -14,8 +14,6 @@ CHOLMOD_A   = 0 #  0  /* solve Ax=b    */
 #define CHOLMOD_P    7  /* permute x=Px  */
 #define CHOLMOD_Pt   8  /* permute x=P'x */
 
-
-
 class CholWrapper:
     '''
     A wrapper class for interacting with CHOLMOD DLL
@@ -26,8 +24,7 @@ class CholWrapper:
 
     def __init__(self, A) -> None:
         ''' 
-        dll: the ctype dll compiles CHOLMOD 
-        A: csc_matrix - the working matrix, which can undergo lowrank changes
+        A: csc_matrix - the matrix to be symbolically factored
         '''
 
         # Access DLL

@@ -2,10 +2,7 @@
 
 from .analytic import AnalyticFilters
 
-
 from sksparse.cholmod import analyze
-from scipy.sparse import csc_matrix
-
 import numpy as np
 
 class FiltersScikit(AnalyticFilters):
@@ -17,24 +14,40 @@ class FiltersScikit(AnalyticFilters):
         scales: optional, default scales used
     '''
 
-    def __call__(self, f):
-        '''
-        Description
-            Conveniece call function that computes SGWT coefficients
-        Returns
-            W:  Array size (Bus, Time, Scale)
-        '''
-        
-        return self.wavelet_coeffs(f)
 
+    '''
+    Abstract Method Implementations
+    '''
 
-    def allocate(self, f, n=None):
-        if n is None:
-            return np.zeros((*f.shape, self.nscales))
-        else:
-            return np.zeros((*f.shape, n))
+    def _allocate_results(self, b, scales):
+        return np.zeros((*b.shape, len(scales)))
+    
+    def _format_rhs(self, b, bset):
+        return b, bset
+    
+    def _symbolic_factorization(self, L):
+        self.factor = analyze(L)
+    
+    def _numeric_factorization(self, beta):
+        self.factor.cholesky_inplace(self.L, beta)
+
+    def _solve(self, b, bset):
+        return self.factor(b)
+
+    def _solve_twice(self, b, bset):
+        return self.factor(self.factor(b))
+
+    def _mult(self, x, scalar):
+        return x*scalar
+
+    def _mult_lap(self, x, scalar):
+        return scalar*(self.L@x)
+
+    def _save_to_results(self, x, index):
+        self.results[:,:,index] = x
 
     
+
     '''
     Local Impulse Responses
     '''
@@ -97,40 +110,7 @@ class FiltersScikit(AnalyticFilters):
 
         return S
     
-    '''
-    Convolutions
-    '''
 
-    
-
-    def _allocate_results(self, b, scales):
-        return self.allocate(b, len(scales))
-    
-    def _format_rhs(self, b, bset):
-        return b, bset
-    
-    def _symbolic_factorization(self, L):
-        self.factor = analyze(L)
-    
-    def _numeric_factorization(self, beta):
-        self.factor.cholesky_inplace(self.L, beta)
-
-    def _solve(self, b, bset):
-        return self.factor(b)
-
-    def _solve_twice(self, b, bset):
-        return self.factor(self.factor(b))
-
-    def _mult(self, x, scalar):
-        return x*scalar
-
-    def _mult_lap(self, x, scalar):
-        return scalar*(self.L@x)
-
-    def _save_to_results(self, x, index):
-        self.results[:,:,index] = x
-
-    
     '''
     Inverse Transformations
     '''

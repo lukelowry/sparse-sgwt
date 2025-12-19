@@ -8,14 +8,17 @@ L = graph.laplacian()
 
 
 # Dense signal input (nBus x nTime)
-ntime = 1
-nscales = 20
+ntime = 20
+nscales = 40
+scales = np.logspace(1e-2, 1e1, nscales)
+
+# Signal Input
 b = np.zeros(
     shape = (L.shape[0], ntime),
     order="F"
 )
 b[50] = 1
-scales = np.logspace(1e-2, 1e1, nscales)
+
 
 # SCIT KIT VERSION
 fsgwt     = sgwt.FiltersScikit(L, scales)
@@ -24,11 +27,11 @@ WAVS  = fsgwt.wavelet_coeffs(b)
 end   = time.time()
 
 # DLL VERSION
-with sgwt.FiltersDLL(L, scales) as fsgwt_DLL:
+with sgwt.FiltersDLL(L, scales) as fsgwt:
 
     # DLL cholmod_solve
     start2 = time.time()
-    WAVS2 = fsgwt_DLL.wavelet_coeffs(b)
+    WAVS2 = fsgwt.wavelet_coeffs(b)
     end2   = time.time()
 
 # Print Compute Time
