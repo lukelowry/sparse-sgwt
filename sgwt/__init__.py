@@ -4,18 +4,14 @@ sgwt
 Author: Luke Lowery (lukel@tamu.edu)
 
 
-- Analytical
+Analytical
     - CHOLMOD (scikit)
     - CHOLMOD (DLL)
-- Vector Fit
+Vector Fit
     - CHOLMOD (scikit)
     - CHOLMOD (DLL)
-- Chebyshev Fit
-    - scipy.sparse
 
 """
-
-
 
 from .analytic import FiltersScikit, FiltersDLL
 from .data import *

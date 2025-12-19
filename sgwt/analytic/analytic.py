@@ -58,14 +58,14 @@ class AnalyticFilters(ABC):
 
     def wavelet_coeffs(self, b, bset=None, scales=None):
         '''
-        Returns
+        Description
             Wavelet  coeffs of indicated scale using the analytical form.
             (1/s)  L/(L+I/s)^2  located only at a subset of buses
         Parameters
             f: Signal array (numVerticies x numFeatures) to calculate wavelet coeffs.
             fset: (nVerticies x 1) Sparse vector indicator function of nodes 
-                where the wavelet coeffs need to be solved. Much faster than calculating
-                coefficients for every vertex localization. Default: None, does not consider fset.
+            where the wavelet coeffs need to be solved. Much faster than calculating
+            coefficients for every vertex localization. Default: None, does not consider fset.
             scales: list (numScales) of scales to compute wavelet coefficents for.
         Returns
             Wavelet coefficients for each scale (numVerticies x numScales)

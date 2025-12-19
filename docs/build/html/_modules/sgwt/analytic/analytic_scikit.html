@@ -1,0 +1,263 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>sgwt.analytic.analytic_scikit &mdash; sgwt 0.1.2 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=92734c54"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            sgwt
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/modules.html">sgwt</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/sgwt.html">sgwt package</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/sgwt.html#subpackages">Subpackages</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/sgwt.html#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/sgwt.html#module-sgwt">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">sgwt</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">sgwt.analytic.analytic_scikit</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for sgwt.analytic.analytic_scikit</h1><div class="highlight"><pre>
+<span></span>
+<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">Implementation using sksparse.</span>
+<span class="sd">It is slower than the DLL implementation,</span>
+<span class="sd">but can be re-enabled if needed.</span>
+<span class="sd">&#39;&#39;&#39;</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.analytic</span><span class="w"> </span><span class="kn">import</span> <span class="n">AnalyticFilters</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sksparse.cholmod</span><span class="w"> </span><span class="kn">import</span> <span class="n">analyze</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<div class="viewcode-block" id="FiltersScikit">
+<a class="viewcode-back" href="../../../api/sgwt.analytic.analytic_scikit.html#sgwt.analytic.analytic_scikit.FiltersScikit">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">FiltersScikit</span><span class="p">(</span><span class="n">AnalyticFilters</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Description</span>
+<span class="sd">        A class that of analytical versions filters for SGWT and GSP</span>
+<span class="sd">    Parameters</span>
+<span class="sd">        L: sparse csc_matrix form of Graph Laplacian (real valued)</span>
+<span class="sd">        scales: optional, default scales used</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_allocate_results</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">scales</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="o">*</span><span class="n">b</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">scales</span><span class="p">)))</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_format_rhs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">bset</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">b</span><span class="p">,</span> <span class="n">bset</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_symbolic_factorization</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">L</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">factor</span> <span class="o">=</span> <span class="n">analyze</span><span class="p">(</span><span class="n">L</span><span class="p">)</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_numeric_factorization</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">beta</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">factor</span><span class="o">.</span><span class="n">cholesky_inplace</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">L</span><span class="p">,</span> <span class="n">beta</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_solve</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">bset</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">factor</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_solve_twice</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">bset</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">factor</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">factor</span><span class="p">(</span><span class="n">b</span><span class="p">))</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_mult</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">scalar</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">x</span><span class="o">*</span><span class="n">scalar</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_mult_lap</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">scalar</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">scalar</span><span class="o">*</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">L</span><span class="nd">@x</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_save_to_results</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">[:,:,</span><span class="n">index</span><span class="p">]</span> <span class="o">=</span> <span class="n">x</span>
+
+<span class="w">    </span>
+
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Local Impulse Responses</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+
+<div class="viewcode-block" id="FiltersScikit.scaling_funcs">
+<a class="viewcode-back" href="../../../api/sgwt.analytic.analytic_scikit.html#sgwt.analytic.analytic_scikit.FiltersScikit.scaling_funcs">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">scaling_funcs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">anchor_indecies</span><span class="p">,</span> <span class="n">scale</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Returns</span>
+<span class="sd">            Scaling functions of indicated scale using the analytical form.</span>
+<span class="sd">        Parameters</span>
+<span class="sd">            anchor_indicies: nodes at which to return scaling functions</span>
+<span class="sd">            scale: scale of the scaling functions</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        
+        <span class="n">F</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">factor</span>
+        <span class="n">L</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">L</span>
+
+        <span class="c1"># Create the LOCALIZATION VECTOR</span>
+        <span class="c1"># Number of Rows = Number of true verticies</span>
+        <span class="c1"># Number of Cols = Number of Reduced vertices</span>
+        <span class="n">nLocal</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">anchor_indecies</span><span class="p">)</span>
+        <span class="n">anchors</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">L</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">nLocal</span><span class="p">))</span>
+
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">node_idx</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">anchor_indecies</span><span class="p">):</span>
+            <span class="n">anchors</span><span class="p">[</span><span class="n">node_idx</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+
+        <span class="c1"># Analytical solution to scaling function</span>
+        <span class="n">F</span><span class="o">.</span><span class="n">cholesky_inplace</span><span class="p">(</span><span class="n">L</span><span class="p">,</span> <span class="mi">1</span><span class="o">/</span><span class="n">scale</span><span class="p">)</span>
+        <span class="n">S</span> <span class="o">=</span> <span class="n">F</span><span class="p">(</span><span class="n">anchors</span><span class="p">)</span><span class="o">/</span><span class="n">scale</span>
+
+        <span class="k">return</span> <span class="n">S</span></div>
+
+    
+<div class="viewcode-block" id="FiltersScikit.wavelet_funcs">
+<a class="viewcode-back" href="../../../api/sgwt.analytic.analytic_scikit.html#sgwt.analytic.analytic_scikit.FiltersScikit.wavelet_funcs">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">wavelet_funcs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">anchor_indecies</span><span class="p">,</span> <span class="n">scale</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Returns</span>
+<span class="sd">            Wavelet functions of indicated scale using the analytical form.</span>
+<span class="sd">            L/(L+I/s)^2</span>
+<span class="sd">        Parameters</span>
+<span class="sd">            anchor_indicies: nodes at which to return wavelets</span>
+<span class="sd">            scale: scale of the wavelet</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        
+        <span class="n">F</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">factor</span>
+        <span class="n">L</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">L</span>
+
+        <span class="c1"># Create the LOCALIZATION VECTOR</span>
+        <span class="c1"># Number of Rows = Number of true verticies</span>
+        <span class="c1"># Number of Cols = Number of Reduced vertices</span>
+        <span class="n">nLocal</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">anchor_indecies</span><span class="p">)</span>
+        <span class="n">anchors</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">L</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">nLocal</span><span class="p">))</span>
+
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">node_idx</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">anchor_indecies</span><span class="p">):</span>
+            <span class="n">anchors</span><span class="p">[</span><span class="n">node_idx</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+
+        <span class="c1"># Analytical solution to scaling function</span>
+        <span class="n">F</span><span class="o">.</span><span class="n">cholesky_inplace</span><span class="p">(</span><span class="n">L</span><span class="p">,</span> <span class="mi">1</span><span class="o">/</span><span class="n">scale</span><span class="p">)</span>
+
+        <span class="c1"># Solve</span>
+        <span class="n">S</span> <span class="o">=</span> <span class="n">F</span><span class="p">(</span><span class="n">anchors</span><span class="p">)</span>
+        <span class="n">S</span> <span class="o">=</span> <span class="n">L</span><span class="nd">@F</span><span class="p">(</span><span class="n">S</span><span class="p">)</span><span class="o">/</span><span class="n">scale</span>
+
+        <span class="k">return</span> <span class="n">S</span></div>
+
+    
+<div class="viewcode-block" id="FiltersScikit.wavelet_inv">
+<a class="viewcode-back" href="../../../api/sgwt.analytic.analytic_scikit.html#sgwt.analytic.analytic_scikit.FiltersScikit.wavelet_inv">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">wavelet_inv</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">W</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Description</span>
+<span class="sd">            The inverse SGWT transformation (only one time point for now)</span>
+<span class="sd">            And does not support scaling coefficients right now. Not normalized</span>
+<span class="sd">        Parameters</span>
+<span class="sd">            W: ndarray of shape (Bus x Times x Scales)</span>
+<span class="sd">        Return</span>
+<span class="sd">            f: reconstructed signal</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+
+        <span class="n">F</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">factor</span>
+        <span class="n">L</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">L</span>
+
+        <span class="c1"># Allocate reconstructed vector (nBus x nFeature)</span>
+        <span class="n">f</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">W</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">W</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">scale</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scales</span><span class="p">):</span>
+
+            <span class="c1"># Coefficients of this scale</span>
+            <span class="n">WS</span> <span class="o">=</span> <span class="n">W</span><span class="p">[:,:,</span><span class="n">i</span><span class="p">]</span>
+
+            <span class="c1"># Step 1 -&gt; Set Scale</span>
+            <span class="n">F</span><span class="o">.</span><span class="n">cholesky_inplace</span><span class="p">(</span><span class="n">L</span><span class="p">,</span> <span class="mi">1</span><span class="o">/</span><span class="n">scale</span><span class="p">)</span>
+
+            <span class="c1"># Step 2 -&gt; First Sovle (Scaling coeffs!)</span>
+            <span class="n">S</span> <span class="o">=</span> <span class="n">F</span><span class="p">(</span><span class="n">WS</span><span class="p">)</span>
+
+            <span class="c1"># Step 3 -&gt; Second Solve and Laplacian product</span>
+            <span class="n">f</span> <span class="o">+=</span> <span class="n">L</span><span class="nd">@F</span><span class="p">(</span><span class="n">S</span><span class="p">)</span><span class="o">/</span><span class="n">scale</span> 
+
+        <span class="k">return</span> <span class="n">f</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Luke Lowery.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

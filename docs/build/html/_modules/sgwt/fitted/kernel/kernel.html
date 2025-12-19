@@ -1,0 +1,209 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>sgwt.fitted.kernel.kernel &mdash; sgwt 0.1.2 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../_static/documentation_options.js?v=92734c54"></script>
+      <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            sgwt
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api/modules.html">sgwt</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../../api/sgwt.html">sgwt package</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../../api/sgwt.html#subpackages">Subpackages</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../api/sgwt.html#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../api/sgwt.html#module-sgwt">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">sgwt</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">sgwt.fitted.kernel.kernel</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for sgwt.fitted.kernel.kernel</h1><div class="highlight"><pre>
+<span></span>
+<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">Analytical representations of wavelet </span>
+<span class="sd">scaling and generating functions to pass to</span>
+<span class="sd">the KernelFactory</span>
+<span class="sd">&#39;&#39;&#39;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
+
+<div class="viewcode-block" id="AbstractKernel">
+<a class="viewcode-back" href="../../../../api/sgwt.fitted.kernel.kernel.html#sgwt.fitted.kernel.kernel.AbstractKernel">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">AbstractKernel</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    An Abstract SGWT Kernel with callable functions g(x) and h(x)</span>
+<span class="sd">    that have can be evaluated in the spectrum of the graph laplacian.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">pass</span>
+
+<div class="viewcode-block" id="AbstractKernel.h">
+<a class="viewcode-back" href="../../../../api/sgwt.fitted.kernel.kernel.html#sgwt.fitted.kernel.kernel.AbstractKernel.h">[docs]</a>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">h</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Description:</span>
+<span class="sd">            The scaling kerenl h(x) evaluating the &#39;DC-like&#39; spectrum</span>
+<span class="sd">        Parameters:</span>
+<span class="sd">            Vector x, the spectrum domain to evaluate.</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            Spectral domain scaling kerenel</span>
+<span class="sd">        &#39;&#39;&#39;</span></div>
+
+
+<div class="viewcode-block" id="AbstractKernel.g">
+<a class="viewcode-back" href="../../../../api/sgwt.fitted.kernel.kernel.html#sgwt.fitted.kernel.kernel.AbstractKernel.g">[docs]</a>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">g</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Description:</span>
+<span class="sd">            The wavelet generating kernel g(x) evaluating the un-scaled wavelet</span>
+<span class="sd">        Parameters:</span>
+<span class="sd">            Vector x, the spectrum domain to evaluate.</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            Spectral domain wavelet kerenel</span>
+<span class="sd">        &#39;&#39;&#39;</span></div>
+</div>
+
+
+<div class="viewcode-block" id="KernelSmoothRational">
+<a class="viewcode-back" href="../../../../api/sgwt.fitted.kernel.kernel.html#sgwt.fitted.kernel.kernel.KernelSmoothRational">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">KernelSmoothRational</span><span class="p">(</span><span class="n">AbstractKernel</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    A specific SGWT analytical function representation.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">order</span> <span class="o">=</span> <span class="n">order</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+    
+<div class="viewcode-block" id="KernelSmoothRational.g">
+<a class="viewcode-back" href="../../../../api/sgwt.fitted.kernel.kernel.html#sgwt.fitted.kernel.kernel.KernelSmoothRational.g">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">g</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Description:</span>
+<span class="sd">            Default kernel function evaluator</span>
+<span class="sd">        Parameters:</span>
+<span class="sd">            x: domain to evaluate (array)</span>
+<span class="sd">            order: higher order -&gt; narrower bandwidth</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            g(x): same shape as x</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">f</span> <span class="o">=</span> <span class="mi">2</span><span class="o">*</span><span class="n">x</span><span class="o">/</span><span class="p">(</span><span class="mi">1</span><span class="o">+</span><span class="n">x</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">f</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">order</span></div>
+
+    
+<div class="viewcode-block" id="KernelSmoothRational.h">
+<a class="viewcode-back" href="../../../../api/sgwt.fitted.kernel.kernel.html#sgwt.fitted.kernel.kernel.KernelSmoothRational.h">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">h</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Description:</span>
+<span class="sd">            The scaling kerenl h(x) evaluating the &#39;DC-like&#39; spectrum</span>
+<span class="sd">        Parameters:</span>
+<span class="sd">            x: domain to evaluate (array)</span>
+<span class="sd">        Returns:</span>
+<span class="sd">           h(x): same shape as x</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="c1"># NOTE</span>
+        <span class="c1"># The scaling function CAN still have negative parts in the vertex-domain,</span>
+        <span class="c1"># at the edge, making it look slightly ac.</span>
+        <span class="n">f</span> <span class="o">=</span> <span class="mi">1</span><span class="o">/</span><span class="p">(</span><span class="mi">1</span><span class="o">+</span><span class="n">x</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+
+        <span class="c1"># NOTE the above should theoretically be better but wow the below</span>
+        <span class="c1"># works SO much better in practice. Probably</span>
+        <span class="c1"># related to the fact that &#39;x&#39; here is actually k^2</span>
+        <span class="c1"># so the above is functionally k^4 which is not ideal</span>
+        <span class="c1">#f = 1/(1+x)</span>
+        <span class="k">return</span> <span class="n">f</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Luke Lowery.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

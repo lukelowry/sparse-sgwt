@@ -1,0 +1,319 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>sgwt.cholesky.wrapper module &mdash; sgwt 0.1.2 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=92734c54"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="sgwt.data package" href="sgwt.data.html" />
+    <link rel="prev" title="sgwt.cholesky.structs module" href="sgwt.cholesky.structs.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            sgwt
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../usage.html">Basic Usage</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">API Reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="sgwt.html">sgwt package</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="sgwt.analytic.html">sgwt.analytic package</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="sgwt.cholesky.html">sgwt.cholesky package</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="sgwt.cholesky.context.html">sgwt.cholesky.context module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="sgwt.cholesky.structs.html">sgwt.cholesky.structs module</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">sgwt.cholesky.wrapper module</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.data.html">sgwt.data package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.fitted.html">sgwt.fitted package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.main.html">sgwt.main module</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">sgwt</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="modules.html">API Reference</a></li>
+          <li class="breadcrumb-item"><a href="sgwt.html">sgwt package</a></li>
+          <li class="breadcrumb-item"><a href="sgwt.cholesky.html">sgwt.cholesky package</a></li>
+      <li class="breadcrumb-item active">sgwt.cholesky.wrapper module</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api/sgwt.cholesky.wrapper.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-sgwt.cholesky.wrapper">
+<span id="sgwt-cholesky-wrapper-module"></span><h1>sgwt.cholesky.wrapper module<a class="headerlink" href="#module-sgwt.cholesky.wrapper" title="Link to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="sgwt.cholesky.wrapper.CholWrapper">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">sgwt.cholesky.wrapper.</span></span><span class="sig-name descname"><span class="pre">CholWrapper</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">A</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sgwt/cholesky/wrapper.html#CholWrapper"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sgwt.cholesky.wrapper.CholWrapper" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>A wrapper class for interacting with CHOLMOD DLL</p>
+<p>WARNING: Should only be used indirectly through SGWT Object
+otherwise memory leaks may occur.</p>
+<dl class="field-list simple">
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="sgwt.cholesky.wrapper.CholWrapper.chol_dense_to_numpy">
+<span class="sig-name descname"><span class="pre">chol_dense_to_numpy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x_ptr</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sgwt/cholesky/wrapper.html#CholWrapper.chol_dense_to_numpy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sgwt.cholesky.wrapper.CholWrapper.chol_dense_to_numpy" title="Link to this definition"></a></dt>
+<dd><dl>
+<dt>Description</dt><dd><blockquote>
+<div><p>Creates numpy array from choldmod_dense ptr.
+Also, frees memory of the ptr.
+Copy must occur, unless context manager is used</p>
+</div></blockquote>
+<dl class="simple">
+<dt>Parameters</dt><dd><p>x_ptr: cholmod_dense* pointer to data struct
+copy: False uses shared memory and cholmod must now be
+responsible for freeing mem. This is very difficult here.
+for now we just copy, to be safe. will be slow tho</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sgwt.cholesky.wrapper.CholWrapper.config_function_args">
+<span class="sig-name descname"><span class="pre">config_function_args</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dll</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sgwt/cholesky/wrapper.html#CholWrapper.config_function_args"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sgwt.cholesky.wrapper.CholWrapper.config_function_args" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sgwt.cholesky.wrapper.CholWrapper.config_return_types">
+<span class="sig-name descname"><span class="pre">config_return_types</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dll</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sgwt/cholesky/wrapper.html#CholWrapper.config_return_types"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sgwt.cholesky.wrapper.CholWrapper.config_return_types" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sgwt.cholesky.wrapper.CholWrapper.finish">
+<span class="sig-name descname"><span class="pre">finish</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sgwt/cholesky/wrapper.html#CholWrapper.finish"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sgwt.cholesky.wrapper.CholWrapper.finish" title="Link to this definition"></a></dt>
+<dd><p>Finish the cholmod usage.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sgwt.cholesky.wrapper.CholWrapper.free_dense">
+<span class="sig-name descname"><span class="pre">free_dense</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dense_ptr</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sgwt/cholesky/wrapper.html#CholWrapper.free_dense"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sgwt.cholesky.wrapper.CholWrapper.free_dense" title="Link to this definition"></a></dt>
+<dd><p>Convenience method for freeing choldmod_dense matricies/vecs</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sgwt.cholesky.wrapper.CholWrapper.free_factor">
+<span class="sig-name descname"><span class="pre">free_factor</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sgwt/cholesky/wrapper.html#CholWrapper.free_factor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sgwt.cholesky.wrapper.CholWrapper.free_factor" title="Link to this definition"></a></dt>
+<dd><p>Convenience method for freeing choldmod_dense matricies/vecs</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sgwt.cholesky.wrapper.CholWrapper.free_sparse">
+<span class="sig-name descname"><span class="pre">free_sparse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sparse_ptr</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sgwt/cholesky/wrapper.html#CholWrapper.free_sparse"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sgwt.cholesky.wrapper.CholWrapper.free_sparse" title="Link to this definition"></a></dt>
+<dd><p>Convenience method for freeing choldmod_sparse matricies/vecs</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sgwt.cholesky.wrapper.CholWrapper.num_factor">
+<span class="sig-name descname"><span class="pre">num_factor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">beta</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sgwt/cholesky/wrapper.html#CholWrapper.num_factor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sgwt.cholesky.wrapper.CholWrapper.num_factor" title="Link to this definition"></a></dt>
+<dd><dl class="simple">
+<dt>Description</dt><dd><p>Equivilent to choldmod_factorize_p in CHOLMOD.
+The matrix is assumed to be the same that underwent symbolic factorization.</p>
+</dd>
+<dt>Parameters</dt><dd><p>beta: real number (for the GSP application, must be positive)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sgwt.cholesky.wrapper.CholWrapper.numpy_to_chol_dense">
+<span class="sig-name descname"><span class="pre">numpy_to_chol_dense</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">b</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sgwt/cholesky/wrapper.html#CholWrapper.numpy_to_chol_dense"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sgwt.cholesky.wrapper.CholWrapper.numpy_to_chol_dense" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_dense" title="sgwt.cholesky.structs.cholmod_dense"><code class="xref py py-class docutils literal notranslate"><span class="pre">cholmod_dense</span></code></a></span></p>
+</dd>
+<dt class="field-even">Parameters<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>b</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.3)"><em>numpy.ndarray</em></a>)</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Description</dt><dd><p>Converts numpy to choldmod_dense struct</p>
+</dd>
+<dt>Returns</dt><dd><p>ctype struct (not a pointer)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sgwt.cholesky.wrapper.CholWrapper.numpy_to_chol_sparse">
+<span class="sig-name descname"><span class="pre">numpy_to_chol_sparse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">A</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">itype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sgwt/cholesky/wrapper.html#CholWrapper.numpy_to_chol_sparse"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sgwt.cholesky.wrapper.CholWrapper.numpy_to_chol_sparse" title="Link to this definition"></a></dt>
+<dd><p>Convert a 2D NumPy array A into a cholmod_sparse struct.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>A</strong> – csc_matrix sparse vector/matrix
+Dense or 2D array to convert.</p></li>
+<li><p><strong>itype</strong> – int
+0=int32 indices, 1=int64 indices</p></li>
+<li><p><strong>dtype</strong> – int
+0=double (real), 1=float (single), 2=complex</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_sparse" title="sgwt.cholesky.structs.cholmod_sparse"><code class="xref py py-class docutils literal notranslate"><span class="pre">cholmod_sparse</span></code></a></span></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>cholmod_sparse instance.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sgwt.cholesky.wrapper.CholWrapper.numpy_to_chol_sparse_vec">
+<span class="sig-name descname"><span class="pre">numpy_to_chol_sparse_vec</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">A</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">itype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sgwt/cholesky/wrapper.html#CholWrapper.numpy_to_chol_sparse_vec"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sgwt.cholesky.wrapper.CholWrapper.numpy_to_chol_sparse_vec" title="Link to this definition"></a></dt>
+<dd><p>Specifically for Bset conversion to cholmod_sparse</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sgwt.cholesky.wrapper.CholWrapper.sdmult">
+<span class="sig-name descname"><span class="pre">sdmult</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">matrix_ptr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_ptr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sgwt/cholesky/wrapper.html#CholWrapper.sdmult"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sgwt.cholesky.wrapper.CholWrapper.sdmult" title="Link to this definition"></a></dt>
+<dd><p>out = alpha * (Laplacian &#64; matrix) + beta * matrix</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sgwt.cholesky.wrapper.CholWrapper.solve">
+<span class="sig-name descname"><span class="pre">solve</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">b_ptr</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sgwt/cholesky/wrapper.html#CholWrapper.solve"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sgwt.cholesky.wrapper.CholWrapper.solve" title="Link to this definition"></a></dt>
+<dd><dl class="simple">
+<dt>Description</dt><dd><p>Equivilent to choldmod_solve in CHOLMOD</p>
+</dd>
+<dt>Parameters</dt><dd><p>b_ptr: pointer to cholmod_dense object</p>
+</dd>
+<dt>Returns</dt><dd><p>x_ptr: pointer to solution, cholmod_dense</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sgwt.cholesky.wrapper.CholWrapper.solve2">
+<span class="sig-name descname"><span class="pre">solve2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">B_ptr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Bset_ptr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">X_ptr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Xset_ptr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Y_ptr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">E_ptr</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sgwt/cholesky/wrapper.html#CholWrapper.solve2"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sgwt.cholesky.wrapper.CholWrapper.solve2" title="Link to this definition"></a></dt>
+<dd><dl class="simple">
+<dt>Description</dt><dd><p>Equivilent to choldmod_solve2 in CHOLMOD</p>
+</dd>
+<dt>Parameters</dt><dd><p>B: Pointer to (N, M) cholmod dense matrix
+Bset_ptr: Pointer to (Nx!) vector Bset where sol is desired, if None will not use Bset feature.
+X_ptr: cholmod_dense pointer to output data into, if None, malloc</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>1 True, 0 False</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>ok</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sgwt.cholesky.wrapper.CholWrapper.start">
+<span class="sig-name descname"><span class="pre">start</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sgwt/cholesky/wrapper.html#CholWrapper.start"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sgwt.cholesky.wrapper.CholWrapper.start" title="Link to this definition"></a></dt>
+<dd><p>Starts cholmod.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sgwt.cholesky.wrapper.CholWrapper.status">
+<span class="sig-name descname"><span class="pre">status</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sgwt/cholesky/wrapper.html#CholWrapper.status"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sgwt.cholesky.wrapper.CholWrapper.status" title="Link to this definition"></a></dt>
+<dd><p>Cholmod Status:
+0 OK;
+-4 Invalid Input;
+-2 Out of Mem</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sgwt.cholesky.wrapper.CholWrapper.sym_factor">
+<span class="sig-name descname"><span class="pre">sym_factor</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sgwt/cholesky/wrapper.html#CholWrapper.sym_factor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sgwt.cholesky.wrapper.CholWrapper.sym_factor" title="Link to this definition"></a></dt>
+<dd><p>Performs symbolic factorization using cholmod_analyze</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="sgwt.cholesky.structs.html" class="btn btn-neutral float-left" title="sgwt.cholesky.structs module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="sgwt.data.html" class="btn btn-neutral float-right" title="sgwt.data package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Luke Lowery.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

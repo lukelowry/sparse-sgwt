@@ -27,5 +27,3 @@ with FiltersDLL(L, scales) as gsp:
 
 
 
-print(LP)
-

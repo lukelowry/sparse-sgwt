@@ -1,5 +1,5 @@
 from .structs import *
-from ctypes import byref, cast, POINTER, CDLL
+from ctypes import byref, cast, POINTER, CDLL, c_int32
 
 import numpy as np
 from importlib_resources import files, as_file

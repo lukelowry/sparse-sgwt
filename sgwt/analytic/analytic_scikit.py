@@ -1,22 +1,20 @@
 
-
+'''
+Implementation using sksparse.
+It is slower than the DLL implementation,
+but can be re-enabled if needed.
+'''
 from .analytic import AnalyticFilters
-
 from sksparse.cholmod import analyze
 import numpy as np
 
 class FiltersScikit(AnalyticFilters):
     '''
-    Description: 
+    Description
         A class that of analytical versions filters for SGWT and GSP
-    Parameters:
+    Parameters
         L: sparse csc_matrix form of Graph Laplacian (real valued)
         scales: optional, default scales used
-    '''
-
-
-    '''
-    Abstract Method Implementations
     '''
 
     def _allocate_results(self, b, scales):
@@ -56,7 +54,7 @@ class FiltersScikit(AnalyticFilters):
         '''
         Returns
             Scaling functions of indicated scale using the analytical form.
-        Parameters:
+        Parameters
             anchor_indicies: nodes at which to return scaling functions
             scale: scale of the scaling functions
         '''
@@ -84,7 +82,7 @@ class FiltersScikit(AnalyticFilters):
         Returns
             Wavelet functions of indicated scale using the analytical form.
             L/(L+I/s)^2
-        Parameters:
+        Parameters
             anchor_indicies: nodes at which to return wavelets
             scale: scale of the wavelet
         '''
@@ -110,22 +108,15 @@ class FiltersScikit(AnalyticFilters):
 
         return S
     
-
-    '''
-    Inverse Transformations
-    '''
-    
     def wavelet_inv(self, W):
         '''
         Description
             The inverse SGWT transformation (only one time point for now)
-            And does not support scaling coefficients right now.
+            And does not support scaling coefficients right now. Not normalized
         Parameters
             W: ndarray of shape (Bus x Times x Scales)
         Return
             f: reconstructed signal
-
-        WARNING: TODO the reconstructed signal is not normalized
         '''
 
         F = self.factor

@@ -1,0 +1,370 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>sgwt.cholesky package &mdash; sgwt 0.1.2 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=92734c54"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="sgwt.cholesky.context module" href="sgwt.cholesky.context.html" />
+    <link rel="prev" title="sgwt.analytic.analytic_scikit module" href="sgwt.analytic.analytic_scikit.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            sgwt
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../usage.html">Basic Usage</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">API Reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="sgwt.html">sgwt package</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="sgwt.analytic.html">sgwt.analytic package</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">sgwt.cholesky package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="sgwt.cholesky.context.html">sgwt.cholesky.context module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="sgwt.cholesky.structs.html">sgwt.cholesky.structs module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="sgwt.cholesky.wrapper.html">sgwt.cholesky.wrapper module</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.data.html">sgwt.data package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.fitted.html">sgwt.fitted package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.main.html">sgwt.main module</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">sgwt</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="modules.html">API Reference</a></li>
+          <li class="breadcrumb-item"><a href="sgwt.html">sgwt package</a></li>
+      <li class="breadcrumb-item active">sgwt.cholesky package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api/sgwt.cholesky.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="sgwt-cholesky-package">
+<h1>sgwt.cholesky package<a class="headerlink" href="#sgwt-cholesky-package" title="Link to this heading"></a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading"></a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="sgwt.cholesky.context.html">sgwt.cholesky.context module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="sgwt.cholesky.context.html#sgwt.cholesky.context.CholeskyContextManager"><code class="docutils literal notranslate"><span class="pre">CholeskyContextManager</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.context.html#sgwt.cholesky.context.CholeskyContextManager.chol"><code class="docutils literal notranslate"><span class="pre">CholeskyContextManager.chol</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="sgwt.cholesky.structs.html">sgwt.cholesky.structs module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common"><code class="docutils literal notranslate"><span class="pre">cholmod_common</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.Flag"><code class="docutils literal notranslate"><span class="pre">cholmod_common.Flag</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.Head"><code class="docutils literal notranslate"><span class="pre">cholmod_common.Head</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.Iwork"><code class="docutils literal notranslate"><span class="pre">cholmod_common.Iwork</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.SPQR_analyze_time"><code class="docutils literal notranslate"><span class="pre">cholmod_common.SPQR_analyze_time</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.SPQR_factorize_time"><code class="docutils literal notranslate"><span class="pre">cholmod_common.SPQR_factorize_time</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.SPQR_flopcount"><code class="docutils literal notranslate"><span class="pre">cholmod_common.SPQR_flopcount</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.SPQR_flopcount_bound"><code class="docutils literal notranslate"><span class="pre">cholmod_common.SPQR_flopcount_bound</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.SPQR_grain"><code class="docutils literal notranslate"><span class="pre">cholmod_common.SPQR_grain</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.SPQR_istat"><code class="docutils literal notranslate"><span class="pre">cholmod_common.SPQR_istat</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.SPQR_norm_E_fro"><code class="docutils literal notranslate"><span class="pre">cholmod_common.SPQR_norm_E_fro</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.SPQR_nthreads"><code class="docutils literal notranslate"><span class="pre">cholmod_common.SPQR_nthreads</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.SPQR_shrink"><code class="docutils literal notranslate"><span class="pre">cholmod_common.SPQR_shrink</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.SPQR_small"><code class="docutils literal notranslate"><span class="pre">cholmod_common.SPQR_small</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.SPQR_solve_time"><code class="docutils literal notranslate"><span class="pre">cholmod_common.SPQR_solve_time</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.SPQR_tol_used"><code class="docutils literal notranslate"><span class="pre">cholmod_common.SPQR_tol_used</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.Xwork"><code class="docutils literal notranslate"><span class="pre">cholmod_common.Xwork</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.aatfl"><code class="docutils literal notranslate"><span class="pre">cholmod_common.aatfl</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.anz"><code class="docutils literal notranslate"><span class="pre">cholmod_common.anz</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.blas_ok"><code class="docutils literal notranslate"><span class="pre">cholmod_common.blas_ok</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.called_nd"><code class="docutils literal notranslate"><span class="pre">cholmod_common.called_nd</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.cholmod_assemble_time"><code class="docutils literal notranslate"><span class="pre">cholmod_common.cholmod_assemble_time</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.cholmod_assemble_time2"><code class="docutils literal notranslate"><span class="pre">cholmod_common.cholmod_assemble_time2</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.cholmod_cpu_gemm_calls"><code class="docutils literal notranslate"><span class="pre">cholmod_common.cholmod_cpu_gemm_calls</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.cholmod_cpu_gemm_time"><code class="docutils literal notranslate"><span class="pre">cholmod_common.cholmod_cpu_gemm_time</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.cholmod_cpu_potrf_calls"><code class="docutils literal notranslate"><span class="pre">cholmod_common.cholmod_cpu_potrf_calls</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.cholmod_cpu_potrf_time"><code class="docutils literal notranslate"><span class="pre">cholmod_common.cholmod_cpu_potrf_time</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.cholmod_cpu_syrk_calls"><code class="docutils literal notranslate"><span class="pre">cholmod_common.cholmod_cpu_syrk_calls</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.cholmod_cpu_syrk_time"><code class="docutils literal notranslate"><span class="pre">cholmod_common.cholmod_cpu_syrk_time</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.cholmod_cpu_trsm_calls"><code class="docutils literal notranslate"><span class="pre">cholmod_common.cholmod_cpu_trsm_calls</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.cholmod_cpu_trsm_time"><code class="docutils literal notranslate"><span class="pre">cholmod_common.cholmod_cpu_trsm_time</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.cholmod_gpu_gemm_calls"><code class="docutils literal notranslate"><span class="pre">cholmod_common.cholmod_gpu_gemm_calls</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.cholmod_gpu_gemm_time"><code class="docutils literal notranslate"><span class="pre">cholmod_common.cholmod_gpu_gemm_time</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.cholmod_gpu_potrf_calls"><code class="docutils literal notranslate"><span class="pre">cholmod_common.cholmod_gpu_potrf_calls</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.cholmod_gpu_potrf_time"><code class="docutils literal notranslate"><span class="pre">cholmod_common.cholmod_gpu_potrf_time</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.cholmod_gpu_syrk_calls"><code class="docutils literal notranslate"><span class="pre">cholmod_common.cholmod_gpu_syrk_calls</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.cholmod_gpu_syrk_time"><code class="docutils literal notranslate"><span class="pre">cholmod_common.cholmod_gpu_syrk_time</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.cholmod_gpu_trsm_calls"><code class="docutils literal notranslate"><span class="pre">cholmod_common.cholmod_gpu_trsm_calls</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.cholmod_gpu_trsm_time"><code class="docutils literal notranslate"><span class="pre">cholmod_common.cholmod_gpu_trsm_time</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.chunk"><code class="docutils literal notranslate"><span class="pre">cholmod_common.chunk</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.cublasEventPotrf"><code class="docutils literal notranslate"><span class="pre">cholmod_common.cublasEventPotrf</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.cublasHandle"><code class="docutils literal notranslate"><span class="pre">cholmod_common.cublasHandle</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.current"><code class="docutils literal notranslate"><span class="pre">cholmod_common.current</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.dbound"><code class="docutils literal notranslate"><span class="pre">cholmod_common.dbound</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.default_nesdis"><code class="docutils literal notranslate"><span class="pre">cholmod_common.default_nesdis</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.devBuffSize"><code class="docutils literal notranslate"><span class="pre">cholmod_common.devBuffSize</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.dev_mempool"><code class="docutils literal notranslate"><span class="pre">cholmod_common.dev_mempool</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.dev_mempool_size"><code class="docutils literal notranslate"><span class="pre">cholmod_common.dev_mempool_size</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.error_handler"><code class="docutils literal notranslate"><span class="pre">cholmod_common.error_handler</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.final_asis"><code class="docutils literal notranslate"><span class="pre">cholmod_common.final_asis</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.final_ll"><code class="docutils literal notranslate"><span class="pre">cholmod_common.final_ll</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.final_monotonic"><code class="docutils literal notranslate"><span class="pre">cholmod_common.final_monotonic</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.final_pack"><code class="docutils literal notranslate"><span class="pre">cholmod_common.final_pack</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.final_resymbol"><code class="docutils literal notranslate"><span class="pre">cholmod_common.final_resymbol</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.final_super"><code class="docutils literal notranslate"><span class="pre">cholmod_common.final_super</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.fl"><code class="docutils literal notranslate"><span class="pre">cholmod_common.fl</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.gpuFlops"><code class="docutils literal notranslate"><span class="pre">cholmod_common.gpuFlops</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.gpuKernelTime"><code class="docutils literal notranslate"><span class="pre">cholmod_common.gpuKernelTime</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.gpuMemorySize"><code class="docutils literal notranslate"><span class="pre">cholmod_common.gpuMemorySize</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.gpuNumKernelLaunches"><code class="docutils literal notranslate"><span class="pre">cholmod_common.gpuNumKernelLaunches</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.gpuStream"><code class="docutils literal notranslate"><span class="pre">cholmod_common.gpuStream</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.grow0"><code class="docutils literal notranslate"><span class="pre">cholmod_common.grow0</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.grow1"><code class="docutils literal notranslate"><span class="pre">cholmod_common.grow1</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.grow2"><code class="docutils literal notranslate"><span class="pre">cholmod_common.grow2</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.host_pinned_mempool"><code class="docutils literal notranslate"><span class="pre">cholmod_common.host_pinned_mempool</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.host_pinned_mempool_size"><code class="docutils literal notranslate"><span class="pre">cholmod_common.host_pinned_mempool_size</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.ibuffer"><code class="docutils literal notranslate"><span class="pre">cholmod_common.ibuffer</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.itype"><code class="docutils literal notranslate"><span class="pre">cholmod_common.itype</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.iworksize"><code class="docutils literal notranslate"><span class="pre">cholmod_common.iworksize</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.lnz"><code class="docutils literal notranslate"><span class="pre">cholmod_common.lnz</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.malloc_count"><code class="docutils literal notranslate"><span class="pre">cholmod_common.malloc_count</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.mark"><code class="docutils literal notranslate"><span class="pre">cholmod_common.mark</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.maxGpuMemBytes"><code class="docutils literal notranslate"><span class="pre">cholmod_common.maxGpuMemBytes</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.maxGpuMemFraction"><code class="docutils literal notranslate"><span class="pre">cholmod_common.maxGpuMemFraction</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.maxrank"><code class="docutils literal notranslate"><span class="pre">cholmod_common.maxrank</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.memory_inuse"><code class="docutils literal notranslate"><span class="pre">cholmod_common.memory_inuse</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.memory_usage"><code class="docutils literal notranslate"><span class="pre">cholmod_common.memory_usage</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.method"><code class="docutils literal notranslate"><span class="pre">cholmod_common.method</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.metis_dswitch"><code class="docutils literal notranslate"><span class="pre">cholmod_common.metis_dswitch</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.metis_memory"><code class="docutils literal notranslate"><span class="pre">cholmod_common.metis_memory</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.metis_nswitch"><code class="docutils literal notranslate"><span class="pre">cholmod_common.metis_nswitch</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.modfl"><code class="docutils literal notranslate"><span class="pre">cholmod_common.modfl</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.ndbounds_hit"><code class="docutils literal notranslate"><span class="pre">cholmod_common.ndbounds_hit</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.nmethods"><code class="docutils literal notranslate"><span class="pre">cholmod_common.nmethods</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.no_workspace_reallocate"><code class="docutils literal notranslate"><span class="pre">cholmod_common.no_workspace_reallocate</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.nrealloc_col"><code class="docutils literal notranslate"><span class="pre">cholmod_common.nrealloc_col</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.nrealloc_factor"><code class="docutils literal notranslate"><span class="pre">cholmod_common.nrealloc_factor</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.nrelax"><code class="docutils literal notranslate"><span class="pre">cholmod_common.nrelax</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.nrow"><code class="docutils literal notranslate"><span class="pre">cholmod_common.nrow</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.nsbounds_hit"><code class="docutils literal notranslate"><span class="pre">cholmod_common.nsbounds_hit</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.nthreads_max"><code class="docutils literal notranslate"><span class="pre">cholmod_common.nthreads_max</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.other_5"><code class="docutils literal notranslate"><span class="pre">cholmod_common.other_5</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.other_6"><code class="docutils literal notranslate"><span class="pre">cholmod_common.other_6</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.postorder"><code class="docutils literal notranslate"><span class="pre">cholmod_common.postorder</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.precise"><code class="docutils literal notranslate"><span class="pre">cholmod_common.precise</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.prefer_binary"><code class="docutils literal notranslate"><span class="pre">cholmod_common.prefer_binary</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.prefer_upper"><code class="docutils literal notranslate"><span class="pre">cholmod_common.prefer_upper</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.prefer_zomplex"><code class="docutils literal notranslate"><span class="pre">cholmod_common.prefer_zomplex</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.print"><code class="docutils literal notranslate"><span class="pre">cholmod_common.print</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.quick_return_if_not_posdef"><code class="docutils literal notranslate"><span class="pre">cholmod_common.quick_return_if_not_posdef</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.rowfacfl"><code class="docutils literal notranslate"><span class="pre">cholmod_common.rowfacfl</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.sbound"><code class="docutils literal notranslate"><span class="pre">cholmod_common.sbound</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.selected"><code class="docutils literal notranslate"><span class="pre">cholmod_common.selected</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.status"><code class="docutils literal notranslate"><span class="pre">cholmod_common.status</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.supernodal"><code class="docutils literal notranslate"><span class="pre">cholmod_common.supernodal</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.supernodal_switch"><code class="docutils literal notranslate"><span class="pre">cholmod_common.supernodal_switch</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.syrkStart"><code class="docutils literal notranslate"><span class="pre">cholmod_common.syrkStart</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.try_catch"><code class="docutils literal notranslate"><span class="pre">cholmod_common.try_catch</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.updateCBuffersFree"><code class="docutils literal notranslate"><span class="pre">cholmod_common.updateCBuffersFree</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.updateCKernelsComplete"><code class="docutils literal notranslate"><span class="pre">cholmod_common.updateCKernelsComplete</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.useGPU"><code class="docutils literal notranslate"><span class="pre">cholmod_common.useGPU</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.xworkbytes"><code class="docutils literal notranslate"><span class="pre">cholmod_common.xworkbytes</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_common.zrelax"><code class="docutils literal notranslate"><span class="pre">cholmod_common.zrelax</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_dense"><code class="docutils literal notranslate"><span class="pre">cholmod_dense</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_dense.d"><code class="docutils literal notranslate"><span class="pre">cholmod_dense.d</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_dense.dtype"><code class="docutils literal notranslate"><span class="pre">cholmod_dense.dtype</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_dense.ncol"><code class="docutils literal notranslate"><span class="pre">cholmod_dense.ncol</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_dense.nrow"><code class="docutils literal notranslate"><span class="pre">cholmod_dense.nrow</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_dense.nzmax"><code class="docutils literal notranslate"><span class="pre">cholmod_dense.nzmax</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_dense.x"><code class="docutils literal notranslate"><span class="pre">cholmod_dense.x</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_dense.xtype"><code class="docutils literal notranslate"><span class="pre">cholmod_dense.xtype</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_dense.z"><code class="docutils literal notranslate"><span class="pre">cholmod_dense.z</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_factor"><code class="docutils literal notranslate"><span class="pre">cholmod_factor</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_factor.ColCount"><code class="docutils literal notranslate"><span class="pre">cholmod_factor.ColCount</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_factor.IPerm"><code class="docutils literal notranslate"><span class="pre">cholmod_factor.IPerm</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_factor.Perm"><code class="docutils literal notranslate"><span class="pre">cholmod_factor.Perm</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_factor.dtype"><code class="docutils literal notranslate"><span class="pre">cholmod_factor.dtype</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_factor.i"><code class="docutils literal notranslate"><span class="pre">cholmod_factor.i</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_factor.is_ll"><code class="docutils literal notranslate"><span class="pre">cholmod_factor.is_ll</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_factor.is_monotonic"><code class="docutils literal notranslate"><span class="pre">cholmod_factor.is_monotonic</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_factor.is_super"><code class="docutils literal notranslate"><span class="pre">cholmod_factor.is_super</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_factor.itype"><code class="docutils literal notranslate"><span class="pre">cholmod_factor.itype</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_factor.maxcsize"><code class="docutils literal notranslate"><span class="pre">cholmod_factor.maxcsize</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_factor.maxesize"><code class="docutils literal notranslate"><span class="pre">cholmod_factor.maxesize</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_factor.minor"><code class="docutils literal notranslate"><span class="pre">cholmod_factor.minor</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_factor.n"><code class="docutils literal notranslate"><span class="pre">cholmod_factor.n</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_factor.next"><code class="docutils literal notranslate"><span class="pre">cholmod_factor.next</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_factor.nsuper"><code class="docutils literal notranslate"><span class="pre">cholmod_factor.nsuper</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_factor.nz"><code class="docutils literal notranslate"><span class="pre">cholmod_factor.nz</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_factor.nzmax"><code class="docutils literal notranslate"><span class="pre">cholmod_factor.nzmax</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_factor.ordering"><code class="docutils literal notranslate"><span class="pre">cholmod_factor.ordering</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_factor.p"><code class="docutils literal notranslate"><span class="pre">cholmod_factor.p</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_factor.pi"><code class="docutils literal notranslate"><span class="pre">cholmod_factor.pi</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_factor.prev"><code class="docutils literal notranslate"><span class="pre">cholmod_factor.prev</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_factor.px"><code class="docutils literal notranslate"><span class="pre">cholmod_factor.px</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_factor.s"><code class="docutils literal notranslate"><span class="pre">cholmod_factor.s</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_factor.ssize"><code class="docutils literal notranslate"><span class="pre">cholmod_factor.ssize</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_factor.super"><code class="docutils literal notranslate"><span class="pre">cholmod_factor.super</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_factor.useGPU"><code class="docutils literal notranslate"><span class="pre">cholmod_factor.useGPU</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_factor.x"><code class="docutils literal notranslate"><span class="pre">cholmod_factor.x</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_factor.xsize"><code class="docutils literal notranslate"><span class="pre">cholmod_factor.xsize</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_factor.xtype"><code class="docutils literal notranslate"><span class="pre">cholmod_factor.xtype</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_factor.z"><code class="docutils literal notranslate"><span class="pre">cholmod_factor.z</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_method_struct"><code class="docutils literal notranslate"><span class="pre">cholmod_method_struct</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_method_struct.aggressive"><code class="docutils literal notranslate"><span class="pre">cholmod_method_struct.aggressive</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_method_struct.fl"><code class="docutils literal notranslate"><span class="pre">cholmod_method_struct.fl</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_method_struct.lnz"><code class="docutils literal notranslate"><span class="pre">cholmod_method_struct.lnz</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_method_struct.nd_camd"><code class="docutils literal notranslate"><span class="pre">cholmod_method_struct.nd_camd</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_method_struct.nd_components"><code class="docutils literal notranslate"><span class="pre">cholmod_method_struct.nd_components</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_method_struct.nd_compress"><code class="docutils literal notranslate"><span class="pre">cholmod_method_struct.nd_compress</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_method_struct.nd_oksep"><code class="docutils literal notranslate"><span class="pre">cholmod_method_struct.nd_oksep</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_method_struct.nd_small"><code class="docutils literal notranslate"><span class="pre">cholmod_method_struct.nd_small</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_method_struct.order_for_lu"><code class="docutils literal notranslate"><span class="pre">cholmod_method_struct.order_for_lu</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_method_struct.ordering"><code class="docutils literal notranslate"><span class="pre">cholmod_method_struct.ordering</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_method_struct.other_1"><code class="docutils literal notranslate"><span class="pre">cholmod_method_struct.other_1</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_method_struct.other_2"><code class="docutils literal notranslate"><span class="pre">cholmod_method_struct.other_2</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_method_struct.other_3"><code class="docutils literal notranslate"><span class="pre">cholmod_method_struct.other_3</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_method_struct.prune_dense"><code class="docutils literal notranslate"><span class="pre">cholmod_method_struct.prune_dense</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_method_struct.prune_dense2"><code class="docutils literal notranslate"><span class="pre">cholmod_method_struct.prune_dense2</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_sparse"><code class="docutils literal notranslate"><span class="pre">cholmod_sparse</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_sparse.dtype"><code class="docutils literal notranslate"><span class="pre">cholmod_sparse.dtype</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_sparse.i"><code class="docutils literal notranslate"><span class="pre">cholmod_sparse.i</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_sparse.itype"><code class="docutils literal notranslate"><span class="pre">cholmod_sparse.itype</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_sparse.ncol"><code class="docutils literal notranslate"><span class="pre">cholmod_sparse.ncol</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_sparse.nrow"><code class="docutils literal notranslate"><span class="pre">cholmod_sparse.nrow</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_sparse.nz"><code class="docutils literal notranslate"><span class="pre">cholmod_sparse.nz</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_sparse.nzmax"><code class="docutils literal notranslate"><span class="pre">cholmod_sparse.nzmax</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_sparse.p"><code class="docutils literal notranslate"><span class="pre">cholmod_sparse.p</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_sparse.packed"><code class="docutils literal notranslate"><span class="pre">cholmod_sparse.packed</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_sparse.sorted"><code class="docutils literal notranslate"><span class="pre">cholmod_sparse.sorted</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_sparse.stype"><code class="docutils literal notranslate"><span class="pre">cholmod_sparse.stype</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_sparse.x"><code class="docutils literal notranslate"><span class="pre">cholmod_sparse.x</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_sparse.xtype"><code class="docutils literal notranslate"><span class="pre">cholmod_sparse.xtype</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.structs.html#sgwt.cholesky.structs.cholmod_sparse.z"><code class="docutils literal notranslate"><span class="pre">cholmod_sparse.z</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="sgwt.cholesky.wrapper.html">sgwt.cholesky.wrapper module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="sgwt.cholesky.wrapper.html#sgwt.cholesky.wrapper.CholWrapper"><code class="docutils literal notranslate"><span class="pre">CholWrapper</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.wrapper.html#sgwt.cholesky.wrapper.CholWrapper.chol_dense_to_numpy"><code class="docutils literal notranslate"><span class="pre">CholWrapper.chol_dense_to_numpy()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.wrapper.html#sgwt.cholesky.wrapper.CholWrapper.config_function_args"><code class="docutils literal notranslate"><span class="pre">CholWrapper.config_function_args()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.wrapper.html#sgwt.cholesky.wrapper.CholWrapper.config_return_types"><code class="docutils literal notranslate"><span class="pre">CholWrapper.config_return_types()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.wrapper.html#sgwt.cholesky.wrapper.CholWrapper.finish"><code class="docutils literal notranslate"><span class="pre">CholWrapper.finish()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.wrapper.html#sgwt.cholesky.wrapper.CholWrapper.free_dense"><code class="docutils literal notranslate"><span class="pre">CholWrapper.free_dense()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.wrapper.html#sgwt.cholesky.wrapper.CholWrapper.free_factor"><code class="docutils literal notranslate"><span class="pre">CholWrapper.free_factor()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.wrapper.html#sgwt.cholesky.wrapper.CholWrapper.free_sparse"><code class="docutils literal notranslate"><span class="pre">CholWrapper.free_sparse()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.wrapper.html#sgwt.cholesky.wrapper.CholWrapper.num_factor"><code class="docutils literal notranslate"><span class="pre">CholWrapper.num_factor()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.wrapper.html#sgwt.cholesky.wrapper.CholWrapper.numpy_to_chol_dense"><code class="docutils literal notranslate"><span class="pre">CholWrapper.numpy_to_chol_dense()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.wrapper.html#sgwt.cholesky.wrapper.CholWrapper.numpy_to_chol_sparse"><code class="docutils literal notranslate"><span class="pre">CholWrapper.numpy_to_chol_sparse()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.wrapper.html#sgwt.cholesky.wrapper.CholWrapper.numpy_to_chol_sparse_vec"><code class="docutils literal notranslate"><span class="pre">CholWrapper.numpy_to_chol_sparse_vec()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.wrapper.html#sgwt.cholesky.wrapper.CholWrapper.sdmult"><code class="docutils literal notranslate"><span class="pre">CholWrapper.sdmult()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.wrapper.html#sgwt.cholesky.wrapper.CholWrapper.solve"><code class="docutils literal notranslate"><span class="pre">CholWrapper.solve()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.wrapper.html#sgwt.cholesky.wrapper.CholWrapper.solve2"><code class="docutils literal notranslate"><span class="pre">CholWrapper.solve2()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.wrapper.html#sgwt.cholesky.wrapper.CholWrapper.start"><code class="docutils literal notranslate"><span class="pre">CholWrapper.start()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.wrapper.html#sgwt.cholesky.wrapper.CholWrapper.status"><code class="docutils literal notranslate"><span class="pre">CholWrapper.status()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sgwt.cholesky.wrapper.html#sgwt.cholesky.wrapper.CholWrapper.sym_factor"><code class="docutils literal notranslate"><span class="pre">CholWrapper.sym_factor()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+<section id="module-sgwt.cholesky">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-sgwt.cholesky" title="Link to this heading"></a></h2>
+<p>sgwt</p>
+<p>Author: Luke Lowery (<a class="reference external" href="mailto:lukel&#37;&#52;&#48;tamu&#46;edu">lukel<span>&#64;</span>tamu<span>&#46;</span>edu</a>)</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="sgwt.analytic.analytic_scikit.html" class="btn btn-neutral float-left" title="sgwt.analytic.analytic_scikit module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="sgwt.cholesky.context.html" class="btn btn-neutral float-right" title="sgwt.cholesky.context module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Luke Lowery.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
