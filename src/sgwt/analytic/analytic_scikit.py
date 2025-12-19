@@ -1,11 +1,14 @@
 
 
-from .cholesky import CholWrapper
+from .analytic import AnalyticFilters
 
+
+from sksparse.cholmod import analyze
 from scipy.sparse import csc_matrix
+
 import numpy as np
 
-class FastSGWT2:
+class FiltersScikit(AnalyticFilters):
     '''
     Description: 
         A class that of analytical versions filters for SGWT and GSP
@@ -22,15 +25,8 @@ class FastSGWT2:
         # Discrete Scales
         self.setscales(scales)
 
-
-        # NOTE improve how this is used so I don't have to do this
-        self.chol = CholWrapper(L)
-
         # Pre-Factor (Symbolic)
-        self.chol.start()
-
-        # Factor Symbolically
-        self.chol.sym_factor()
+        self.factor = analyze(L)
 
     def __call__(self, f):
         '''
@@ -119,7 +115,7 @@ class FastSGWT2:
     Convolutions
     '''
 
-    def scaling_coeffs(self, f, scales=None):
+    def scaling_coeffs(self, f, fset=None, scales=None):
         '''
         Description
             Scaling coefficnets at indicated scales using the analytical form
@@ -133,23 +129,48 @@ class FastSGWT2:
         
         scales = self.scales if scales is None else scales
         W = self.allocate(f, len(scales))
-        C = self.chol
+        F = self.factor
         L = self.L
 
         # Calculate Scaling Coefficients of 'f' for each scale
         for i, scale in enumerate(scales):
 
             # Step 1 -> Set Scale
-            C.num_factor(1/scale)
-
+            F.cholesky_inplace(L, 1/scale)
 
             # Step 2 -> Solve and Divide by squared scale for normalization
-            W[:,:,i] = C.solve(f)/scale 
+            W[:,:,i] = F(f)/scale 
 
         return W
     
-    # NOTE only function with new implementation so far
-    def wavelet_coeffs(self, f, scales=None):
+    
+    def _allocate_results(self):
+        pass
+    
+    def _format_rhs(self, b, bset):
+        return b, bset
+    
+    def _save_to_results(self, x, index):
+        pass
+    
+    def _numeric_factorization(self, beta):
+        pass
+
+    def _solve(self, b, bset):
+        pass
+
+    def _solve_twice(self, b, bset):
+        pass
+
+    def _mult(self, x, scalar):
+        pass
+
+    def _mult_lap(self, x, scalar):
+        pass
+
+    
+    
+    def wavelet_coeffs(self, f, fset=None, scales=None):
         '''
         Returns
             Wavelet functions of indicated scale using the analytical form.
@@ -163,26 +184,23 @@ class FastSGWT2:
         
         scales = self.scales if scales is None else scales
         W = self.allocate(f,len(scales))
-        C = self.chol
+        F = self.factor
         L = self.L
 
         for i, scale in enumerate(scales):
 
-            # Step 1 -> Set Scale via shifted numeric factor
-            C.num_factor(1/scale)
+            # Step 1 -> Set Scale
+            F.cholesky_inplace(L, 1/scale)
 
-            # Step 2 -> First Sovle
-            S = C.solve(f) 
+            # Step 2 -> First Sovle (Scaling coeffs!)
+            S = F(f)
 
             # Step 3 -> Second Solve and Laplacian product
-            W[:,i] = L@C.solve(S)/scale 
-
-            # TODO support higher dimensions
-            #W[:,:,i] = L@C.solve(S)/scale 
+            W[:,:,i] = L@F(S)*(4/scale)
 
         return W
     
-    def highpass_coeffs(self, f, scales=None):
+    def highpass_coeffs(self, f, fset=None, scales=None):
         '''
         Description
             Scaling coefficnets at indicated scales using the analytical form
@@ -210,3 +228,42 @@ class FastSGWT2:
 
 
         return W
+    
+    '''
+    Inverse Transformations
+    '''
+    
+    def wavelet_inv(self, W):
+        '''
+        Description
+            The inverse SGWT transformation (only one time point for now)
+            And does not support scaling coefficients right now.
+        Parameters
+            W: ndarray of shape (Bus x Times x Scales)
+        Return
+            f: reconstructed signal
+
+        WARNING: TODO the reconstructed signal is not normalized
+        '''
+
+        F = self.factor
+        L = self.L
+
+        # Allocate reconstructed vector (nBus x nFeature)
+        f = np.zeros((W.shape[0],W.shape[1]))
+
+        for i, scale in enumerate(self.scales):
+
+            # Coefficients of this scale
+            WS = W[:,:,i]
+
+            # Step 1 -> Set Scale
+            F.cholesky_inplace(L, 1/scale)
+
+            # Step 2 -> First Sovle (Scaling coeffs!)
+            S = F(WS)
+
+            # Step 3 -> Second Solve and Laplacian product
+            f += L@F(S)/scale 
+
+        return f

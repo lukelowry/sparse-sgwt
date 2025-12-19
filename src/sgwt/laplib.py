@@ -48,7 +48,7 @@ def impulse(lap, n=0):
     '''
     Returns a numpy array dirac impulse at vertex n of compatible shape with L
     '''
-    b = zeros(lap.shape[0])
+    b = zeros((lap.shape[0],1))
     b[n] = 1
 
     return b

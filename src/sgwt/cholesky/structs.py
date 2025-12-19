@@ -244,3 +244,26 @@ class cholmod_dense(Structure):
         ("xtype", c_int),       # real/pattern/complex
         ("dtype", c_int)        # data type
     ]
+    def __init__(
+        self,
+        *,
+        nrow=0,
+        ncol=0,
+        nzmax=0,
+        d=0,
+        x=None,
+        z=None,
+        xtype=0,
+        dtype=0,
+    ):
+        self.nrow = nrow
+        self.ncol = ncol
+        self.nzmax = nzmax
+        self.d = d
+
+        # Accept None or integer / pointer-compatible values
+        self.x = 0 if x is None else x
+        self.z = 0 if z is None else z
+
+        self.xtype = xtype
+        self.dtype = dtype
