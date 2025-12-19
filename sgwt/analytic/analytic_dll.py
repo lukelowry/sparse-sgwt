@@ -12,10 +12,6 @@ class FiltersDLL(AnalyticFilters, CholeskyContextManager):
     that uses cholmod_solve2
     '''
 
-    '''
-    Abstract Function Definitions
-    '''
-
     def _allocate_results(self, b, scales):
         return []
     

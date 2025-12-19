@@ -7,13 +7,14 @@ the VF version of the SGWT.
 Author: Luke Lowery (lukel@tamu.edu)
 """
 
+from abc import ABC, abstractmethod
 from sksparse.cholmod import analyze
 from scipy.sparse import csc_matrix
 
 import numpy as np
 from .kernel import VFKernelData
 
-class VectorFitSGWT:
+class VectorFitSGWT(ABC):
     '''
     Description: 
         A class that computes rational-approximation approach to the SGWT
@@ -123,3 +124,6 @@ class VectorFitSGWT:
         return f/self.C
     
 
+    @abstractmethod
+    def _solve(self, b, bset):
+        pass
