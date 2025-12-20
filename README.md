@@ -71,7 +71,7 @@ Although, a `(nVert,1)` array can also be used.
 
 There are three convenience analytical filters available.
 ```python
-with sgwt.Convolve(L) as conv:
+with Convolve(L) as conv:
 
     Y = conv.lowpass(X, s)
     Y = conv.bandpass(X, s)
@@ -82,7 +82,7 @@ For more advanced functionality, the convolution is generalized using kernel fit
 
 The convolutional kernel `F` can be a vector function, meaning multiple filters can be applied concurrently (i.e., an orthoginal kernel to generate the wavaelet coefficients `SGWT`) This kernel will be available soon.
 ```python
-with sgwt.Convolve(L) as conv:
+with Convolve(L) as conv:
 
     Y = conv(X, F)
 ```
