@@ -43,11 +43,15 @@ LENGTH_WECC = LapID("LENGTH", "WECC")
 
 
 
-def impulse(lap, n=0):
+def impulse(lap, n=0, ntime=1):
     '''
-    Returns a numpy array dirac impulse at vertex n of compatible shape with L
+    Description
+        Returns a numpy array dirac impulse at vertex n of compatible shape with L
+    Parameters
+        n: Index of vertex to impulse
+        ntime: number of columns in signal
     '''
-    b = zeros((lap.shape[0],1))
+    b = zeros((lap.shape[0],ntime), order='F')
     b[n] = 1
 
     return b

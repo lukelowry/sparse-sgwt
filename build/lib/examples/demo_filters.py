@@ -1,5 +1,5 @@
 
-from sgwt.analytic import Filters
+from tests.analytic import Filters
 from sgwt.data import IMPEDANCE_EASTWEST as graph
 import numpy as np
 

@@ -153,22 +153,6 @@ class CholWrapper:
             byref(self.common) 
         )
 
-    def mult(self, R_ptr, B_ptr, C_ptr):
-        '''
-        C = R @ B + C
-        '''
-        Alpha = (c_double * 2)(1.0, 0.0) 
-        Beta  = (c_double * 2)(1.0, 0.0) 
-
-        self.dll.cholmod_sdmult(
-            R_ptr, # Left matrix always Laplacian
-            0,            # Do not Transpose = 0
-            Alpha,      
-            Beta,      
-            B_ptr,  # Input
-            C_ptr,     # Output
-            byref(self.common) 
-        )
  
     '''
     Data Structures
@@ -268,8 +252,8 @@ class CholWrapper:
             raise TypeError("values must be a numpy.ndarray")
 
         # Ensure correct dtype
-        #if b.dtype != np.float64:
-        #    b = b.astype(np.float64, copy=False)
+        if b.dtype != np.float64:
+            b = b.astype(np.float64, copy=False)
 
         # Ensure contiguous memory
         if not b.flags["F_CONTIGUOUS"]:

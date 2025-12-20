@@ -8,6 +8,7 @@ Author: Luke Lowery (lukel@tamu.edu)
 """
 
 from ctypes import byref
+from typing import Any
 
 from .fitted import VFKern
 from .cholesky import CholWrapper, CholeskyContextManager
@@ -21,6 +22,9 @@ class Convolve(CholeskyContextManager):
         
         # Handles symb factor when entering context
         self.chol = CholWrapper(L)
+
+    def __call__(self, B, K: VFKern) -> Any:
+        return self.convolve(B, K)
 
     def convolve(self, B, K: VFKern):
         '''
@@ -84,6 +88,7 @@ class Convolve(CholeskyContextManager):
         # Using this requires the number of columns in f to be 1
         if Bset is not None:
             Bset = byref(self.chol.numpy_to_chol_sparse_vec(Bset))
+
 
         # Calculate Scaling Coefficients of 'f' for each scale
         for i, scale in enumerate(scales):
