@@ -58,10 +58,10 @@ The user can also load any graph Laplacian so long it is in the `csc_matrix` for
 
 ### Input Signals
 
-A real-valued time-vertex function $X\in\mathbb{R}^{|N|\times|T|}$ stored as a 2D numpy array in column-major ordering (i.e., fortran style) can be used. For example, a random signal meeting these specifications is generated like:
+A real-valued time-vertex function $X\in\mathbb{R}^{|N|\times|T|}$ stored as a 2D numpy array in column-major ordering (i.e., fortran style) can be used. For example, an empty array meeting these specifications:
 
 ```python
-X = np.random.random(
+X = np.empty(
     shape=(nVert, nTime),
     order = 'F'
 )
@@ -105,27 +105,26 @@ g_a(\mathbf{\Lambda})\approx
 
 An iterative pole realocation procedure is used to converge to a reduced order model. The convolution of some function $\mathbf{f}*g_a$ is computed using the cholesky decomposition and memory efficient re-factors.
 
-
-### Rational Kernel JSON Format
+An example of an approriate format of the rational expansion:
 
 ```json
 {
-    "nfunc": n,
-    "d": [d_0, d_1, ..., d_n],
-    "npoles": m
+    "nfunc": N,
+    "d": [d0, d1, ..., dN],
+    "npoles": M,
     "poles": [
         {
-            'q': q_0, 
-            'r':[r_0, r_1, ..., r_n]
+            'q': q0, 
+            'r':[r0, r1, ..., rN]
         },
         {
-            'q': q_1, 
-            'r':[r_0, r_1, ..., r_n]
+            'q': q1, 
+            'r':[r0, r1, ..., rN]
         },
         ...
         {
-            'q': q_m, 
-            'r':[r_0, r_1, ..., r_n]
+            'q': qM, 
+            'r':[r0, r1, ..., rN]
         }
     ]
 }
