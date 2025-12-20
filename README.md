@@ -16,8 +16,6 @@ The CHOLMOD library can be used by installing `scikit-sparse` or using the a com
 
 ## Basic Usage
 
-
-
 ### Quick Start
 For the quick-start example, we will find the response of a low-pass filter $\phi$ scaled by `s` to impulse $\delta$ at node $n$ over the graph `L`. This is mathematically denoted by $\phi_{n,s}=\delta_n*\phi_s$.
 ```python
@@ -69,7 +67,7 @@ X = np.empty(
 
 Although, a `(nVert,1)` array can also be used.
 
-### Analytical Kernels
+### Kernel Functions
 
 There are three convenience analytical filters available.
 ```python
@@ -79,8 +77,6 @@ with sgwt.Convolve(L) as conv:
     Y = conv.bandpass(X, s)
     Y = conv.highpass(X, s)
 ```
-
-### Fitted Kernels
 
 For more advanced functionality, the convolution is generalized using kernel fitting. Single Function kernels include `MEXICAN_HAT`, `MODIFIED_MORLET`, `SHANNON`, and more.
 
@@ -94,7 +90,6 @@ with sgwt.Convolve(L) as conv:
 Same as before, the convolution is simply performed on our signal `X` by first defining L as the convolution context.
 
 ## Kernel Fitting
-
 
 The kernel fitting representation is more generally a vector fitted function, a simple pole expansion of the form:
 ```math
