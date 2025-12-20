@@ -7,3 +7,8 @@ the VF version of the SGWT.
 Author: Luke Lowery (lukel@tamu.edu)
 """
 
+from .analytic import Filters
+
+class Convolve(Filters):
+
+    pass

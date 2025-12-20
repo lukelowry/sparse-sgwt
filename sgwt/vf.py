@@ -13,8 +13,8 @@ from scipy.sparse import csc_matrix
 
 import numpy as np
 
-from ..cholesky import CholWrapper, CholeskyContextManager
-from .ration import VFKern
+from .cholesky import CholWrapper, CholeskyContextManager
+from .fitted import VFKern
 
 class VFConvolve(CholeskyContextManager):
     '''

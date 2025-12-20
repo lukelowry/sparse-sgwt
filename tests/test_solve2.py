@@ -3,6 +3,8 @@ import numpy as np
 from sgwt.data import IMPEDANCE_EASTWEST as graph
 import time
 
+import analytic_scikit as SK
+
 
 L = graph.get()
 
@@ -21,7 +23,7 @@ b[50] = 1
 
 
 # SCIT KIT VERSION
-fsgwt     = sgwt.FiltersScikit(L, scales)
+fsgwt     = SK.FiltersScikit(L, scales)
 start = time.time()
 WAVS  = fsgwt.wavelet_coeffs(b)
 end   = time.time()

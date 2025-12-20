@@ -4,6 +4,9 @@ from scipy.sparse import csc_matrix
 from sgwt.data import IMPEDANCE_EASTWEST as graph
 import time
 
+# Test only Scikit Implementation
+import analytic_scikit as SK
+
 
 L = graph.get()
 
@@ -33,7 +36,7 @@ bset = csc_matrix(bset)
 
 
 # SCIT KIT VERSION
-fsgwt     = sgwt.FiltersScikit(L, scales)
+fsgwt     = SK.FiltersScikit(L, scales)
 start = time.time()
 WAVS  = fsgwt.scaling_coeffs(b)
 end   = time.time()

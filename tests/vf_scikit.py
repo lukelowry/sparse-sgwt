@@ -12,7 +12,7 @@ from sksparse.cholmod import analyze
 from scipy.sparse import csc_matrix
 
 import numpy as np
-from .ration import VFKern
+from ..sgwt.fitted.ration import VFKern
 
 class VFConvolveScikit(ABC):
     '''
