@@ -4,15 +4,15 @@ from ctypes import byref, cast, POINTER, CDLL, c_int32
 import numpy as np
 from importlib_resources import files, as_file
 
-CHOLMOD_A   = 0 #  0  /* solve Ax=b    */
-#define CHOLMOD_LDLt 1  /* solve LDL'x=b */
-#define CHOLMOD_LD   2  /* solve LDx=b   */
-#define CHOLMOD_DLt  3  /* solve DL'x=b  */
-#define CHOLMOD_L    4  /* solve Lx=b    */
-#define CHOLMOD_Lt   5  /* solve L'x=b   */
-#define CHOLMOD_D    6  /* solve Dx=b    */
-#define CHOLMOD_P    7  /* permute x=Px  */
-#define CHOLMOD_Pt   8  /* permute x=P'x */
+CHOLMOD_A    =0 #  solve Ax=b    */
+CHOLMOD_LDLt =1 #  solve LDL'x=b */
+CHOLMOD_LD   =2 # /* solve LDx=b   */
+CHOLMOD_DLt  =3 # /* solve DL'x=b  */
+CHOLMOD_L    =4 # /* solve Lx=b    */
+CHOLMOD_Lt   =5 # /* solve L'x=b   */
+CHOLMOD_D    =6 # /* solve Dx=b    */
+CHOLMOD_P    =7 # /* permute x=Px  */
+CHOLMOD_Pt   =8 # /* permute x=P'x */
 
 class CholWrapper:
     '''
@@ -150,6 +150,23 @@ class CholWrapper:
             Beta,        # out += Beta * matrix
             matrix_ptr,  # Input
             out_ptr,     # Output
+            byref(self.common) 
+        )
+
+    def mult(self, R_ptr, B_ptr, C_ptr):
+        '''
+        C = R @ B + C
+        '''
+        Alpha = (c_double * 2)(1.0, 0.0) 
+        Beta  = (c_double * 2)(1.0, 0.0) 
+
+        self.dll.cholmod_sdmult(
+            R_ptr, # Left matrix always Laplacian
+            0,            # Do not Transpose = 0
+            Alpha,      
+            Beta,      
+            B_ptr,  # Input
+            C_ptr,     # Output
             byref(self.common) 
         )
  
@@ -365,6 +382,23 @@ class CholWrapper:
             byref(self.common)
         )
 
+    def allocate_dense(self, nrow, ncol):
+        return self.dll.cholmod_allocate_dense(
+            nrow,
+            ncol,
+            nrow,
+            1, # real?
+            byref(self.common)
+        )
+    
+    def zeros(self, nrow, ncol):
+        return self.dll.cholmod_zeros(
+            nrow,
+            ncol,
+            1, # real?
+            byref(self.common)
+        )
+
     '''
     Configuration Functions
     '''
@@ -388,6 +422,13 @@ class CholWrapper:
         # Symbolic Factorization
         dll.cholmod_analyze.argtypes = [
             POINTER(cholmod_sparse),
+            POINTER(cholmod_common)
+        ]
+
+        dll.cholmod_zeros.argtypes = [
+            c_size_t, # nrow
+            c_size_t,   # ncol
+            c_int, # xdtipe
             POINTER(cholmod_common)
         ]
 
@@ -482,6 +523,8 @@ class CholWrapper:
         dll.cholmod_norm_sparse.restype = c_double
 
         dll.cholmod_sdmult.restype = c_int
+
+        dll.cholmod_zeros.restype = POINTER(cholmod_dense)
 
 
     

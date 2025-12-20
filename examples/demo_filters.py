@@ -1,5 +1,5 @@
 
-from sgwt import Filters
+from sgwt import Convolve
 from sgwt.data import IMPEDANCE_EASTWEST as graph
 import numpy as np
 
@@ -10,20 +10,20 @@ nscales = 5
 
 # Signal Input
 shape = (L.shape[0], ntime)
-b = np.zeros(shape, order="F")
-b[50] = 1
+X = np.zeros(shape, order="F")
+X[50] = 1
 
 # Scales
-scales = np.logspace(1e-2, 1e1, nscales)
+s = np.logspace(1e-2, 1e1, nscales)
 
 # Memory Efficient Context
-with Filters(L, scales) as gsp:
+with Convolve(L) as conv:
 
-    LP = gsp.scaling_coeffs(b)
+    LP = conv.lowpass(X, s)
 
-    BP = gsp.wavelet_coeffs(b)
+    BP = conv.bandpass(X, s)
 
-    HP = gsp.highpass_coeffs(b)
+    HP = conv.highpass(X, s)
 
 
 

@@ -11,6 +11,9 @@ import analytic_scikit as SK
 L = graph.get()
 
 '''
+NOTE Bset only makes sense for the low-pass filter
+(i.e., multiplying by laplacian is undefined for BP and HP sometimes)
+
 NOTE In this case where we want to use Bset
 the signal must have only one column.
 
@@ -18,48 +21,53 @@ Dense Shape: nBus x 1
 
 '''
 ntime = 1
-nscales = 20
-scales = np.logspace(1e-2, 1e1, nscales)
+nscales = 30
+s = np.logspace(1e-2, 1e1, nscales)
 
+# NOTE CRUCIAL -> indicate the indicies that are non-zero
+NZ = [0, 120]
 
 # Signal
-b = np.zeros(
+X = np.zeros(
     shape = (L.shape[0], ntime),
     order="F"
 )
-b[0] = 1
+X[NZ] = 1
 
 # Bset (sparsity pattern)
-bset = np.zeros_like(b)
-bset[b!=0] = 1
+bset = np.zeros_like(X)
+bset[X!=0] = 1
 bset = csc_matrix(bset)
 
 
 # SCIT KIT VERSION
-fsgwt     = SK.FiltersScikit(L, scales)
+fsgwt     = SK.FiltersScikit(L, s)
+
 start = time.time()
-WAVS  = fsgwt.scaling_coeffs(b)
-end   = time.time()
+LP_SK  = fsgwt.scaling_coeffs(X)
+lp_time_sk = time.time() - start
 
 # DLL VERSION
-with sgwt.Filters(L, scales) as fsgwt_DLL:
+with sgwt.Convolve(L) as conv:
 
-    # DLL cholmod_solve2 (NOTE eventually can speed up by not copying data)
-    start3 = time.time()
-    WAVS3  = fsgwt_DLL.scaling_coeffs(b, bset)
-    end3   = time.time()
+    start = time.time()
+    LP  = conv.lowpass(X, s, bset)
+    lp_time = time.time() - start
 
-# Print Compute Time
-print(f"Time: {(end  - start )*1000:.3f} ms (scikit)")
-print(f"Time: {(end3 - start3)*1000:.3f} ms (solve2)")
+MSCALE = 0
+LP_ERR = np.max(np.abs(LP_SK[:,:,MSCALE]-LP[MSCALE])[NZ])
+print(f"         (scikit)  \t (solve2) \t Rel. Speed \t Max Err")
+print(f"LP Time: {lp_time_sk*1000:.3f} ms \t {lp_time*1000:.3f} ms \t   {(lp_time_sk-lp_time)/lp_time_sk*100:.1f} % \t {LP_ERR:.3f}")
 
-DIFF = WAVS[:,:,0]-WAVS3[0]
-DIFF = DIFF[0]
+def ftest(passed: bool):
+    GREEN = "\033[92m"
+    RED = "\033[91m"
+    RESET = "\033[0m"
+    COLOR = GREEN if passed else RED
+    TEXT = "PASSED" if passed else "FAILED"
+    return f"{COLOR}{TEXT}{RESET}"
 
-# Measure Error of DLL solve & scicit
-SOLVE2_ERR = np.max(np.abs(DIFF))
-print(f"Error: {SOLVE2_ERR:.7f} (solve2)")
-
-
-
-
+# Pass
+tol = 1e-5
+T1 = LP_ERR < tol
+print(ftest(T1))

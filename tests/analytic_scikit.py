@@ -4,7 +4,7 @@ Implementation using sksparse.
 It is slower than the DLL implementation,
 but can be re-enabled if needed.
 '''
-from sgwt import AnalyticFilters
+from analytic import AnalyticFilters
 from sksparse.cholmod import analyze
 import numpy as np
 

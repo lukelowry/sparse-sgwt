@@ -2,6 +2,8 @@ from importlib_resources import files, as_file
 from json import load
 from dataclasses import dataclass
 
+from ..fitted.ration import VFKern
+
 
 @dataclass(frozen=True)
 class KernID:
@@ -12,7 +14,7 @@ class KernID:
 
         with as_file(files("sgwt").joinpath(f"data/KERNELS/{N}.json")) as kern_path:
             with open(kern_path) as f:
-                return load(f)
+                return VFKern.from_json(load(f))
 
 
 #class LapLib(Enum):

@@ -12,61 +12,46 @@ from sksparse.cholmod import analyze
 from scipy.sparse import csc_matrix
 
 import numpy as np
-from sgwt import VFKern
 
-class VFConvolveScikit(ABC):
+class VFConvolve:
     '''
-    Description: 
+    Description
         A class that computes rational-approximation approach to the SGWT
         and various analytical versions of filters.
-    Parameters:
+    Parameters
         L: sparse csc_matrix form of Graph Laplacian (real valued)
         kern: optional, VF data of spectral function
     '''
 
-    def __init__(self, L: csc_matrix, kern: VFKern = None):
+    def __init__(self, L: csc_matrix, K):
+        '''
+        Parameters
+            K: json/dict of poles and residues
+        '''
 
         # Sparse Laplacian
         self.L = L
 
-        # Pre-Factor (Symbolic)
+        # Kernel Function
+        self.R = K.R 
+        self.Q = K.Q
+        self.D = K.D
+        self.ndim = self.R.shape[1]
+
+        # Symbolic Factorization
         self.factor = analyze(L)
 
-        # Initialize kernel if passed
-        if kern is not None:
-            self.init_kern(kern)
-            self.kern = kern
-
-    def init_kern(self, kern: VFKern):
-
-        # Load Residues, Poles, Scales
-        self.R, self.Q, self.S = kern.R, kern.Q, kern.S
-
-        # Wavelet Constant (scalar mult)
-        if len(self.S) > 1:
-            ds = np.log(self.S[1]/self.S[0])[0]
-            self.C = 1/ds
-        else:
-            self.C = 1
-
-        # Number of scales
-        self.nscales = len(self.S)
-
-
-    def allocate(self, f, n=None):
-        if n is None:
-            return np.zeros((*f.shape, self.nscales))
-        else:
-            return np.zeros((*f.shape, n))
+    def allocate(self, f):
+        return np.zeros((*f.shape, self.ndim))
     
-    '''
-    GENERATLIZED SGWT
-    '''
+    # TODO we can also 'scale' any given function very easily
 
-    def wavelet_coeffs(self, f):
+    def convolve(self, f):
         '''
+        Description
+            General convolution of function f
         Returns
-            W:  Array size (Bus, Time, Scale)
+            W:  (nVertex, nTime, nDim)
         '''
         
         W = self.allocate(f)
@@ -76,54 +61,9 @@ class VFConvolveScikit(ABC):
         for q, r in zip(self.Q, self.R):
 
             F.cholesky_inplace(L, q) 
-            W += F(f)[:, :, None]*r   # Almost the entire duration is occupied multiplying here
+            W += F(f)[:, :, None]*r  
+            
+        # TODO add self.D per dimension
 
         return W
     
-    def singleton(self, f, n):
-        '''
-        Returns
-            Coefficients of f localized at n
-        '''
-        
-        F = self.factor
-        L = self.L
-
-        # LOCALIZATION VECTOR
-        local = np.zeros((L.shape[0], 1))
-        local[n] = 1
-
-        # Singleton Matrix
-        W = np.zeros((L.shape[0], self.nscales))
-
-        # Compute
-        for q, r in zip(self.Q, self.R):
-
-            F.cholesky_inplace(L, q) 
-            W += F(local)*r.T  
-
-        return f.T@W 
-    
-    def inv(self, W):
-        '''
-        Description
-            The inverse SGWT transformation (only one time point for now)
-            And does not support scaling coefficients right now.
-        Parameters
-            W: ndarray of shape (Bus x Times x Scales)
-        '''
-        
-        fact, L = self.factor, self.L
-        f = np.zeros((W.shape[0], W.shape[1]))
-
-        for q, r in zip(self.Q, self.R):
-
-            fact.cholesky_inplace(L, q) 
-            f += fact(W@r) 
-
-        return f/self.C
-    
-
-    @abstractmethod
-    def _solve(self, b, bset):
-        pass

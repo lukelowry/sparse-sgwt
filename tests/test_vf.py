@@ -1,7 +1,8 @@
 
-from sgwt import Convolve
+import sgwt
 from sgwt.data import LENGTH_EASTWEST, COORD_EASTWEST, MODIFIED_MORLET
 import numpy as np
+import time
 
 # Graph & Kernel
 L = LENGTH_EASTWEST.get()
@@ -24,16 +25,30 @@ def plot_signal(f):
     plt.show()
 
 # Signal Input
-ntime = 1
-shape = (L.shape[0], ntime)
-X = np.zeros(shape, order="F")
+ntime = 200
+X = np.zeros(
+    shape=(L.shape[0], ntime), 
+    order="F"
+)
 X[-10000] = 1
 
 K.Q /= 20000000 # TODO kernel scaling g.scale_kern(...)
 
-with Convolve(L) as g:
 
-    Y = g.convolve(X, K)
-    
+fsgwt = sgwt.VFConvolve(L, K)
+start = time.time()
+H1 = fsgwt.convolve(X)
+vf_time_sk = time.time() - start 
 
-plot_signal(Y[:,0,0])
+# Memory Efficient Context
+with sgwt.Convolve(L) as g:
+
+    start = time.time()
+    H2 = g.convolve(X, K)
+    vf_time = time.time() - start 
+
+print(f"         (scikit)  \t (solve2) \t Rel. Speed \t Max Err")
+print(f"HP Time: {vf_time_sk*1000:.3f} ms \t {vf_time*1000:.3f} ms ")
+
+
+plot_signal(H2[:,0,0])
