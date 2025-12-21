@@ -1,39 +1,23 @@
 
-from sgwt import Convolve
-from sgwt.data import LENGTH_EASTWEST, COORD_EASTWEST, MODIFIED_MORLET
+from sgwt import Convolve, impulse
+from sgwt.library import IMPEDANCE_EASTWEST, COORD_EASTWEST, MODIFIED_MORLET
 import numpy as np
+from plot_points import plot_signal
 
 # Graph & Kernel
-L = LENGTH_EASTWEST.get()
+L = IMPEDANCE_EASTWEST.get()
 K = MODIFIED_MORLET.get()
 C = COORD_EASTWEST.get()
 
-def plot_signal(f):
-
-    import matplotlib.pyplot as plt
-    from matplotlib.colors import Normalize
-    import matplotlib.cm as cm
-
-    # Coordinates
-    L1, L2 = C['longitude'], C['latitude']
-
-    mx = np.sort(np.abs(f))[-20] 
-    norm = Normalize(-mx, mx)
-    plt.scatter(L1, L2 , c=f, edgecolors='none', cmap=cm.get_cmap('Spectral'), norm=norm)
-    plt.axis('scaled')   
-    plt.show()
-
 # Signal Input
-ntime = 1
-shape = (L.shape[0], ntime)
-X = np.zeros(shape, order="F")
-X[-10000] = 1
+X = impulse(L, n=-1000)#-10000)
 
-K.Q /= 20000000 # TODO kernel scaling g.scale_kern(...)
+# TODO kernel scaling
+K.Q /= 2000  #  g.scale_kern(...)
+K.R /= 2000
 
 with Convolve(L) as g:
 
     Y = g.convolve(X, K)
     
-
-plot_signal(Y[:,0,0])
+plot_signal(Y[:,0,0], C, 'Spectral')

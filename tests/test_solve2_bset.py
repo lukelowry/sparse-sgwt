@@ -1,7 +1,7 @@
 import sgwt 
 import numpy as np
 from scipy.sparse import csc_matrix
-from sgwt.data import IMPEDANCE_EASTWEST as graph
+from sgwt.library import IMPEDANCE_EASTWEST as graph
 import time
 
 # Test only Scikit Implementation

@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 from matplotlib.colors import Normalize
 import matplotlib.cm as cm
 
+
 def plot_signal(f, C, cmap='Spectral'):
     '''
     Parameters
@@ -17,12 +18,4 @@ def plot_signal(f, C, cmap='Spectral'):
     plt.scatter(L1, L2 , c=f, edgecolors='none', cmap=cm.get_cmap(cmap), norm=norm)
     plt.axis('scaled')   
     plt.show()
-
-
-def plot_GIS(x, y):
-    '''
-    Parameters
-        f: Signal to plot, (nVertex, nTime)
-        C: Coordinats
-    '''
 

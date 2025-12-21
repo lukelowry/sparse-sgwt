@@ -10,7 +10,7 @@ Used to construct a oneline!
 '''
 
 from sgwt import Convolve
-from sgwt.data import IMPEDANCE_WECC
+from sgwt.library import IMPEDANCE_WECC
 import matplotlib.pyplot as plt
 import numpy as np
 

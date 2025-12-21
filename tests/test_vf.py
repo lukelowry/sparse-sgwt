@@ -1,6 +1,6 @@
 
 import sgwt
-from sgwt.data import LENGTH_EASTWEST, COORD_EASTWEST, MODIFIED_MORLET
+from sgwt.library import LENGTH_EASTWEST, COORD_EASTWEST, MODIFIED_MORLET
 import numpy as np
 import time
 

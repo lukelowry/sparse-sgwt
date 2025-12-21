@@ -1,20 +1,33 @@
 """
 main.py
 
-Will be abstracted eventually. Core class for now, implementing
-the VF version of the SGWT.
+Analytical and Vector Fitting methods of GSP & SGWT Convolution
 
 Author: Luke Lowery (lukel@tamu.edu)
 """
 
-from ctypes import byref
-from typing import Any
-
-from .fitted import VFKern
 from .cholesky import CholWrapper, CholeskyContextManager
+from .fitted import VFKern
 
 import numpy as np
 from scipy.sparse import csc_matrix
+
+from ctypes import byref
+from typing import Any
+
+
+def impulse(lap, n=0, ntime=1):
+    '''
+    Description
+        Returns a numpy array dirac impulse at vertex n of compatible shape with L
+    Parameters
+        n: Index of vertex to impulse
+        ntime: number of columns in signal
+    '''
+    b = np.zeros((lap.shape[0],ntime), order='F')
+    b[n] = 1
+
+    return b
 
 class Convolve(CholeskyContextManager):
 

@@ -12,7 +12,7 @@ The package can be installed using:
 pip install sgwt
 ```
 
-The CHOLMOD library can be used by installing `scikit-sparse` or using the a compiled CHOLMOD `.dll` file.
+The package uses a compiled CHOLMOD `.dll` file. Tests use `scikit-sparse` as a second level of vertification.
 
 ## Basic Usage
 
@@ -22,7 +22,7 @@ For the quick-start example, we will find the response of a low-pass filter $\ph
 import sgwt
 
 # Graph Laplacian
-L = sgwt.data.LENGTH_TX
+L = sgwt.library.IMPEDANCE_TX
 
 # Impulse at Vertex n
 X = sgwt.impulse(L, n=...)
@@ -46,9 +46,9 @@ The purpose of the context manager is to provide safe re-use of `cholmod` worksp
 The module has a small repository of built in graph laplacians that are useful for quick start examples. 
 
 ```python
-L = sgwt.data.LENGTH_TX
-L = sgwt.data.IMPEDANCE_HAWAII
-L = sgwt.data.STANFARD_BUNNY
+L = sgwt.library.LENGTH_TX
+L = sgwt.library.IMPEDANCE_HAWAII
+L = sgwt.library.STANFARD_BUNNY
 ```
 
 The user can also load any graph Laplacian so long it is in the `csc_matrix` format.

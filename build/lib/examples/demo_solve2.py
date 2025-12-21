@@ -1,6 +1,6 @@
 import sgwt 
 import numpy as np
-from sgwt.data import IMPEDANCE_EASTWEST as graph
+from sgwt.library import IMPEDANCE_EASTWEST as graph
 import time
 
 
