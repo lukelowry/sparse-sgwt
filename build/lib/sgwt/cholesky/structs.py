@@ -7,8 +7,8 @@ Contains the ctypes formatted cholmod structs that are used.
 Author: Luke Lowery (lukel@tamu.edu)
 """
 
-from ctypes import c_float, c_double, c_int, c_int32, c_int64, c_size_t, c_void_p
-from ctypes import Structure, POINTER
+from ctypes import c_float, c_double, c_int, c_int64, c_size_t, c_void_p
+from ctypes import Structure
 
 CHOLMOD_REAL = 0
 CHOLMOD_MAXMETHODS = 9
