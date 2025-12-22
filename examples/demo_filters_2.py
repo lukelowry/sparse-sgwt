@@ -1,9 +1,7 @@
 
 from sgwt import Convolve, impulse
 from sgwt.library import DELAY_EASTWEST, COORD_EASTWEST
-import numpy as np
-
-from plot_points import plot_signal
+from demo_plot import plot_signal
 
 # Graph
 L = DELAY_EASTWEST.get()

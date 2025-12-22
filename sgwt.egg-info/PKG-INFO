@@ -1,6 +1,6 @@
 Metadata-Version: 2.4
 Name: sgwt
-Version: 0.2.0
+Version: 0.2.4
 Summary: Sparse Tools for the Spectral Graph Wavelet Transformation and Graph Convolution
 Author: Luke Lowery
 License:                                  Apache License
@@ -208,8 +208,8 @@ License:                                  Apache License
 Requires-Python: >=3.7
 Description-Content-Type: text/markdown
 License-File: LICENSE
-Requires-Dist: scipy<=1.9.1
-Requires-Dist: numpy<=1.23.2
+Requires-Dist: numpy
+Requires-Dist: scipy
 Dynamic: license-file
 
 # Sparse GSP & SGWT Tools
@@ -223,7 +223,7 @@ Intended for GSP of time-vertex signals over static and dynamic sparse graphs.
 The package can be installed using:
 
 ```
-pip install sgwt
+python -m pip install sgwt
 ```
 
 The package uses a compiled CHOLMOD `.dll` file. Tests use `scikit-sparse` as a second level of vertification.

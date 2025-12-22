@@ -1,8 +1,11 @@
-from .structs import *
-from ctypes import byref, cast, POINTER, CDLL, c_int32
 
+from .structs import *
+
+from ..library import get_cholmod_dll
+
+from ctypes import byref, cast, POINTER, c_int32
 import numpy as np
-from importlib_resources import files, as_file
+
 
 CHOLMOD_A    =0 #  solve Ax=b    */
 CHOLMOD_LDLt =1 #  solve LDL'x=b */
@@ -26,16 +29,12 @@ class CholWrapper:
         ''' 
         A: csc_matrix - the matrix to be symbolically factored
         '''
-
-        # Access DLL
-        with as_file(
-            files("sgwt").joinpath("cholesky/cholmod.dll")
-        ) as dll_path:
-            self.dll = CDLL(str(dll_path))
-
+        self.dll = get_cholmod_dll()
+        
         # DLL Setup    
         self.config_function_args(self.dll)
         self.config_return_types(self.dll)
+        
 
         # Parse matrix to cholmod_sparse
         self.A = self.numpy_to_chol_sparse(A) # Parse to Cholmod format
@@ -48,14 +47,14 @@ class CholWrapper:
 
     def status(self):
         ''' 
-        Cholmod Status: 
-        0 OK; 
-        -4 Invalid Input; 
-        -2 Out of Mem
+        Description
+            Cholmod Status
+        Returns
+             0 -> OK
+            -4 -> Invalid Input
+            -2 -> Out of Mem
         '''
-        stat = self.common.status
-        print("CHOLMOD status:", stat)
-        return stat
+        return self.common.status
 
     '''
     Factorizations

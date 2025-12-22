@@ -8,16 +8,38 @@ TODO simplify access to files, too many steps at the moment
 
 '''
 
-from importlib_resources import files, as_file
-
 from ..fitted.ration import VFKern
 
+from importlib.resources import files, as_file
+import os
+
+from ctypes import CDLL
 from numpy import load as npload
 from json import load as jsonload
 from scipy.sparse import load_npz
 from dataclasses import dataclass
 
 
+def get_cholmod_dll():
+    '''
+    Adds the library/dll directory with necessary DLLs to the system search path
+    '''
+
+    resource = files("sgwt.library") / "dll" / "cholmod.dll"
+
+    with as_file(resource) as dll_path:
+        
+        dll_dir = os.path.dirname(dll_path)
+
+        # Windows
+        if hasattr(os, 'add_dll_directory'):
+            os.add_dll_directory(dll_dir)
+    
+        try:
+            return CDLL(str(dll_path))
+        
+        except:
+            raise Exception("Error Loading DLL")
 
 
 @dataclass(frozen=True)

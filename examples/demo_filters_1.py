@@ -1,12 +1,10 @@
 
 from sgwt import Convolve, impulse
-from sgwt.library import IMPEDANCE_TEXAS, COORD_TEXAS
-import numpy as np
-
-from plot_points import plot_signal
+from sgwt.library import DELAY_TEXAS, COORD_TEXAS
+from demo_plot import plot_signal
 
 # Graph
-L = IMPEDANCE_TEXAS.get()
+L = DELAY_TEXAS.get()
 C = COORD_TEXAS.get()
 
 # Impulse
@@ -14,7 +12,7 @@ X  = impulse(L, n=1200)
 X += impulse(L, n=600)
 
 # Scales
-s = np.logspace(1e-5, 1e-1, num = 5)
+s = [1e-1]
 
 # Memory Efficient Context
 with Convolve(L) as conv:

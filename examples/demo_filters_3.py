@@ -2,7 +2,7 @@ from sgwt import Convolve, impulse
 from sgwt.library import DELAY_USA, COORD_USA
 import numpy as np
 
-from plot_points import plot_signal
+from demo_plot import plot_signal
 
 # Graph
 L = DELAY_USA.get()

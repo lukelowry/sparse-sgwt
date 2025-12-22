@@ -1,18 +1,21 @@
+
 from .structs import *
-from ctypes import byref, cast, POINTER, CDLL
 
+from ..library import get_cholmod_dll
+
+from ctypes import byref, cast, POINTER, c_int32
 import numpy as np
-from importlib_resources import files, as_file
 
-CHOLMOD_A   = 0 #  0  /* solve Ax=b    */
-#define CHOLMOD_LDLt 1  /* solve LDL'x=b */
-#define CHOLMOD_LD   2  /* solve LDx=b   */
-#define CHOLMOD_DLt  3  /* solve DL'x=b  */
-#define CHOLMOD_L    4  /* solve Lx=b    */
-#define CHOLMOD_Lt   5  /* solve L'x=b   */
-#define CHOLMOD_D    6  /* solve Dx=b    */
-#define CHOLMOD_P    7  /* permute x=Px  */
-#define CHOLMOD_Pt   8  /* permute x=P'x */
+
+CHOLMOD_A    =0 #  solve Ax=b    */
+CHOLMOD_LDLt =1 #  solve LDL'x=b */
+CHOLMOD_LD   =2 # /* solve LDx=b   */
+CHOLMOD_DLt  =3 # /* solve DL'x=b  */
+CHOLMOD_L    =4 # /* solve Lx=b    */
+CHOLMOD_Lt   =5 # /* solve L'x=b   */
+CHOLMOD_D    =6 # /* solve Dx=b    */
+CHOLMOD_P    =7 # /* permute x=Px  */
+CHOLMOD_Pt   =8 # /* permute x=P'x */
 
 class CholWrapper:
     '''
@@ -26,16 +29,12 @@ class CholWrapper:
         ''' 
         A: csc_matrix - the matrix to be symbolically factored
         '''
-
-        # Access DLL
-        with as_file(
-            files("sgwt").joinpath("cholesky/cholmod.dll")
-        ) as dll_path:
-            self.dll = CDLL(str(dll_path))
-
+        self.dll = get_cholmod_dll()
+        
         # DLL Setup    
         self.config_function_args(self.dll)
         self.config_return_types(self.dll)
+        
 
         # Parse matrix to cholmod_sparse
         self.A = self.numpy_to_chol_sparse(A) # Parse to Cholmod format
@@ -48,14 +47,14 @@ class CholWrapper:
 
     def status(self):
         ''' 
-        Cholmod Status: 
-        0 OK; 
-        -4 Invalid Input; 
-        -2 Out of Mem
+        Description
+            Cholmod Status
+        Returns
+             0 -> OK
+            -4 -> Invalid Input
+            -2 -> Out of Mem
         '''
-        stat = self.common.status
-        print("CHOLMOD status:", stat)
-        return stat
+        return self.common.status
 
     '''
     Factorizations
@@ -152,6 +151,7 @@ class CholWrapper:
             out_ptr,     # Output
             byref(self.common) 
         )
+
  
     '''
     Data Structures
@@ -251,8 +251,8 @@ class CholWrapper:
             raise TypeError("values must be a numpy.ndarray")
 
         # Ensure correct dtype
-        #if b.dtype != np.float64:
-        #    b = b.astype(np.float64, copy=False)
+        if b.dtype != np.float64:
+            b = b.astype(np.float64, copy=False)
 
         # Ensure contiguous memory
         if not b.flags["F_CONTIGUOUS"]:
@@ -365,6 +365,23 @@ class CholWrapper:
             byref(self.common)
         )
 
+    def allocate_dense(self, nrow, ncol):
+        return self.dll.cholmod_allocate_dense(
+            nrow,
+            ncol,
+            nrow,
+            1, # real?
+            byref(self.common)
+        )
+    
+    def zeros(self, nrow, ncol):
+        return self.dll.cholmod_zeros(
+            nrow,
+            ncol,
+            1, # real?
+            byref(self.common)
+        )
+
     '''
     Configuration Functions
     '''
@@ -388,6 +405,13 @@ class CholWrapper:
         # Symbolic Factorization
         dll.cholmod_analyze.argtypes = [
             POINTER(cholmod_sparse),
+            POINTER(cholmod_common)
+        ]
+
+        dll.cholmod_zeros.argtypes = [
+            c_size_t, # nrow
+            c_size_t,   # ncol
+            c_int, # xdtipe
             POINTER(cholmod_common)
         ]
 
@@ -482,6 +506,8 @@ class CholWrapper:
         dll.cholmod_norm_sparse.restype = c_double
 
         dll.cholmod_sdmult.restype = c_int
+
+        dll.cholmod_zeros.restype = POINTER(cholmod_dense)
 
 
     

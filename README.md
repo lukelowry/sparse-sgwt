@@ -9,7 +9,7 @@ Intended for GSP of time-vertex signals over static and dynamic sparse graphs.
 The package can be installed using:
 
 ```
-pip install sgwt
+python -m pip install sgwt
 ```
 
 The package uses a compiled CHOLMOD `.dll` file. Tests use `scikit-sparse` as a second level of vertification.
