@@ -152,6 +152,13 @@ class CholWrapper:
             byref(self.common) 
         )
 
+    '''
+    Low Rank Updates
+    '''
+
+    def updown(self):
+        pass
+
  
     '''
     Data Structures
