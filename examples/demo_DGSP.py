@@ -1,3 +1,10 @@
+'''
+Description
+    We show how we can dynamically update the graph and still
+    obtain convolutions with incredible speed.
+    This is owed to the CHOLMOD updown function and Kernel Fitting
+'''
+
 
 from sgwt import DyConvolve, impulse
 from sgwt.library import DELAY_TEXAS, COORD_TEXAS
@@ -9,31 +16,25 @@ C = COORD_TEXAS.get()
 
 # Impulse
 X  = impulse(L, n=1200)
-#X += impulse(L, n=600)
 
 # Pre-Determined Poles
-scales = [0.1, 1, 10, 100]
+scales = [0.1, 1, 10]
 poles = [1/s for s in scales]
-
-# Should get same answer as demo_filters_1, maybe
-
 
 # The tradeoff for efficient graph updates is that poles cannot change
 with DyConvolve(L, poles) as conv:
 
-    # BEFORE CLOSE
-    BP = conv.bandpass(X)
-    plot_signal(BP[0][:,0], C, 'seismic')
+    # Pre-Close Convolution
+    Y_before = conv.bandpass(X)
+ 
+    # Add Branch, effectively making Bus 1200 and 600 Neighbors.
+    # We should expect Bus 600 to have positive value similar to 1200.
+    tau = 1e-3
+    conv.addbranch(1200, 600, 1/tau**2)
 
-    # OH SHIT THAT WORKED!
-    conv.addbranch(1200, 600, 1e6)
-
-    # AFTER 
-    BP = conv.bandpass(X)
-    plot_signal(BP[0][:,0], C, 'seismic')
+    # Post-Close Convolution
+    Y_after = conv.bandpass(X)
     
-
-# NOTE Description:
-# The above shows how we can dynamically update the graph and still
-# obtain convolutions with incredible speed
-# This is owed to the Cholesky Decomposition and Kernel Fitting
+    
+plot_signal(Y_before[0][:,0], C, 'seismic')
+plot_signal(Y_after[0][:,0], C, 'seismic')
