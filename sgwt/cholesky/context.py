@@ -31,7 +31,7 @@ class CholeskyContextManager:
     def __exit__(self, exc_type, exc_val, exc_tb):
 
         # Free the factored matrix object
-        self.chol.free_factor()
+        self.chol.free_factor(self.chol.fact_ptr)
 
         # Free working memory used in solve2
         self.chol.free_dense(self.X1)

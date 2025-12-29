@@ -3,6 +3,8 @@ main.py
 
 Analytical and Vector Fitting methods of GSP & SGWT Convolution
 
+Designed for Static Graphs (i.e., topology is constant)
+
 Author: Luke Lowery (lukel@tamu.edu)
 """
 
@@ -32,6 +34,15 @@ def impulse(lap, n=0, ntime=1):
 class Convolve(CholeskyContextManager):
 
     def __init__(self, L:csc_matrix) -> None:
+        '''
+        L: Sparse Graph Laplacian
+
+        NOTE Real valued branches only in this version.
+             Goal is to soon support complex (Hermitian required)
+        '''
+
+        # Store Number of nodes
+        self.nBus = L.shape[0]
         
         # Handles symb factor when entering context
         self.chol = CholWrapper(L)
@@ -58,13 +69,16 @@ class Convolve(CholeskyContextManager):
         W = np.zeros((*B.shape, nDim))
         B  = byref(self.chol.numpy_to_chol_dense(B))
 
+        A_ptr = byref(self.chol.A)
+        fact_ptr = self.chol.fact_ptr
+
         for q, r in zip(K.Q, K.R):
 
             # Step 1 -> Numeric Factorization
-            self.chol.num_factor(q)
+            self.chol.num_factor(A_ptr, fact_ptr, q)
 
             # Step 2 -> Solve Linear System (A + qI) X1 = B
-            self.chol.solve2(B,  None, X1, Xset, Y, E) 
+            self.chol.solve2(fact_ptr, B,  None, X1, Xset, Y, E) 
 
             # Before Residue
             Z = self.chol.chol_dense_to_numpy(X1)
@@ -76,7 +90,7 @@ class Convolve(CholeskyContextManager):
 
         return W
     
-    def lowpass(self, B, scales=[1], Bset=None):
+    def lowpass(self, B, scales=[1], Bset=None, refactor=True):
         '''
         Description
             Scaling coefficnets at indicated scales using the analytical form
@@ -102,15 +116,21 @@ class Convolve(CholeskyContextManager):
         if Bset is not None:
             Bset = byref(self.chol.numpy_to_chol_sparse_vec(Bset))
 
+        
+        A_ptr = byref(self.chol.A)
+        fact_ptr = self.chol.fact_ptr
+
 
         # Calculate Scaling Coefficients of 'f' for each scale
         for i, scale in enumerate(scales):
 
-            # Step 1 -> Numeric Factorization
-            self.chol.num_factor(1/scale)
+            # Step 1 -> Numeric Factorization 
+            # In some instances it will alreayd be factord at appropriate scale, so we allow option to skip
+            if refactor:
+                self.chol.num_factor(A_ptr, fact_ptr, 1/scale)
             
             # Step 2 -> Solve Linear System (A + beta*I) X1 = B
-            self.chol.solve2(B,  Bset, X1, Xset, Y, E) 
+            self.chol.solve2(fact_ptr, B,  Bset, X1, Xset, Y, E) 
 
             # Step 3 ->  Divide by scale  X1 = X1/scale
             self.chol.sdmult(X1,  X1, 0.0,  1/scale)
@@ -147,15 +167,19 @@ class Convolve(CholeskyContextManager):
         # Pointer to b (The function being convolved)
         B    = byref(self.chol.numpy_to_chol_dense(B))
 
+        
+        A_ptr = byref(self.chol.A)
+        fact_ptr = self.chol.fact_ptr
+
         # Calculate Scaling Coefficients of 'f' for each scale
         for i, scale in enumerate(scales):
 
             # Step 1 -> Numeric Factorization
-            self.chol.num_factor(1/scale)
+            self.chol.num_factor(A_ptr, fact_ptr, 1/scale)
             
             # Step 2 -> Solve Linear System (A + beta*I)^2 x = B
-            self.chol.solve2( B, None, X2, Xset, Y, E) 
-            self.chol.solve2(X2, None, X1, Xset, Y, E) 
+            self.chol.solve2(fact_ptr, B, None, X2, Xset, Y, E) 
+            self.chol.solve2(fact_ptr, X2, None, X1, Xset, Y, E) 
 
             # Step 3 ->  Divide by scale for normalization
             self.chol.sdmult(
@@ -194,18 +218,21 @@ class Convolve(CholeskyContextManager):
         # Pointer to b (The function being convolved)
         B    = byref(self.chol.numpy_to_chol_dense(B))
 
+        A_ptr = byref(self.chol.A)
+        fact_ptr = self.chol.fact_ptr
+
         # Calculate Scaling Coefficients of 'f' for each scale
         for i, scale in enumerate(scales):
 
             # Step 1 -> Numeric Factorization
-            self.chol.num_factor(1/scale)
+            self.chol.num_factor(A_ptr, fact_ptr, 1/scale)
             
             # Need to ensure X2 Initialized
             if i==0:
-                self.chol.solve2(B, None, X2, Xset, Y, E) 
+                self.chol.solve2(fact_ptr, B, None, X2, Xset, Y, E) 
 
             # Step 2 -> Solve Linear System (L + I/scale) x = B
-            self.chol.solve2(B, None, X1, Xset, Y, E) 
+            self.chol.solve2(fact_ptr, B, None, X1, Xset, Y, E) 
 
             # Step 3 ->  X2 = L@X1
             self.chol.sdmult(
@@ -221,3 +248,42 @@ class Convolve(CholeskyContextManager):
             )
 
         return W
+    
+    def addbranch(self, i, j, w):
+        '''
+        Description
+            Adds a branch via cholmod_updown
+        Parameters
+            i: Index of Vertex A
+            j: Index of Vertex B
+            w: Edge Weight
+        '''
+
+        # Make sparse version of the single line lap
+        ws = np.sqrt(w)
+        data    = [ws, -ws]
+        bus_ind = [i ,  j ] # Row Indicies
+        br_ind  = [0 ,  0 ] # Col Indicies
+
+        # Creates Sparse Incidence Matrix of added branch, must free later
+        Cptr = self.chol.triplet_to_chol_sparse(
+            nrow=self.nBus,
+            ncol=1,
+            rows=bus_ind,
+            cols=br_ind,
+            vals=data
+        )
+
+        # Make cholmod_sparse representation
+        ok = self.chol.update(Cptr)
+
+        # Free Cptr now that it has been used
+        self.chol.free_sparse(Cptr)
+
+        # Add to the factorized graph
+        return ok
+    
+    def setup_static_mode(self, npoles):
+        '''
+        This is specifically design for 
+        '''

@@ -7,6 +7,7 @@ examples/demo_filters_3.py
 examples/demo_plot.py
 examples/demo_recon.py
 examples/demo_vf.py
+examples/single_file_test.py
 examples/temp.py
 sgwt/__init__.py
 sgwt/main.py
