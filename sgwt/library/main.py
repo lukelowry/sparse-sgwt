@@ -4,7 +4,9 @@ Library
 
 Access to laplacians, signals, and kernels.
 
-TODO simplify access to files, too many steps at the moment
+TODO simplify access to files
+
+TODO must transition to .mat as standard input, I think.
 
 '''
 
