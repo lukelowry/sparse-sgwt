@@ -1,4 +1,5 @@
 LICENSE
+README.md
 pyproject.toml
 examples/demo_DGSP.py
 examples/demo_DGSP_time.py
