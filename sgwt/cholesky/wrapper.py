@@ -74,6 +74,8 @@ class CholWrapper:
         
         # Make choldmod_common struct
         self.common = cholmod_common()
+        #self.common.supernodal = CHOLMOD_SUPERNODAL
+        #self.common.nmethods = 8
 
         # TODO Support other solve types
         self.MODE = CHOLMOD_A
