@@ -6,6 +6,7 @@ using LinearAlgebra
 using SuiteSparse
 using Statistics
 using Plots
+using PlotUtils
 
 # Include source files
 include("GraphIO.jl")

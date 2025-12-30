@@ -16,8 +16,7 @@ function plot_signal(f::AbstractVecOrMat, S::AbstractMatrix; cmap=nothing)
 
     # 3. Robust Normalization
     sorted_abs = sort(abs.(f_vec))
-    #idx = max(1, length(sorted_abs) - 19)
-    mx = sorted_abs[length(sorted_abs) - 19]
+    mx = sorted_abs[max(1, length(sorted_abs) - 19)]
 
     # 4. Handle Colormap
     if isnothing(cmap)

@@ -69,7 +69,7 @@ function convolve(conv::DyConvolve, B, K::VFKern)
 end
 
 function lowpass(conv::DyConvolve, B)
-    W = []
+    W = typeof(B)[]
     
     # Pre-allocate buffer
     X1 = similar(B)
@@ -91,7 +91,7 @@ function lowpass(conv::DyConvolve, B)
 end
 
 function bandpass(conv::DyConvolve, B)
-    W = []
+    W = typeof(B)[]
     
     # Pre-allocate buffers
     X1 = similar(B)
@@ -119,7 +119,7 @@ function bandpass(conv::DyConvolve, B)
 end
 
 function highpass(conv::DyConvolve, B)
-    W = []
+    W = typeof(B)[]
 
     # Pre-allocate buffers
     X1 = similar(B)
