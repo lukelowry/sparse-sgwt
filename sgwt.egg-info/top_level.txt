@@ -1,5 +1,6 @@
 build
 dist
 examples
+julia
 sgwt
 tests
