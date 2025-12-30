@@ -6,13 +6,9 @@ Intended for GSP of time-vertex signals over static and dynamic sparse graphs.
 
 ## Installation
 
-The package can be installed using:
-
-```
-python -m pip install sgwt
-```
-
-The package uses a compiled CHOLMOD `.dll` file. Tests use `scikit-sparse` as a second level of vertification.
+See the install guides for each language:
+- In [python](python\README.md)
+- In [julia](julia\README.md)
 
 ## Basic Usage
 
@@ -163,7 +159,6 @@ This filter qualifies as a wavelet generating kernel for the SGWT, since $\Psi(0
 
 ## Cholesky Implementation
 
-Given a rational approximation of some kernel function, we are able to implement graph convolutions using the Cholesky Decomposition. To ensure scalability to signals of large sparse networks, time-varying graph signals must be as efficient as possible with memory.
+For the context that this was designed for, a direct solve approach is preferred to an iterative solver like `ARMA`. Time-varying graph signals must be as efficient as possible with memory, to ensure scalability to signals of large sparse networks. Especially if the process is online.
 
-The `cholmod_solve2` function is the primary engine behind the fast reusable convolution environment. Access to the `cholmod` functions also means that this module is ideal for GSP of signals on dynamic graphs, using low-rank updates to change the factorization of the graph Laplacian.
-
+The `cholmod_solve2` and `updown` functions are the primary engine behind the fast reusable convolution environment. 
