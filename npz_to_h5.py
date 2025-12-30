@@ -5,7 +5,7 @@ import scipy.sparse as sp
 import scipy.io as sio
 
 # CONFIGURATION
-BASE_DIR = r"C:\Users\wyattluke.lowery\Documents\GitHub\sparse-sgwt\sgwt\library\data"
+BASE_DIR = r"C:\Users\wyattluke.lowery\Documents\GitHub\sparse-sgwt\python\sgwt\library\data"
 TARGET_DIRS = ["DELAY", "IMPEDANCE", "LENGTH"]
 SIGNAL_DIR = "SIGNALS"
 

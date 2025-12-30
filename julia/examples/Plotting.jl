@@ -4,7 +4,7 @@ include("../src/GraphFilters.jl")
 include("../src/GraphIO.jl")
 include("../src/GraphPlot.jl")
 
-base_dir = raw"C:\Users\wyattluke.lowery\Documents\GitHub\sparse-sgwt\sgwt\library\data"
+base_dir = joinpath(@__DIR__, "..", "..", "python", "sgwt", "library", "data")
 path_L = joinpath(base_dir, "DELAY", "TEXAS_DELAY.mat")
 path_S = joinpath(base_dir, "SIGNALS", "texas_coords.mat")
 

@@ -1,3 +1,7 @@
+using SparseArrays
+using LinearAlgebra
+using SuiteSparse
+
 """
     VFKern
 

@@ -1,8 +1,6 @@
-using Pkg
-Pkg.activate(joinpath(@__DIR__, ".."))
-Pkg.resolve()
-Pkg.instantiate()
-using SpectralGraphWavelet
+include("../src/GraphFilters.jl")
+include("../src/GraphIO.jl")
+include("../src/GraphPlot.jl")
 
 base_dir = joinpath(@__DIR__, "..", "..", "python", "sgwt", "library", "data")
 path_L = joinpath(base_dir, "DELAY", "USA_DELAY.mat")
