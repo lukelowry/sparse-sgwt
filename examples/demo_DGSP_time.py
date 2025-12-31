@@ -4,13 +4,9 @@ Description
 '''
 
 from sgwt import Convolve, DyConvolve, impulse
-from sgwt.library import DELAY_USA, COORD_USA
+from sgwt.library import DELAY_USA as L
 import numpy as np
 import time 
-
-# Graph
-L = DELAY_USA.get()
-C = COORD_USA.get()
 
 # Impulse
 X  = impulse(L, n=1200)
@@ -22,8 +18,6 @@ poles = 1/scales
 # TODO While I personally see the utility of both methods, 
 # I think DyConvolve is best because its generally faster
 # only utility for Convolve is if we want to change the scales often
-
-
 
 with Convolve(L) as conv:
 

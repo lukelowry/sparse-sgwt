@@ -11,7 +11,7 @@ Author: Luke Lowery (lukel@tamu.edu)
 from .cholesky import CholWrapper
 from .cholesky import cholmod_dense, cholmod_sparse
 
-from .fitted import VFKern
+from .ration import VFKern
 
 import numpy as np
 from scipy.sparse import csc_matrix
@@ -209,21 +209,16 @@ class DyConvolve:
 
         # Pointer to b (The function being convolved)
         B    = byref(self.chol.numpy_to_chol_dense(B))
-
-        
-        A_ptr = byref(self.chol.A)
         fact_ptr = self.chol.fact_ptr
 
         # Calculate Scaling Coefficients of 'f' for each scale
         for q, fact_ptr in zip(self.poles, self.factors):
 
-            # NOTE we can go straight to solve! Already have numeric factors.
-            
             # Step 1 -> Solve Linear System (A + beta*I)^2 x = B
             self.chol.solve2(fact_ptr, B, None, X2, Xset, Y, E) 
             self.chol.solve2(fact_ptr, X2, None, X1, Xset, Y, E) 
 
-            # Step 3 ->  Divide by scale for normalization
+            # Step 2 ->  Divide by scale for normalization
             self.chol.sdmult(
                 matrix_ptr = X1, 
                 out_ptr =X2,  
@@ -259,7 +254,7 @@ class DyConvolve:
         B    = byref(self.chol.numpy_to_chol_dense(B))
 
         # Calculate Scaling Coefficients of 'f' for each scale
-        for i, q, fact_ptr in zip(range(self.npoles), self.poles, self.factors):
+        for i, fact_ptr in enumerate(self.factors):
 
             # Need to ensure X2 Initialized
             if i==0:
@@ -323,4 +318,3 @@ class DyConvolve:
         # Add to the factorized graph
         return ok
     
-

@@ -11,7 +11,7 @@ def plot_signal(f, C, cmap='Spectral'):
         C: Coordinats
     '''
 
-    L1, L2 = C['longitude'], C['latitude']
+    L1, L2 = C[:, 0], C[:, 1]
 
     mx = sort(abs(f))[-20] 
     norm = Normalize(-mx, mx)

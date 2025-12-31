@@ -7,12 +7,8 @@ Description
 
 
 from sgwt import DyConvolve, impulse
-from sgwt.library import DELAY_TEXAS, COORD_TEXAS
-from demo_plot import plot_signal
-
-# Graph
-L = DELAY_TEXAS.get()
-C = COORD_TEXAS.get()
+from sgwt.library import DELAY_TEXAS as L
+from sgwt.library import COORD_TEXAS as C
 
 # Impulse
 X  = impulse(L, n=1200)
@@ -35,6 +31,6 @@ with DyConvolve(L, poles) as conv:
     # Post-Close Convolution
     Y_after = conv.bandpass(X)
     
-    
+from demo_plot import plot_signal
 plot_signal(Y_before[0][:,0], C, 'seismic')
 plot_signal(Y_after[0][:,0], C, 'seismic')

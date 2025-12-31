@@ -10,7 +10,7 @@ Used to construct a oneline!
 '''
 
 from sgwt import Convolve
-from sgwt.library import IMPEDANCE_WECC
+from sgwt.library import IMPEDANCE_WECC as L
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -40,9 +40,7 @@ WORKING:
 
 '''
 
-# Graph
-L = IMPEDANCE_WECC.get()
-nbus = L.shape[0]
+
 
 
 # Bus Index, Longitude, Latitude
@@ -56,6 +54,8 @@ MEASURMENTS = [
     [187     ,-123.14    ,44.34 ]
 ]
 
+
+nbus = L.shape[0]
 X = np.zeros((nbus, 2)) # Signal, Sparse
 Xh = np.zeros_like(X) # Reconstruction, Dense
 

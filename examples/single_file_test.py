@@ -1,10 +1,7 @@
 
 from sgwt import Convolve, impulse
-from sgwt.library import DELAY_TEXAS, COORD_TEXAS
-
-
-# Graph
-L = DELAY_TEXAS.get()
+from sgwt.library import DELAY_TEXAS as L
+from sgwt.library import COORD_TEXAS as C
 
 '''
 Impulse Response of BP
@@ -30,12 +27,9 @@ import matplotlib.pyplot as plt
 from matplotlib.colors import Normalize
 import matplotlib.cm as cm
 
-C = COORD_TEXAS.get()
-L1, L2 = C['longitude'], C['latitude']
-
 mx = sorted(abs(Y))[-10]
 norm = Normalize(-mx, mx)
-plt.scatter(L1, L2 , c=Y[:,0], cmap=cm.get_cmap('seismic'), norm=norm)
+plt.scatter(C[:,0], C[:,1] , c=Y[:,0], cmap=cm.get_cmap('seismic'), norm=norm)
 plt.axis('scaled')   
 plt.show()
 

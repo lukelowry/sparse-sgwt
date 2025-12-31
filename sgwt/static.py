@@ -9,7 +9,7 @@ Author: Luke Lowery (lukel@tamu.edu)
 """
 
 from .cholesky import CholWrapper, CholeskyContextManager
-from .fitted import VFKern
+from .ration import VFKern
 
 import numpy as np
 from scipy.sparse import csc_matrix

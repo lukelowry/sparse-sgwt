@@ -1,13 +1,8 @@
 
 from sgwt import Convolve, impulse
-from sgwt.library import IMPEDANCE_EASTWEST, COORD_EASTWEST, MODIFIED_MORLET
-import numpy as np
-from demo_plot import plot_signal
-
-# Graph & Kernel
-L = IMPEDANCE_EASTWEST.get()
-K = MODIFIED_MORLET.get()
-C = COORD_EASTWEST.get()
+from sgwt.library import IMPEDANCE_EASTWEST as L
+from sgwt.library import COORD_EASTWEST as C
+from sgwt.library import MODIFIED_MORLET as K
 
 # Signal Input
 X = impulse(L, n=-1000)
@@ -20,4 +15,5 @@ with Convolve(L) as g:
 
     Y = g.convolve(X, K)
     
+from demo_plot import plot_signal
 plot_signal(Y[:,0,0], C, 'Spectral')

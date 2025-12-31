@@ -1,11 +1,7 @@
 
 from sgwt import Convolve, impulse
-from sgwt.library import DELAY_TEXAS, COORD_TEXAS
-from demo_plot import plot_signal
-
-# Graph
-L = DELAY_TEXAS.get()
-C = COORD_TEXAS.get()
+from sgwt.library import DELAY_TEXAS as L
+from sgwt.library import COORD_TEXAS as C
 
 # Impulse
 X  = impulse(L, n=1200)
@@ -21,6 +17,7 @@ with Convolve(L) as conv:
     BP = conv.bandpass(X, s)
     HP = conv.highpass(X, s)
 
+from demo_plot import plot_signal
 plot_signal(BP[0][:,0], C, 'seismic')
 
 

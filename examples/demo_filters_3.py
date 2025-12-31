@@ -1,12 +1,6 @@
 from sgwt import Convolve, impulse
-from sgwt.library import DELAY_USA, COORD_USA
-import numpy as np
-
-from demo_plot import plot_signal
-
-# Graph
-L = DELAY_USA.get()
-C = COORD_USA.get()
+from sgwt.library import DELAY_USA as L
+from sgwt.library import COORD_USA as C
 
 # Impulse
 X  = impulse(L, n=15000)
@@ -21,6 +15,7 @@ with Convolve(L) as conv:
     BP = conv.bandpass(BP, s)[0]
     BP = conv.bandpass(BP, s)[0]
 
+from demo_plot import plot_signal
 plot_signal(BP[:,0], C, 'coolwarm')
 
 
