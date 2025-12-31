@@ -11,6 +11,7 @@ This directory contains demonstration scripts for various features of the `sgwt`
 ## Advanced Convolution
 - `demo_vf.py`: Using Vector Fitting (VF) kernels for custom filter shapes (e.g., Modified Morlet).
 - `demo_recon.py`: Signal reconstruction (e.g., coordinate recovery) from sparse measurements.
+- `demo_inpainting.py`: Reconstructing a smooth signal from a small fraction of samples using iterative low-pass filtering.
 
 ## Dynamic Graphs
 - `demo_dynamic_topology.py`: Updating graph topology (adding branches) on-the-fly with `DyConvolve`.
