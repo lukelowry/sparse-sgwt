@@ -21,9 +21,12 @@ from scipy.sparse import csc_matrix
 
 
 def get_cholmod_dll():
-    '''
-    Adds the library/dll directory with necessary DLLs to the system search path
-    '''
+    """
+    Locates and loads the CHOLMOD shared library.
+    
+    Ensures the DLL directory is added to the system search path (Windows) 
+    and returns the CDLL handle.
+    """
     resource = files("sgwt.library") / "dll" / "cholmod.dll"
 
     with as_file(resource) as dll_path:

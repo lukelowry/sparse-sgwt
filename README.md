@@ -1,22 +1,22 @@
-# Sparse Spectral Graph Wavelet Transform (SGWT)
+# Sparse Graph Signal Processing (GSP) and Wavelet Transforms
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-A high-performance Python library for computing Spectral Graph Wavelet Transforms (SGWT) on large-scale sparse graphs. This package leverages the CHOLMOD library for efficient sparse direct solvers, providing significant speedups over traditional dense or iterative methods.
+A high-performance Python library for sparse Graph Signal Processing (GSP) and Spectral Graph Wavelet Transforms (SGWT). This package leverages the CHOLMOD library for efficient sparse direct solvers, providing significant speedups over traditional dense or iterative methods for large-scale graph convolution.
 
 ## Key Features
 
-- **High Performance**: Direct integration with CHOLMOD for fast sparse matrix factorizations.
-- **Versatile Kernels**: Support for analytical filters (low-pass, band-pass, high-pass) and custom kernels via Vector Fitting (VF).
-- **Dynamic Topology**: Optimized routines for graphs with evolving structures (e.g., power system line closures).
-- **Memory Efficient**: Context-managed workspace reuse to minimize allocation overhead.
-- **Graph Library**: Built-in access to common graph Laplacians (Texas, USA, WECC, etc.).
+- **High-Performance Sparse Solvers**: Direct integration with the CHOLMOD library for optimized sparse Cholesky factorizations and linear system solves.
+- **Generalized Graph Convolution**: Support for arbitrary spectral kernels via rational approximation (*Kernel Fitting*) and standard analytical filters (low-pass, band-pass, high-pass).
+- **Dynamic Topology Support**: Specialized routines for graphs with evolving structures, utilizing efficient rank-1 updates for real-time topology changes.
+- **Resource-Aware Execution**: Context-managed memory allocation and workspace reuse to minimize overhead in high-throughput applications.
+- **Integrated Graph Repository**: Built-in access to standardized graph Laplacians and signals from power systems and infrastructure networks.
 
 ## Installation
 
 The package can be installed via pip:
 
-```
+```bash
 python -m pip install sgwt
 ```
 
@@ -96,3 +96,22 @@ with Convolve(L) as conv:
 ```
 
 Same as before, the convolution is simply performed on our signal `X` by first defining L as the convolution context.
+
+### Dynamic Graph Example
+
+In many real-world applications, such as power systems or sensor networks, the underlying graph topology is dynamic. Re-initializing the entire convolution context for every edge update is computationally prohibitive. This example demonstrates the use of `DyConvolve` to perform efficient, real-time signal filtering on an evolving graph by leveraging rank-1 updates to adapt existing factorizations on-the-fly.
+
+```python
+from sgwt.dynamic import DyConvolve
+from sgwt import DELAY_USA as L
+
+poles = [10.0, 1.0, 0.1]
+
+with DyConvolve(L, poles) as conv:
+    for f_t, event in stream:
+        if event:
+            conv.addbranch(*event) # Update topology
+        W = conv.bandpass(f_t)     # Filter signal
+```
+
+At each iteration, the matrix `W` contains the column vectors which are the filtered versionf of `f` at the 'spatial' scale associated with each pole. So in this example `W` be a 3-column matrix representing the signal at three different scales.

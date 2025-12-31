@@ -19,13 +19,23 @@ from typing import Any
 
 
 def impulse(lap, n=0, ntime=1):
-    '''
-    Description
-        Returns a numpy array dirac impulse at vertex n of compatible shape with L
+    """
+    Generates a Dirac impulse signal at a specified vertex.
+
     Parameters
-        n: Index of vertex to impulse
-        ntime: number of columns in signal
-    '''
+    ----------
+    lap : csc_matrix
+        Graph Laplacian defining the node count.
+    n : int
+        Index of the vertex where the impulse is applied.
+    ntime : int
+        Number of time steps (columns) in the resulting signal.
+
+    Returns
+    -------
+    np.ndarray
+        A (N x ntime) array with 1.0 at index n and 0.0 elsewhere, in Fortran order.
+    """
     b = np.zeros((lap.shape[0],ntime), order='F')
     b[n] = 1
 
@@ -34,12 +44,17 @@ def impulse(lap, n=0, ntime=1):
 class Convolve:
 
     def __init__(self, L:csc_matrix) -> None:
-        '''
-        L: Sparse Graph Laplacian
+        """
+        Initializes a static convolution context.
+        
+        Designed for high-performance GSP operations on graphs with constant topology.
+        Manages CHOLMOD symbolic and numeric factorizations.
 
-        NOTE Real valued branches only in this version.
-             Goal is to soon support complex (Hermitian required)
-        '''
+        Parameters
+        ----------
+        L : csc_matrix
+            Sparse Graph Laplacian.
+        """
 
         # Store Number of nodes
         self.nBus = L.shape[0]
@@ -87,15 +102,21 @@ class Convolve:
         return self.convolve(B, K)
 
     def convolve(self, B, K: VFKern | dict):
-        '''
-        Description
-            This versatile function can perform many convolutions,
-            either with a single function (i.e., smoothing) or for
-            a whole transformation (Compute the SGWT)
+        """
+        Performs graph convolution using a specified kernel.
+
         Parameters
-            B: 2D Array (nVertex, nTime) with column major ordering (F)
-            K: Kernel function to generate convolution
-        '''
+        ----------
+        B : np.ndarray
+            Input signal array (N x T) with column-major ordering (F).
+        K : VFKern or dict
+            Kernel function (Vector Fitting model) to apply.
+
+        Returns
+        -------
+        np.ndarray
+            Convolved signal (N x T x nDim).
+        """
         # 1. Input validation and conversion before heavy lifting
         if isinstance(K, dict):
             K = VFKern.from_dict(K)
@@ -140,17 +161,27 @@ class Convolve:
         return W
     
     def lowpass(self, B, scales=[1], Bset=None, refactor=True):
-        '''
-        Description
-            Scaling coefficnets at indicated scales using the analytical form
-            I/(aL+I)
+        """
+        Computes low-pass filtered scaling coefficients at specified scales.
+
+        Uses the analytical form: I / (sL + I).
+
         Parameters
-            f: Signal array (numVerticies x numFeatures) to calculate scaling coeffs.
-            fset: Used to solve for a sparse subset of coeffs. ncol must be 1
-            scales: list (numScales) of scales to compute scaling coefficents for.
+        ----------
+        B : np.ndarray
+            Input signal array (N x T).
+        scales : list of float
+            List of scales to compute coefficients for.
+        Bset : csc_matrix, optional
+            Sparse indicator vector for localized coefficient computation.
+        refactor : bool
+            Whether to perform numeric factorization for each scale.
+
         Returns
-            Scaling coefficients for each scale (numVerticies x numScales)
-        '''
+        -------
+        list of np.ndarray
+            Filtered signals for each scale.
+        """
 
         # List, malloc, numpy, etc.
         W = []
@@ -192,20 +223,23 @@ class Convolve:
         return W
     
     def bandpass(self, B, scales=[1]):
-        '''
-        Description
-            Wavelet  coeffs of indicated scale using the analytical form.
-            (1/s)  L/(L+I/s)^2  located only at a subset of buses
+        """
+        Computes band-pass filtered wavelet coefficients at specified scales.
+
+        Uses the analytical form: (1/s) * L / (L + I/s)^2.
+
         Parameters
-            B: Signal array (numVerticies x numFeatures) to calculate wavelet coeffs.
-            Bset: (nVerticies x 1) Sparse vector indicator function of nodes 
-            where the wavelet coeffs need to be solved. Much faster than calculating
-            coefficients for every vertex localization. Default: None, does not consider fset.
-            scales: list (numScales) of scales to compute wavelet coefficents for.
+        ----------
+        B : np.ndarray
+            Input signal array (N x T).
+        scales : list of float
+            List of scales to compute coefficients for.
+
         Returns
-            Wavelet coefficients for each scale (numVerticies x numScales)
-            Solved accurately only for buses indicated by fset
-        '''
+        -------
+        list of np.ndarray
+            Filtered signals for each scale.
+        """
 
         # List, malloc, numpy, etc.
         W = []
@@ -246,17 +280,23 @@ class Convolve:
         return W
 
     def highpass(self, B, scales=[1]):
-        '''
-        Description
-            High-pass coefficnets at indicated scales using the analytical form
-            aL/(aL+I). Bset parameter not defined for HP filter
+        """
+        Computes high-pass filtered coefficients at specified scales.
+
+        Uses the analytical form: sL / (sL + I).
+
         Parameters
-            f: Signal array (numVerticies x numFeatures) to calculate HP coeffs.
-            fset: Pattern vector 
-            scales: list (numScales) of scales to compute  HP coefficents for.
+        ----------
+        B : np.ndarray
+            Input signal array (N x T).
+        scales : list of float
+            List of scales to compute coefficients for.
+
         Returns
-            High-pass coefficients for each scale (numVerticies x numScales)
-        '''
+        -------
+        list of np.ndarray
+            Filtered signals for each scale.
+        """
       
         # List, malloc, numpy, etc.
         W = []
@@ -299,14 +339,20 @@ class Convolve:
         return W
     
     def addbranch(self, i, j, w):
-        '''
-        Description
-            Adds a branch via cholmod_updown
+        """
+        Adds a branch to the graph topology and updates the factorization.
+
+        Uses CHOLMOD's updown routines for efficient rank-1 updates.
+
         Parameters
-            i: Index of Vertex A
-            j: Index of Vertex B
-            w: Edge Weight
-        '''
+        ----------
+        i : int
+            Index of Vertex A.
+        j : int
+            Index of Vertex B.
+        w : float
+            Edge weight.
+        """
 
         # Make sparse version of the single line lap
         ws = np.sqrt(w)

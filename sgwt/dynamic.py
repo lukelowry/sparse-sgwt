@@ -23,16 +23,19 @@ from typing import Any
 class DyConvolve:
 
     def __init__(self, L:csc_matrix, poles: list | VFKern) -> None:
-        '''
-        Description
-            A variant of Convolve except the implementation
-            is optimized to handle updown calls to add branches.
-            The trade-off is that the poles/scales are constant.
+        """
+        Initializes a dynamic convolution context.
+        
+        Optimized for graphs with evolving topologies where poles/scales remain constant.
+        Uses CHOLMOD's updown routines for efficient rank-1 updates.
+
         Parameters 
-            L: Sparse Graph Laplacian
-            poles: predetermined set of poles (equiv to 1/scale)
-            K: Please set poles=None if passing kern.
-        '''
+        ----------
+        L : csc_matrix
+            Sparse Graph Laplacian.
+        poles : list or VFKern
+            Predetermined set of poles (equivalent to 1/scale for analytical filters).
+        """
 
         # Store Number of nodes
         self.nBus = L.shape[0]
@@ -111,15 +114,19 @@ class DyConvolve:
         return self.convolve(B)
 
     def convolve(self, B):
-        '''
-        Description
-            This versatile function can perform many convolutions,
-            either with a single function (i.e., smoothing) or for
-            a whole transformation (Compute the SGWT)
+        """
+        Performs graph convolution using the pre-defined kernel.
+
         Parameters
-            X: 2D Array (nVertex, nTime) with column major ordering (F)
-            K: Kernel function to generate convolution
-        '''
+        ----------
+        B : np.ndarray
+            Input signal array (N x T) with column-major ordering (F).
+
+        Returns
+        -------
+        np.ndarray
+            Convolved signal (N x T x nDim).
+        """
 
         if self.R is None:
             raise Exception("Cannot call without VFKern Object")
@@ -147,17 +154,23 @@ class DyConvolve:
     
     
     def lowpass(self, B, Bset=None):
-        '''
-        Description
-            Scaling coefficnets at indicated scales using the analytical form
-            I/(aL+I) = qI/(L+qI)
+        """
+        Computes low-pass filtered scaling coefficients.
+        
+        Uses the analytical form: qI / (L + qI).
+
         Parameters
-            f: Signal array (numVerticies x numFeatures) to calculate scaling coeffs.
-            fset: Used to solve for a sparse subset of coeffs. ncol must be 1
-            scales: list (numScales) of scales to compute scaling coefficents for.
+        ----------
+        B : np.ndarray
+            Input signal array (N x T).
+        Bset : csc_matrix, optional
+            Sparse indicator vector for localized coefficient computation.
+
         Returns
-            Scaling coefficients for each scale (numVerticies x numScales)
-        '''
+        -------
+        list of np.ndarray
+            Filtered signals for each pre-defined pole.
+        """
 
         # List, malloc, numpy, etc.
         W = []
@@ -189,16 +202,21 @@ class DyConvolve:
         return W
     
     def bandpass(self, B):
-        '''
-        Description
-            Wavelet  coeffs of indicated scale using the analytical form.
-            4qL/(L+qI)^2  located only at a subset of buses
+        """
+        Computes band-pass filtered wavelet coefficients.
+
+        Uses the analytical form: 4qL / (L + qI)^2.
+
         Parameters
-            f: Signal array (numVerticies x numFeatures) to calculate wavelet coeffs.
+        ----------
+        B : np.ndarray
+            Input signal array (N x T).
+
         Returns
-            Wavelet coefficients for each scale (numVerticies x numScales)
-            Solved accurately only for buses indicated by fset
-        '''
+        -------
+        list of np.ndarray
+            Filtered signals for each pre-defined pole.
+        """
 
         # List, malloc, numpy, etc.
         W = []
@@ -233,15 +251,21 @@ class DyConvolve:
         return W
 
     def highpass(self, B):
-        '''
-        Description
-            High-pass coefficnets at indicated scales using the analytical form
-            L/(L+qI). Bset parameter not defined for HP filter
+        """
+        Computes high-pass filtered coefficients.
+
+        Uses the analytical form: L / (L + qI).
+
         Parameters
-            f: Signal array (numVerticies x numFeatures) to calculate HP coeffs.
+        ----------
+        B : np.ndarray
+            Input signal array (N x T).
+
         Returns
-            High-pass coefficients for each scale (numVerticies x numScales)
-        '''
+        -------
+        list of np.ndarray
+            Filtered signals for each pre-defined pole.
+        """
       
         # List, malloc, numpy, etc.
         W = []
@@ -278,14 +302,20 @@ class DyConvolve:
         return W
     
     def addbranch(self, i, j, w):
-        '''
-        Description
-            Adds a branch via cholmod_updown
+        """
+        Adds a branch to the graph topology and updates all factorizations.
+
+        Uses CHOLMOD's updown routines for efficient rank-1 updates.
+
         Parameters
-            i: Index of Vertex A
-            j: Index of Vertex B
-            w: Edge Weight
-        '''
+        ----------
+        i : int
+            Index of Vertex A.
+        j : int
+            Index of Vertex B.
+        w : float
+            Edge weight.
+        """
 
         ok = True
 
