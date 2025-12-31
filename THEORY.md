@@ -1,14 +1,3 @@
-# Sparse GSP & SGWT Tools
-
-A highly customizable, sparse-friendly SGWT/GSP module. This package provides tools to design, approximate, and implement a custom SGWT kernel for use over sparse networks.
-
-Intended for GSP of time-vertex signals over static and dynamic sparse graphs.
-
-## Get Started
-
-See the install guides for each language:
-- In [python](python\README.md)
-- In [julia](julia\README.md)
 
 
 ## Kernel Fitting
