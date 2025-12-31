@@ -1,11 +1,11 @@
+# -*- coding: utf-8 -*-
 """
-dynamic.py
-
-GSP Convolution designed *specifically* for dynamic graphs (i.e. line closures and opens)
-
-For scalable implementation, this approach requires the set of scales/poles to be pre-determined
-
+Sparse Spectral Graph Wavelet Transform (SGWT)
+----------------------------------------------
 Author: Luke Lowery (lukel@tamu.edu)
+File: sgwt/dynamic.py
+Description: GSP Convolution designed specifically for dynamic graphs 
+             (e.g., line closures and opens). Requires pre-determined scales.
 """
 
 from .cholesky import CholWrapper
@@ -22,7 +22,7 @@ from typing import Any
 
 class DyConvolve:
 
-    def __init__(self, L:csc_matrix, poles, K:VFKern = None) -> None:
+    def __init__(self, L:csc_matrix, poles: list | VFKern) -> None:
         '''
         Description
             A variant of Convolve except the implementation
@@ -41,14 +41,17 @@ class DyConvolve:
         self.chol = CholWrapper(L)
 
         # If VF model given
-        if K is not None:
-            self.K = K
-            self.poles = K.Q
-            self.npoles = len(K.Q)
+        if isinstance(poles, VFKern):
+            self.poles = poles.Q
+            self.R = poles.R
+            self.D = poles.D
         else:
             # Number of scales
             self.poles = poles 
-            self.npoles = len(poles)
+            self.R = None
+            self.D = np.array([])
+        
+        self.npoles = len(self.poles)
 
 
     # Context Manager for using CHOLMOD
@@ -104,10 +107,10 @@ class DyConvolve:
         self.chol.finish()
 
 
-    def __call__(self, B, K: VFKern) -> Any:
-        return self.convolve(B, self.K)
+    def __call__(self, B) -> Any:
+        return self.convolve(B)
 
-    def convolve(self, B, K: VFKern):
+    def convolve(self, B):
         '''
         Description
             This versatile function can perform many convolutions,
@@ -118,32 +121,28 @@ class DyConvolve:
             K: Kernel function to generate convolution
         '''
 
+        if self.R is None:
+            raise Exception("Cannot call without VFKern Object")
+
         # List, malloc, numpy, etc.
-        nDim = K.R.shape[1]
+        nDim = self.R.shape[1]
         X1, Xset = self.X1, self.Xset
         Y, E   = self.Y, self.E
 
+        # Initialize with direct term if it exists
         W = np.zeros((*B.shape, nDim))
-        B  = byref(self.chol.numpy_to_chol_dense(B))
+        if self.D.size > 0:
+            W += self.D
 
+        B_chol = byref(self.chol.numpy_to_chol_dense(B))
         
-        A_ptr = byref(self.chol.A)
-   
-
-        
-        for fact_ptr, q, r in zip(self.factors, K.Q, K.R):
-
+        for fact_ptr, r in zip(self.factors, self.R):
             # The benefit now is we never have to factor, just solve
-            self.chol.solve2(fact_ptr, B,  None, X1, Xset, Y, E) 
-
+            self.chol.solve2(fact_ptr, B_chol,  None, X1, Xset, Y, E) 
             # Before Residue
             Z = self.chol.chol_dense_to_numpy(X1)
-
             # Cross multiply with residual (SLOW)
             W += Z[:, :, None]*r  
-
-        # TODO add K.D per dimension
-
         return W
     
     
@@ -162,9 +161,9 @@ class DyConvolve:
 
         # List, malloc, numpy, etc.
         W = []
-        X1, X2 = self.X1, self.X2 
-        Xset   = self.Xset
-        Y, E   = self.Y, self.E
+        X1    = self.X1
+        Xset  = self.Xset
+        Y, E  = self.Y, self.E
 
         # Pointer to b (The function being convolved)
         B    = byref(self.chol.numpy_to_chol_dense(B))

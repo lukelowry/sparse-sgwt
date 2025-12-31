@@ -1,14 +1,14 @@
-'''
-Description
-    We show how we can dynamically update the graph and still
-    obtain convolutions with incredible speed.
-    This is owed to the CHOLMOD updown function and Kernel Fitting
-'''
-
-
+# -*- coding: utf-8 -*-
+"""
+Sparse Spectral Graph Wavelet Transform (SGWT)
+----------------------------------------------
+Author: Luke Lowery (lukel@tamu.edu)
+File: examples/demo_dynamic_topology.py
+Description: Demonstration of dynamic graph updates using DyConvolve.
+"""
 from sgwt import DyConvolve, impulse
-from sgwt.library import DELAY_TEXAS as L
-from sgwt.library import COORD_TEXAS as C
+from sgwt import DELAY_TEXAS as L
+from sgwt import COORD_TEXAS as C
 
 # Impulse
 X  = impulse(L, n=1200)

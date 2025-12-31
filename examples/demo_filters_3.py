@@ -1,6 +1,14 @@
+# -*- coding: utf-8 -*-
+"""
+Sparse Spectral Graph Wavelet Transform (SGWT)
+----------------------------------------------
+Author: Luke Lowery (lukel@tamu.edu)
+File: examples/demo_filters_3.py
+Description: Filtering demonstration on the USA grid.
+"""
 from sgwt import Convolve, impulse
-from sgwt.library import DELAY_USA as L
-from sgwt.library import COORD_USA as C
+from sgwt import DELAY_USA as L
+from sgwt import COORD_USA as C
 
 # Impulse
 X  = impulse(L, n=15000)
@@ -17,7 +25,3 @@ with Convolve(L) as conv:
 
 from demo_plot import plot_signal
 plot_signal(BP[:,0], C, 'coolwarm')
-
-
-
-

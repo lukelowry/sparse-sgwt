@@ -1,7 +1,14 @@
-
+# -*- coding: utf-8 -*-
+"""
+Sparse Spectral Graph Wavelet Transform (SGWT)
+----------------------------------------------
+Author: Luke Lowery (lukel@tamu.edu)
+File: examples/demo_filters_2.py
+Description: Filtering demonstration on the East-West US grid.
+"""
 from sgwt import Convolve, impulse
-from sgwt.library import DELAY_EASTWEST as L
-from sgwt.library import COORD_EASTWEST as C
+from sgwt import DELAY_EASTWEST as L
+from sgwt import COORD_EASTWEST as C
 
 
 # Impulse
@@ -19,4 +26,3 @@ with Convolve(L) as conv:
 
 from demo_plot import plot_signal
 plot_signal(BP[:,0], C, 'coolwarm')
-

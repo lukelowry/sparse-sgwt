@@ -1,10 +1,10 @@
-
+# -*- coding: utf-8 -*-
 """
-structs.py
-
-Contains the ctypes formatted cholmod structs that are used.
-
+Sparse Spectral Graph Wavelet Transform (SGWT)
+----------------------------------------------
 Author: Luke Lowery (lukel@tamu.edu)
+File: sgwt/cholesky/structs.py
+Description: Ctypes definitions for CHOLMOD C structures.
 """
 
 from ctypes import c_float, c_double, c_int, c_int64, c_size_t, c_void_p
@@ -20,6 +20,7 @@ CHOLMOD_CUDASTREAM = c_void_p
 CHOLMOD_CUDAEVENT = c_void_p    
 
 class cholmod_method_struct(Structure):
+    """Ordering and factorization methods configuration."""
     _fields_ = [
         ("lnz", c_double),
         ("fl", c_double),
@@ -39,6 +40,7 @@ class cholmod_method_struct(Structure):
     ]
 
 class cholmod_common(Structure):
+    """The CHOLMOD 'Common' object used to control parameters and store statistics."""
     _fields_ = [
         # primary parameters
         ("dbound", c_double),
@@ -173,6 +175,7 @@ class cholmod_common(Structure):
     ]
 
 class cholmod_factor(Structure):
+    """Represents a symbolic or numeric factorization (L or LDL')."""
     _fields_ = [
         # Factor size
         ("n", c_size_t),
@@ -216,24 +219,26 @@ class cholmod_factor(Structure):
     ]
 
 class cholmod_sparse(Structure):
+    """A sparse matrix in compressed-column (CSC) or triplet form."""
     _fields_ = [
         ("nrow", c_size_t),     # number of rows
         ("ncol", c_size_t),     # number of columns
         ("nzmax", c_size_t),    # maximum number of entries
         ("p", c_void_p),        # column pointers
         ("i", c_void_p),        # row indices
-        ("nz", c_void_p),        # numeric values
+        ("nz", c_void_p),       # entry counts (for unpacked matrices)
         ("x", c_void_p),        # numeric values
         ("z", c_void_p),        # complex values
-        ("stype", c_int),       # symmetric flag
-        ("itype", c_int),       # index type
-        ("xtype", c_int),       # real/pattern/complex
-        ("dtype", c_int),       # data type
+        ("stype", c_int),       # symmetric flag (0: general, >0: upper, <0: lower)
+        ("itype", c_int),       # index type (0: int, 1: int64)
+        ("xtype", c_int),       # pattern (0), real (1), complex (2), zomplex (3)
+        ("dtype", c_int),       # double (0), single (1)
         ("sorted", c_int),      # columns sorted
         ("packed", c_int)       # packed/unpacked
     ]
 
 class cholmod_dense(Structure):
+    """A dense matrix in column-major (Fortran) order."""
     _fields_ = [
         ("nrow", c_size_t),     # number of rows
         ("ncol", c_size_t),     # number of columns
@@ -241,8 +246,8 @@ class cholmod_dense(Structure):
         ("d", c_size_t),        # leading dimension
         ("x", c_void_p),        # values
         ("z", c_void_p),        # complex values
-        ("xtype", c_int),       # real/pattern/complex
-        ("dtype", c_int)        # data type
+        ("xtype", c_int),       # pattern (0), real (1), complex (2), zomplex (3)
+        ("dtype", c_int)        # double (0), single (1)
     ]
     def __init__(
         self,

@@ -1,7 +1,11 @@
-'''
-I/O Utilities
-Access to laplacians, signals, and kernels.
-'''
+# -*- coding: utf-8 -*-
+"""
+Sparse Spectral Graph Wavelet Transform (SGWT)
+----------------------------------------------
+Author: Luke Lowery (lukel@tamu.edu)
+File: sgwt/io.py
+Description: I/O utilities for accessing built-in Laplacians, signals, and kernels.
+"""
 
 from .ration import VFKern
 
@@ -63,7 +67,7 @@ def _mat_loader(path: str, to_csc: bool = False):
 def _json_kern_loader(path: str):
     """Loads a VFKern from a JSON file."""
     with open(path, "r") as f:
-        return VFKern.from_json(jsonload(f))
+        return jsonload(f)
 
 # Factory helpers
 def _lap(k, r): return _load_resource(f"library/{k}/{r}_{k}.mat", lambda p: _mat_loader(p, to_csc=True))

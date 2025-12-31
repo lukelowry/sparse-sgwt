@@ -1,3 +1,11 @@
+# -*- coding: utf-8 -*-
+"""
+Sparse Spectral Graph Wavelet Transform (SGWT)
+----------------------------------------------
+Author: Luke Lowery (lukel@tamu.edu)
+File: sgwt/library/__init__.py
+Description: Library module initialization for built-in datasets.
+"""
 from ..io import (
     get_cholmod_dll,
     

@@ -20,11 +20,12 @@ dependencies = [
     "dll/*.dll", 
     "dll/*.so", 
     "dll/*.dylib",
-    "data/KERNELS/*.json", # Kernels
-    "data/IMPEDANCE/*.npz",   # Laplacians
-    "data/LENGTH/*.npz",
-    "data/DELAY/*.npz" ,
-    "data/SIGNALS/*.npz"  # SIGNALS
+    "KERNELS/*.json",  # Kernels
+    "SIGNALS/*.mat"    # SIGNALS
+    "IMPEDANCE/*.mat", # Laplacians
+    "LENGTH/*.mat",
+    "DELAY/*.mat" ,
+
 ]
 
 [tool.setuptools.packages.find]

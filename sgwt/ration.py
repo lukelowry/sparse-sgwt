@@ -1,8 +1,16 @@
+# -*- coding: utf-8 -*-
+"""
+Sparse Spectral Graph Wavelet Transform (SGWT)
+----------------------------------------------
+Author: Luke Lowery (lukel@tamu.edu)
+File: sgwt/ration.py
+Description: Data structures for Vector Fitting (VF) kernel representations.
+"""
 from dataclasses import dataclass
 import numpy as np
 import numpy.typing as npt
 
-@dataclass(frozen=True)
+@dataclass
 class VFKern:
     """
     Vector Fitting Kernel representation.
@@ -15,7 +23,7 @@ class VFKern:
     D: npt.NDArray
 
     @classmethod
-    def from_json(cls, data: dict) -> 'VFKern':
+    def from_dict(cls, data: dict) -> 'VFKern':
         """Loads kernel data from a dictionary/JSON structure."""
         poles = data.get('poles', [])
         return cls(

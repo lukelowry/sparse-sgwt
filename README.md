@@ -1,6 +1,20 @@
+# Sparse Spectral Graph Wavelet Transform (SGWT)
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+A high-performance Python library for computing Spectral Graph Wavelet Transforms (SGWT) on large-scale sparse graphs. This package leverages the CHOLMOD library for efficient sparse direct solvers, providing significant speedups over traditional dense or iterative methods.
+
+## Key Features
+
+- **High Performance**: Direct integration with CHOLMOD for fast sparse matrix factorizations.
+- **Versatile Kernels**: Support for analytical filters (low-pass, band-pass, high-pass) and custom kernels via Vector Fitting (VF).
+- **Dynamic Topology**: Optimized routines for graphs with evolving structures (e.g., power system line closures).
+- **Memory Efficient**: Context-managed workspace reuse to minimize allocation overhead.
+- **Graph Library**: Built-in access to common graph Laplacians (Texas, USA, WECC, etc.).
+
 ## Installation
 
-The package can be installed using:
+The package can be installed via pip:
 
 ```
 python -m pip install sgwt
@@ -16,7 +30,7 @@ For the quick-start example, we will find the response of a low-pass filter $\ph
 import sgwt
 
 # Graph Laplacian
-L = sgwt.library.IMPEDANCE_TX
+L = sgwt.IMPEDANCE_TX
 
 # Impulse at Vertex n
 X = sgwt.impulse(L, n=...)
@@ -40,9 +54,9 @@ The purpose of the context manager is to provide safe re-use of `cholmod` worksp
 The module has a small repository of built in graph laplacians that are useful for quick start examples. 
 
 ```python
-L = sgwt.library.LENGTH_TX
-L = sgwt.library.IMPEDANCE_HAWAII
-L = sgwt.library.STANFARD_BUNNY
+L = sgwt.LENGTH_TX
+L = sgwt.IMPEDANCE_HAWAII
+L = sgwt.DELAY_USA
 ```
 
 The user can also load any graph Laplacian so long it is in the `csc_matrix` format.

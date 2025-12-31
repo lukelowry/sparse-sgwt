@@ -1,10 +1,13 @@
-'''
-Description
-    Measure the Computation Speed betwenn Static and Dynamic Methods.
-'''
-
+# -*- coding: utf-8 -*-
+"""
+Sparse Spectral Graph Wavelet Transform (SGWT)
+----------------------------------------------
+Author: Luke Lowery (lukel@tamu.edu)
+File: examples/demo_dynamic_time.py
+Description: Performance comparison between static and dynamic convolution.
+"""
 from sgwt import Convolve, DyConvolve, impulse
-from sgwt.library import DELAY_USA as L
+from sgwt import DELAY_USA as L
 import numpy as np
 import time 
 

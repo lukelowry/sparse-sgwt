@@ -1,8 +1,10 @@
+# -*- coding: utf-8 -*-
 """
-sgwt
-
+Sparse Spectral Graph Wavelet Transform (SGWT)
+----------------------------------------------
 Author: Luke Lowery (lukel@tamu.edu)
-
+File: sgwt/__init__.py
+Description: Main package initialization.
 """
 
 # Data Structure
