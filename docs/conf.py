@@ -38,8 +38,8 @@ master_doc = "index"
 project = "Sparse SGWT"
 copyright = "2024, Luke Lowery"
 author = "Luke Lowery"
-version = "0.3.0"
-release = "0.3.0"
+version = "0.3.1"
+release = "0.3.1"
 
 html_theme = "sphinx_rtd_theme"
 html_theme_options = {
