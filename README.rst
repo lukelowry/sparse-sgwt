@@ -27,10 +27,9 @@ Key Features
 Other
 -----
 
-A brief review of the theoretical work used in this module is available in this repository in markdown format `THEORY.md <THEORY.md>`_. Additional examples with descriptions are also available in the `sgwt/examples <examples/>`_ directory.
-Details regarding the built-in graph library (Laplacians, Signals, Kernels) can be found in `sgwt/library <sgwt/library/README.md>`_.
-
-This module is also implemented in `Julia <https://github.com/lukelowry/SpectralGraphWavelet.jl>`_ which takes advantage of the native SuiteSparse support.
+This module is also implemented 
+in `Julia <https://github.com/lukelowry/SpectralGraphWavelet.jl>`_ which takes advantage of 
+the native SuiteSparse support. Although, it is not as well documented or tested.
 
 References
 ~~~~~~~~~~

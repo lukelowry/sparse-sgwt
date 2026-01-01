@@ -11,18 +11,4 @@ The kernel fitting representation is more generally a vector fitted function, a 
 
 An iterative pole reallocation procedure is used to converge to a reduced order model. The convolution of some function :math:`\mathbf{f}*g_a` is computed using the Cholesky decomposition and memory efficient re-factors.
 
-An example of an appropriate format of the rational expansion:
-
-.. code-block:: json
-
-    {
-        "nfunc": "N",
-        "d": ["d0", "d1", "...", "dN"],
-        "npoles": "M",
-        "poles": [
-            {
-                "q": "q0", 
-                "r": ["r0", "r1", "...", "rN"]
-            }
-        ]
-    }
+For details on the file format used to store these kernels, see :doc:`library_json`.
