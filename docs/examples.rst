@@ -3,12 +3,14 @@ Examples
 
 The library comes with several examples demonstrating static and dynamic graph convolutions.
 
-Basic Usage
------------
+Static Graph Filtering
+----------------------
 
 These examples demonstrate basic filtering operations (Low-pass, Band-pass, High-pass) on various synthetic power grid networks.
 
 **Basic Filtering (Texas Grid)**
+
+Demonstrates low-pass, band-pass, and high-pass filtering on the synthetic Texas grid (~2k nodes).
 
 .. literalinclude:: ../examples/demo_filters_1.py
    :language: python
@@ -16,11 +18,15 @@ These examples demonstrate basic filtering operations (Low-pass, Band-pass, High
 
 **Filtering on East-West Grid**
 
+Performs filtering operations on the larger synthetic East-West US grid (~65k nodes).
+
 .. literalinclude:: ../examples/demo_filters_2.py
    :language: python
    :caption: Filtering on East-West Grid
 
 **Filtering on USA Grid**
+
+Scales up to the synthetic USA grid (~82k nodes) to demonstrate performance on larger networks.
 
 .. literalinclude:: ../examples/demo_filters_3.py
    :language: python
@@ -28,20 +34,20 @@ These examples demonstrate basic filtering operations (Low-pass, Band-pass, High
 
 **Self-Contained Example**
 
-A standalone example of band-pass filtering.
+A standalone example of band-pass filtering that includes all necessary imports and setup in a single file.
 
 .. literalinclude:: ../examples/demo_single_file.py
    :language: python
    :caption: Single File Demo
 
-Advanced Graph Convolution
+Advanced Usage
 --------------------------
 
 Examples demonstrating more advanced features like custom kernels and signal reconstruction.
 
 **Vector Fitting Kernels**
 
-Using Vector Fitting (VF) kernels for custom filter shapes (e.g., Modified Morlet).
+Shows how to use Vector Fitting (VF) kernels to implement custom filter shapes, such as the Modified Morlet wavelet.
 
 .. literalinclude:: ../examples/demo_vf.py
    :language: python
@@ -49,7 +55,7 @@ Using Vector Fitting (VF) kernels for custom filter shapes (e.g., Modified Morle
 
 **Signal Reconstruction**
 
-Recovering signal values (e.g., coordinates) from sparse measurements.
+Demonstrates recovering signal values (e.g., geographic coordinates) from sparse measurements using graph convolution.
 
 .. literalinclude:: ../examples/demo_recon.py
    :language: python
@@ -57,7 +63,7 @@ Recovering signal values (e.g., coordinates) from sparse measurements.
 
 **Signal Inpainting**
 
-Reconstructs a smooth signal across the USA grid using only a small fraction of known data points.
+Reconstructs a smooth signal across the USA grid using only a small fraction (e.g., 0.1%) of known data points via iterative low-pass filtering.
 
 .. literalinclude:: ../examples/demo_inpainting.py
    :language: python
@@ -70,7 +76,7 @@ Demonstrations of dynamic graph updates using ``DyConvolve``.
 
 **Dynamic Topology Update**
 
-Updating graph topology (adding branches) on-the-fly.
+Illustrates updating the graph topology (adding branches) on-the-fly without recomputing the entire decomposition.
 
 .. literalinclude:: ../examples/demo_dynamic_topology.py
    :language: python
@@ -78,7 +84,7 @@ Updating graph topology (adding branches) on-the-fly.
 
 **Performance Comparison**
 
-Comparing performance between static (``Convolve``) and dynamic (``DyConvolve``) convolution methods.
+Compares the execution time and performance between static (``Convolve``) and dynamic (``DyConvolve``) convolution methods.
 
 .. literalinclude:: ../examples/demo_dynamic_time.py
    :language: python
@@ -86,17 +92,8 @@ Comparing performance between static (``Convolve``) and dynamic (``DyConvolve``)
 
 **Online Stream Processing**
 
-Simulating an online processor handling a stream of data and topology events.
+Simulates an online processor handling a continuous stream of data and topology change events.
 
 .. literalinclude:: ../examples/demo_dynamic_stream.py
    :language: python
    :caption: Dynamic Stream Processing
-
-Utilities
----------
-
-Helper functions used in the examples.
-
-.. literalinclude:: ../examples/demo_plot.py
-   :language: python
-   :caption: Plotting Utilities

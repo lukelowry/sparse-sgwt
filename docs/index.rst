@@ -17,7 +17,7 @@
 
 .. toctree::
    :maxdepth: 2
-   :caption: Data Library
+   :caption: Resources
 
    library
    library_json

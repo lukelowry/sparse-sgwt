@@ -1,21 +1,22 @@
 # -*- coding: utf-8 -*-
-"""
-Sparse Spectral Graph Wavelet Transform (SGWT)
-----------------------------------------------
+"""Static Graph Convolution for Sparse Spectral Graph Wavelet Transform (SGWT).
+
+This module provides analytical and Vector Fitting methods for Graph Signal Processing (GSP)
+and Spectral Graph Wavelet Transform (SGWT) convolution operations on graphs with
+constant topology. It is designed for high-performance operations leveraging CHOLMOD.
+
 Author: Luke Lowery (lukel@tamu.edu)
-File: sgwt/static.py
-Description: Analytical and Vector Fitting methods for GSP & SGWT Convolution 
-             on static graphs (constant topology).
 """
 
 from .cholesky import CholWrapper, cholmod_dense, cholmod_sparse
 from .io import VFKern
 
 import numpy as np
-from scipy.sparse import csc_matrix
+from scipy.sparse import csc_matrix # type: ignore
 
 from ctypes import byref, POINTER
-from typing import Any, Union
+from typing import Any, Union, Optional, Type, List
+from types import TracebackType
 
 
 def impulse(lap, n=0, ntime=1):
@@ -36,7 +37,7 @@ def impulse(lap, n=0, ntime=1):
     np.ndarray
         A (N x ntime) array with 1.0 at index n and 0.0 elsewhere, in Fortran order.
     """
-    b = np.zeros((lap.shape[0],ntime), order='F')
+    b: np.ndarray = np.zeros((lap.shape[0],ntime), order='F')
     b[n] = 1
 
     return b
@@ -63,7 +64,7 @@ class Convolve:
         self.chol = CholWrapper(L)
 
     
-    def __enter__(self):
+    def __enter__(self) -> "Convolve":
         # Start Cholmod
         self.chol.start()
 
@@ -81,7 +82,7 @@ class Convolve:
 
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(self, exc_type: Optional[Type[BaseException]], exc_val: Optional[BaseException], exc_tb: Optional[TracebackType]) -> Optional[bool]:
 
         # Free the factored matrix object
         self.chol.free_factor(self.chol.fact_ptr)
@@ -98,10 +99,10 @@ class Convolve:
         # Finish cholmod
         self.chol.finish()
 
-    def __call__(self, B, K: Union[VFKern, dict]) -> Any:
+    def __call__(self, B: np.ndarray, K: Union[VFKern, dict]) -> np.ndarray:
         return self.convolve(B, K)
 
-    def convolve(self, B, K: Union[VFKern, dict]):
+    def convolve(self, B: np.ndarray, K: Union[VFKern, dict]) -> np.ndarray:
         """
         Performs graph convolution using a specified kernel.
 
@@ -160,7 +161,7 @@ class Convolve:
 
         return W
     
-    def lowpass(self, B, scales=[1], Bset=None, refactor=True):
+    def lowpass(self, B: np.ndarray, scales: List[float] = [1], Bset: Optional[csc_matrix] = None, refactor: bool = True) -> List[np.ndarray]:
         """
         Computes low-pass filtered scaling coefficients at specified scales.
 
@@ -222,7 +223,7 @@ class Convolve:
 
         return W
     
-    def bandpass(self, B, scales=[1]):
+    def bandpass(self, B: np.ndarray, scales: List[float] = [1]) -> List[np.ndarray]:
         """
         Computes band-pass filtered wavelet coefficients at specified scales.
 
@@ -279,7 +280,7 @@ class Convolve:
 
         return W
 
-    def highpass(self, B, scales=[1]):
+    def highpass(self, B: np.ndarray, scales: List[float] = [1]) -> List[np.ndarray]:
         """
         Computes high-pass filtered coefficients at specified scales.
 

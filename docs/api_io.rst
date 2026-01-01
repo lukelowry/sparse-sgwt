@@ -1,4 +1,4 @@
-I/O and Utilities
+Utilities
 =================
 
 .. automodule:: sgwt.io
