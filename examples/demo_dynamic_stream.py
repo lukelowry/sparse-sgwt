@@ -12,6 +12,9 @@ plt.rcParams['xtick.labelsize'] = 10
 plt.rcParams['ytick.labelsize'] = 10
 plt.rcParams['figure.titlesize'] = 16 # For suptitle if used
 
+# --- Configuration ---
+N_SAMPLES = 1000
+from sgwt import DELAY_USA as L
 
 # --- Helper Function for Stream Simulation ---
 
@@ -28,34 +31,30 @@ events_data = {
     950: (5000, 9000, 1.0)
 }
 first_event_time = next(iter(events_data.keys())) if events_data else None
-def get_incoming_data(t):
-    """Mock signal generator and network event simulator."""
-    n_nodes = L.shape[0]
-    # Generate random signal (Fortran order for CHOLMOD efficiency)
-    f_t = np.asfortranarray(np.random.randn(n_nodes, 1).astype(np.float64))
-    event = events_data.get(t)
-    
-    return f_t, event
+
+# Pre-generate the entire signal stream for reproducibility
+F = np.asfortranarray(np.random.randn(L.shape[0], N_SAMPLES).astype(np.float64))
+
+def get_incoming_data():
+    """Generator for mock signal and network events."""
+    for t in range(F.shape[1]):
+        # Yield a slice of the pre-generated signal
+        f_t = F[:, t:t+1]
+        # Get event for this time step
+        event = events_data.get(t)
+        yield t, f_t, event
 
 # DOC_START_CODE_EXCLUDE_IMPORTS
 from sgwt import DyConvolve
 from sgwt import DELAY_USA as L
 
-# --- Configuration ---
 scales = np.geomspace(0.1, 10.0, 10)
 poles  = 1.0 / scales
-N_SAMPLES = 1000
-
-print("SGWT Online Processor Emulation")
-print(f"Graph:  Synthetic USA ({L.shape[0]} nodes)")
-print(f"Stream: {N_SAMPLES} samples\n")
 
 avg_signal_magnitudes = []
 
 with DyConvolve(L, poles) as conv:
-    for t in range(N_SAMPLES):
-        f_t, event = get_incoming_data(t)
-
+    for t, f_t, event in get_incoming_data():
         if event:
             u, v, w = event
             conv.addbranch(*event)
@@ -66,7 +65,6 @@ with DyConvolve(L, poles) as conv:
         avg_signal_magnitudes.append(np.mean(np.abs(f_t))) # Record average signal magnitude
         
         if not event: print(f"[{t:04d}] STATUS | Stream processing active")
-
 # DOC_END_CODE_EXCLUDE_PLOT
 # Create a plot to visualize stream processing
 fig, ax = plt.subplots(figsize=(10, 5))

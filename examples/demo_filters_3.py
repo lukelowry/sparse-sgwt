@@ -10,7 +10,7 @@ from sgwt import COORD_USA as C
 X  = impulse(L, n=35000)
 
 # Scales
-s = [10]#[3e0]
+s = [10]
 
 # Memory Efficient Context
 with Convolve(L) as conv:
