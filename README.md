@@ -132,9 +132,3 @@ The graph laplacians used in the examples are derived from the [synthetic grid r
 
 The theoretical work of this module is derived in part from this [paper](https://scholarspace.manoa.hawaii.edu/items/3f08d29d-db06-41d5-b235-2ee549bd198b) nominated for best paper at HICSS-59.
 - Lowery, Luke, Jongoh Baek, and Adam Birchfield. "Using Spectral Graph Wavelets to Analyze Large Power System Oscillation Modes." (2026)
-
-
-
-### Author
-
-Luke Lowery received the B.S. degree in electrical engineering at Texas A&M University in 2023, where he is currently pursuing the Ph.D. in electrical engineering. His research interests include numerical macromodeling and graph-based signal processing for large power systems. More information can be found at [his website](https://lukelowry.github.io/).
