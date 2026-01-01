@@ -4,14 +4,12 @@
    :maxdepth: 2
    :caption: Getting Started
 
+   installation
    quickstart
-   examples
-
-.. toctree::
-   :maxdepth: 2
-   :caption: Theory
-
+   concepts
+   dynamic_quickstart
    theory
+   examples
 
 .. toctree::
    :maxdepth: 2

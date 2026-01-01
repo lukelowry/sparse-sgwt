@@ -10,10 +10,6 @@ X  = impulse(L, n=1200)
 scales = np.geomspace(1e-5, 1e2, 20)
 poles = 1/scales
 
-# TODO While I personally see the utility of both methods, 
-# I think DyConvolve is best because its generally faster
-# only utility for Convolve is if we want to change the scales often
-
 with Convolve(L) as conv:
 
     start = time.time()

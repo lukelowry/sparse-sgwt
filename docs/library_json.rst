@@ -10,11 +10,12 @@ The JSON file represents a rational expansion of the form:
 
 .. math::
 
-   g(\lambda) \approx d + e\lambda + \sum_{k=1}^{M} \frac{r_k}{\lambda - q_k}
+   \mathbf{g}(\lambda) \approx \mathbf{d} + \mathbf{e}\lambda + \sum_{k=1}^{M} \frac{\mathbf{r}_k}{\lambda - q_k}
 
 Fields
 ~~~~~~
 
+- ``description`` (string, optional): A description of the kernel.
 - ``nfuncs`` (int): Number of functions in the kernel.
 - ``npoles`` (int): Number of poles (:math:`M`) in the approximation.
 - ``d`` (float or list): The constant term :math:`d`.
@@ -22,7 +23,7 @@ Fields
 - ``poles`` (list): A list of objects, each containing:
     - ``q`` (float): The pole location.
     - ``r`` (list): The residues corresponding to this pole.
-- ``description`` (string, optional): A description of the kernel.
+
 
 Example
 -------

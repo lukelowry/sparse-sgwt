@@ -18,6 +18,6 @@ Dynamic Graph Convolution
 I/O and Utilities
 -----------------
 .. automodule:: sgwt.io
-   :members:
+   :members: VFKern
    :undoc-members:
    :show-inheritance:
