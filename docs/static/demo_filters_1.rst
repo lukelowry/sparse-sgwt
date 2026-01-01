@@ -1,6 +1,6 @@
 .. _demo_filters_1:
 
-Basic Filtering (Texas Grid)
+Impulse Smoothing
 ============================
 
 Demonstrates low-pass, band-pass, and high-pass filtering on the synthetic Texas grid (~2k nodes).

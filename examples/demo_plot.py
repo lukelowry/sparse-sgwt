@@ -7,8 +7,6 @@ import matplotlib.cm as cm
 plt.rcParams['font.family'] = 'serif'
 plt.rcParams['font.serif'] = ['Times New Roman'] + plt.rcParams['font.serif']
 
-
-
 def plot_signal(f, C, cmap='Spectral'):
     '''
     Parameters
@@ -22,3 +20,5 @@ def plot_signal(f, C, cmap='Spectral'):
     norm = Normalize(-mx, mx)
     plt.scatter(L1, L2 , c=f, edgecolors='none', cmap=cm.get_cmap(cmap), norm=norm)
     plt.axis('scaled')   
+    ax = plt.gca()
+    ax.set_axis_off()

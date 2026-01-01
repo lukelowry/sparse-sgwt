@@ -2,11 +2,9 @@ import os
 import matplotlib.pyplot as plt
 
 # DOC_START_CODE_EXCLUDE_IMPORTS
-
 from sgwt import Convolve
 from sgwt import IMPEDANCE_WECC as L
 import numpy as np
-
 
 # Bus Index, atitude (Y), Longitude (X)
 MEASURMENTS = [
@@ -18,7 +16,6 @@ MEASURMENTS = [
     [33      ,-116.778   ,35.14 ],
     [187     ,-123.14    ,44.34 ]
 ]
-
 
 nbus = L.shape[0]
 X = np.zeros((nbus, 2)) # Signal, Sparse
@@ -43,10 +40,6 @@ with Convolve(L) as conv:
         dX = conv.lowpass(B, [s])
 
         Xh += s * dX[0]
-
-# Set font to Times New Roman for a professional look
-plt.rcParams['font.family'] = 'serif'
-plt.rcParams['font.serif'] = ['Times New Roman'] + plt.rcParams['font.serif']
 
 # DOC_END_CODE_EXCLUDE_PLOT
 plt.figure(figsize=(8, 6)) # Create a figure for this plot

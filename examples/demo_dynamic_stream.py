@@ -2,7 +2,6 @@ import os
 import matplotlib.pyplot as plt
 
 # DOC_START_CODE_EXCLUDE_IMPORTS
-
 import numpy as np
 from sgwt.dynamic import DyConvolve
 from sgwt import DELAY_USA as L
@@ -60,12 +59,6 @@ with DyConvolve(L, poles) as conv:
         
         if not event:
             print(f"[{t:04d}] STATUS | Stream processing active")
-
-print("\nStream processing complete.")
-
-# Set font to Times New Roman for a professional look
-plt.rcParams['font.family'] = 'serif'
-plt.rcParams['font.serif'] = ['Times New Roman'] + plt.rcParams['font.serif']
 
 # DOC_END_CODE_EXCLUDE_PLOT
 # Create a plot to visualize stream processing

@@ -26,10 +26,6 @@ with Convolve(L) as conv:
     BP = conv.bandpass(X, s)
     HP = conv.highpass(X, s)
 
-# Set font to Times New Roman for a professional look
-plt.rcParams['font.family'] = 'serif'
-plt.rcParams['font.serif'] = ['Times New Roman'] + plt.rcParams['font.serif']
-
 # DOC_END_CODE_EXCLUDE_PLOT
 # Assuming plot_signal creates and sets the current matplotlib figure
 from demo_plot import plot_signal

@@ -60,8 +60,6 @@ with DyConvolve(L, poles=[1/SMOOTHING_SCALE]) as conv:
         if (i + 1) % 100 == 0:
             print(f"  Iteration {i+1}/{N_ITERATIONS}")
 
-print("Reconstruction complete.")
-
 # DOC_END_CODE_EXCLUDE_PLOT
 # 4. Visualize Results
 fig, (ax1, ax2, ax3) = plt.subplots(3, 1, figsize=(5, 8), sharex=True)

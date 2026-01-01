@@ -2,13 +2,11 @@ import os
 import matplotlib.pyplot as plt
 
 # DOC_START_CODE_EXCLUDE_IMPORTS
-
 from sgwt import Convolve, DyConvolve, impulse
 from sgwt import DELAY_USA as L
 import numpy as np
 import time 
 
-# DOC_START_CODE_EXCLUDE_IMPORTS
 # Impulse
 X  = impulse(L, n=1200)
 
@@ -31,28 +29,37 @@ with DyConvolve(L, poles) as conv:
         Y = conv.bandpass(X)
     T2 = time.time() - start
 
-# Set font to Times New Roman for a professional look
-plt.rcParams['font.family'] = 'serif'
-plt.rcParams['font.serif'] = ['Times New Roman'] + plt.rcParams['font.serif']
-
 # DOC_END_CODE_EXCLUDE_PLOT
+# Set font to Times New Roman for a professional look (already set above, but kept for clarity if code block was different)
+# plt.rcParams['font.family'] = 'serif'
+# plt.rcParams['font.serif'] = ['Times New Roman'] + plt.rcParams['font.serif']
+
 # Create a bar chart to visualize the performance comparison
-fig, ax = plt.subplots(figsize=(6, 4))
+fig, ax = plt.subplots(figsize=(9, 6)) # Increased figure size for better readability
 labels = ['Static (Convolve)', 'Dynamic (DyConvolve)']
 times_ms = [T1 * 1000, T2 * 1000]
-colors = ['skyblue', 'lightcoral']
+colors = ['#66c2a5', '#fc8d62'] # A more subtle color palette
 
-ax.bar(labels, times_ms, color=colors)
-ax.set_ylabel('Execution Time (ms)')
-ax.set_title('Performance Comparison: Static vs. Dynamic Convolution')
-ax.tick_params(axis='x', rotation=15)
-ax.grid(axis='y', linestyle='--', alpha=0.7)
+bars = ax.bar(labels, times_ms, color=colors, width=0.6) # Added width for better spacing
+ax.set_ylabel('Execution Time (ms)', fontsize=12)
+ax.set_title('Performance Comparison: Static vs. Dynamic Convolution', fontsize=14, pad=15) # Added padding to title
+ax.tick_params(axis='x', rotation=30, labelsize=11) # Increased rotation and labelsize
+ax.tick_params(axis='y', labelsize=11)
+ax.grid(axis='y', linestyle='--', alpha=0.6) # Slightly reduced alpha for grid
 
 # Add text labels on top of bars
-for i, v in enumerate(times_ms):
-    ax.text(i, v + max(times_ms)*0.05, f"{v:.2f} ms", ha='center', va='bottom', fontsize=10)
+for bar in bars:
+    yval = bar.get_height()
+    ax.text(bar.get_x() + bar.get_width()/2, yval + yval*0.03, # Adjusted y-offset
+            f"{yval:.2f} ms", ha='center', va='bottom', fontsize=10, color='black')
 
-plt.tight_layout()
+# Add a frame around the plot area
+ax.spines['top'].set_visible(False)
+ax.spines['right'].set_visible(False)
+ax.spines['left'].set_linewidth(0.5)
+ax.spines['bottom'].set_linewidth(0.5)
+
+plt.tight_layout(pad=2.0) # Increased padding for tight_layout
 
 # Save the figure for documentation
 script_dir = os.path.dirname(os.path.abspath(__file__))
