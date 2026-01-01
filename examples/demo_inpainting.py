@@ -1,12 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Example: demo_inpainting.py
-Description: Demonstrates graph signal inpainting (reconstruction) from sparse samples.
-             This example reconstructs a smooth signal across the USA grid using only
-             a small fraction of known data points, leveraging the graph's topology
-             through iterative low-pass filtering.
-"""
-
 import os
 import numpy as np
 import matplotlib.pyplot as plt

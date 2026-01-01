@@ -1,11 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Sparse Spectral Graph Wavelet Transform (SGWT)
-----------------------------------------------
-Author: Luke Lowery (lukel@tamu.edu)
-File: examples/demo_dynamic_topology.py
-Description: Demonstration of dynamic graph updates using DyConvolve.
-"""
 from sgwt import DyConvolve, impulse
 from sgwt import DELAY_TEXAS as L
 from sgwt import COORD_TEXAS as C

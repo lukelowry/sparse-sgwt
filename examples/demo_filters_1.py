@@ -1,11 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Sparse Spectral Graph Wavelet Transform (SGWT)
-----------------------------------------------
-Author: Luke Lowery (lukel@tamu.edu)
-File: examples/demo_filters_1.py
-Description: Basic filtering (LP, BP, HP) on the Texas grid.
-"""
 from sgwt import Convolve, impulse
 from sgwt import DELAY_TEXAS as L
 from sgwt import COORD_TEXAS as C

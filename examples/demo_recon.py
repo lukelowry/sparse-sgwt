@@ -1,12 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Sparse Spectral Graph Wavelet Transform (SGWT)
-----------------------------------------------
-Author: Luke Lowery (lukel@tamu.edu)
-File: examples/demo_recon.py
-Description: Reconstructs geographical coordinates from sparse measurements.
-"""
-
 from sgwt import Convolve
 from sgwt import IMPEDANCE_WECC as L
 import numpy as np

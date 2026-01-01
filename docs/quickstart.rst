@@ -15,33 +15,30 @@ The package uses a compiled version of ``CHOLMOD``.
 Basic Usage
 -----------
 
-Quick Start
-~~~~~~~~~~~
+Static Graph Filtering
+~~~~~~~~~~~~~~~~~~~~~~
 
-For the quick-start example, we will find the response of a low-pass filter :math:`\phi` scaled by ``s`` to impulse :math:`\delta` at node :math:`n` over the graph ``L``. This is mathematically denoted by :math:`\phi_{n,s}=\delta_n*\phi_s`.
+Here is a simple example of performing a band-pass filter on a graph signal using the Texas power grid topology.
 
 .. code-block:: python
 
-    import sgwt
+    from sgwt import Convolve, impulse
+    from sgwt import DELAY_TEXAS as L
+    from sgwt import COORD_TEXAS as C
 
-    # CSC Graph Laplacian
-    L = sgwt.DELAY_TX
+    # Create an impulse signal at 600-th vertex
+    X = impulse(L, n=600)
 
-    # Impulse at Vertex n
-    X = sgwt.impulse(L, n=...)
+    # Define scales for the filter
+    scales = [0.1, 1, 10]
 
-    # Discrete Scales
-    s = np.logspace(...)
-
-    # L -> Context of Convolution
+    # Initialize the convolution context
     with Convolve(L) as conv:
 
-        # Apply Low-Pass Filters
-        Y = conv.lowpass(X, s)
-
-The numpy arrays ``Y[i]`` correspond to a filtered signal ``X`` at the ``i-th`` scale.
-
-The purpose of the context manager is to provide safe re-use of ``CHOLMOD`` workspace. While inside the context, the convolution procedure optimizes memory usage.
+        # Apply band-pass filter
+        Y = conv.bandpass(X, scales)
+        
+    # Y is the filtered signal coefficients
 
 Underlying Graph
 ~~~~~~~~~~~~~~~~

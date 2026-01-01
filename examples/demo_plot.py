@@ -1,11 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Sparse Spectral Graph Wavelet Transform (SGWT)
-----------------------------------------------
-Author: Luke Lowery (lukel@tamu.edu)
-File: examples/demo_plot.py
-Description: Utility functions for plotting graph signals.
-"""
 from numpy import sort, abs
 import matplotlib.pyplot as plt
 from matplotlib.colors import Normalize

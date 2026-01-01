@@ -1,9 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Example: demo_dynamic_stream.py
-Description: Self-contained simulation of a signal stream on an evolving graph.
-"""
-
 import numpy as np
 from sgwt.dynamic import DyConvolve
 from sgwt import DELAY_USA as L

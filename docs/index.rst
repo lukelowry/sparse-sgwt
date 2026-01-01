@@ -20,6 +20,11 @@
    api_static
    api_dynamic
    api_io
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Data Library
+
    library
 
 .. toctree::

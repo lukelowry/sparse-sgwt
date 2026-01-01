@@ -1,11 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Sparse Spectral Graph Wavelet Transform (SGWT)
-----------------------------------------------
-Author: Luke Lowery (lukel@tamu.edu)
-File: examples/demo_vf.py
-Description: Demonstration of Vector Fitting (VF) kernel convolution.
-"""
 from sgwt import DyConvolve, impulse, VFKern
 from sgwt import IMPEDANCE_EASTWEST as L
 from sgwt import COORD_EASTWEST as C

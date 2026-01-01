@@ -14,6 +14,11 @@ autodoc_default_options = {
     "member-order": "groupwise",
 }
 
+# Better API formatting
+autoclass_content = "both"        # Include __init__ docstring in class description
+autodoc_typehints = "description" # Move type hints to description
+add_module_names = False          # Don't show full module path (e.g. sgwt.static.Convolve -> Convolve)
+
 extensions.append("sphinx.ext.intersphinx")
 intersphinx_mapping = {
     "python": ("https://docs.python.org/3", None),
