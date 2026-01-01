@@ -17,7 +17,7 @@ poles = 1/scales
 with Convolve(L) as conv:
 
     start = time.time()
-    for i in range(2):
+    for i in range(10):
         Y = conv.bandpass(X, scales)
     T1 = time.time() - start
 
@@ -25,7 +25,7 @@ with Convolve(L) as conv:
 with DyConvolve(L, poles) as conv:
 
     start = time.time()
-    for i in range(2):
+    for i in range(10):
         Y = conv.bandpass(X)
     T2 = time.time() - start
 
@@ -36,14 +36,14 @@ with DyConvolve(L, poles) as conv:
 
 # Create a bar chart to visualize the performance comparison
 fig, ax = plt.subplots(figsize=(9, 6)) # Increased figure size for better readability
-labels = ['Static (Convolve)', 'Dynamic (DyConvolve)']
+labels = ['Convolve', 'DyConvolve']
 times_ms = [T1 * 1000, T2 * 1000]
 colors = ['#66c2a5', '#fc8d62'] # A more subtle color palette
 
 bars = ax.bar(labels, times_ms, color=colors, width=0.6) # Added width for better spacing
 ax.set_ylabel('Execution Time (ms)', fontsize=12)
-ax.set_title('Performance Comparison: Static vs. Dynamic Convolution', fontsize=14, pad=15) # Added padding to title
-ax.tick_params(axis='x', rotation=30, labelsize=11) # Increased rotation and labelsize
+ax.set_title('80k Bus Convolution with 20 Scales For 10 Signals', fontsize=14, pad=15) # Added padding to title
+ax.tick_params(axis='x', labelsize=11) # Increased rotation and labelsize
 ax.tick_params(axis='y', labelsize=11)
 ax.grid(axis='y', linestyle='--', alpha=0.6) # Slightly reduced alpha for grid
 

@@ -1,12 +1,20 @@
 import os
 import matplotlib.pyplot as plt
-
-# DOC_START_CODE_EXCLUDE_IMPORTS
 import numpy as np
-from sgwt.dynamic import DyConvolve
-from sgwt import DELAY_USA as L
+
+# Set font to Times New Roman for a professional look
+plt.rcParams['font.family'] = 'serif'
+plt.rcParams['font.serif'] = ['Times New Roman'] + plt.rcParams['font.serif']
+plt.rcParams['font.size'] = 12 # Increase base font size
+plt.rcParams['axes.labelsize'] = 12
+plt.rcParams['axes.titlesize'] = 14
+plt.rcParams['xtick.labelsize'] = 10
+plt.rcParams['ytick.labelsize'] = 10
+plt.rcParams['figure.titlesize'] = 16 # For suptitle if used
 
 
+
+# --- Helper Function for Stream Simulation ---
 def get_incoming_data(t):
     """Mock signal generator and network event simulator."""
     n_nodes = L.shape[0]
@@ -30,7 +38,10 @@ def get_incoming_data(t):
     return f_t, event
 
 # DOC_START_CODE_EXCLUDE_IMPORTS
-# 1. Configuration
+from sgwt.dynamic import DyConvolve
+from sgwt import DELAY_USA as L
+
+# --- Configuration ---
 scales = np.geomspace(0.1, 10.0, 10)
 poles  = 1.0 / scales
 N_SAMPLES = 1000
@@ -42,6 +53,7 @@ print(f"Stream: {N_SAMPLES} samples\n")
 # Data to plot
 event_times = []
 avg_signal_magnitudes = []
+# --- Execution Context ---
 # 2. Execution Context
 with DyConvolve(L, poles) as conv:
     for t in range(N_SAMPLES):
@@ -68,9 +80,11 @@ ax.plot(range(N_SAMPLES), avg_signal_magnitudes, label='Average Signal Magnitude
 for et in event_times:
     ax.axvline(et, color='red', linestyle='--', alpha=0.6, label='Topology Event' if et == event_times[0] else "")
 
+ax.set_xlim(0, N_SAMPLES)
+
 ax.set_xlabel('Time Step')
 ax.set_ylabel('Average Signal Magnitude')
-ax.set_title('Dynamic Stream Processing: Signal Magnitude and Topology Events')
+ax.set_title('Dynamic GSP: Online Signal and Topology Events')
 ax.legend()
 ax.grid(True, linestyle=':', alpha=0.7)
 

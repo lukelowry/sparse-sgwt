@@ -7,8 +7,7 @@ from sgwt import Convolve, impulse
 from sgwt import DELAY_TEXAS as L
 from sgwt import COORD_TEXAS as C
 
-
-# Impulse
+# Impulses
 X  = impulse(L, n=1200)
 X += impulse(L, n=600)
 

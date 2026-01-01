@@ -1,9 +1,6 @@
 Quickstart
 ==========
 
-Static Graph Filtering
-----------------------
-
 Here is a simple example of performing a band-pass filter on a graph signal using the Texas power grid topology.
 
 .. code-block:: python

@@ -15,6 +15,7 @@ s = [3e0]
 # Memory Efficient Context
 with Convolve(L) as conv:
 
+    # Third Order Band-Pass
     BP = conv.bandpass(X, s)[0]
     BP = conv.bandpass(BP, s)[0]
     BP = conv.bandpass(BP, s)[0]
