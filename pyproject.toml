@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "sgwt"
 version = "0.3.0"
 description = "Sparse Tools for the Spectral Graph Wavelet Transformation and Graph Convolution"
-readme = "README.md"
+readme = "README.rst"
 license = { file = "LICENSE.md" }
 authors = [{name = "Luke Lowery", email = "lukel@tamu.edu"}]
 requires-python = ">=3.7"
