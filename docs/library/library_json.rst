@@ -1,4 +1,4 @@
-Kernel File Format
+Kernel JSON
 ==================
 
 The library supports loading spectral kernels defined by rational approximations (Vector Fitting) stored in JSON format. These files are parsed into :class:`sgwt.io.VFKern` objects.

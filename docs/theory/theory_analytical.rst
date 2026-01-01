@@ -1,5 +1,5 @@
 Analytical Filters
-==================
+------------------
 
 Low-Pass Spectral Graph Filter
 ------------------------------

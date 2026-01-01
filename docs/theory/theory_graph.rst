@@ -1,5 +1,5 @@
-Theory
-======
+Graph Laplacian
+---------------
 
 This section outlines the mathematical foundations of the Sparse SGWT library.
 

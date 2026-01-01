@@ -1,23 +1,6 @@
-API Reference
-=============
+.. toctree::
+   :maxdepth: 2
 
-Static Graph Convolution
-------------------------
-.. automodule:: sgwt.static
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-Dynamic Graph Convolution
--------------------------
-.. automodule:: sgwt.dynamic
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-I/O and Utilities
------------------
-.. automodule:: sgwt.io
-   :members: VFKern
-   :undoc-members:
-   :show-inheritance:
+   api/api_static
+   api/api_dynamic
+   api/api_io
