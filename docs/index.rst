@@ -5,11 +5,9 @@
    :caption: Getting Started
 
    installation
-   quickstart
-   concepts
-   dynamic_quickstart
-   theory
+   basic_usage
    examples
+   theory
 
 .. toctree::
    :maxdepth: 2
