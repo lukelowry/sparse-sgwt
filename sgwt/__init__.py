@@ -8,7 +8,7 @@ Description: Main package initialization.
 """
 
 # Static Graphs (Typical use case)
-from .static import Convolve, impulse
+from .static import Convolve
 
 # Dynamic Graphs (Optimized performance, less versatile)
 from .dynamic import DyConvolve
@@ -17,6 +17,7 @@ from .io import (
 
     # Vector Fitting Dataclass
     VFKern,
+    impulse,
 
     # DLL Reader
     get_cholmod_dll,

@@ -17,31 +17,6 @@ from scipy.sparse import csc_matrix # type: ignore
 from ctypes import byref, POINTER
 from typing import Any, Union, Optional, Type, List
 from types import TracebackType
-
-
-def impulse(lap, n=0, ntime=1):
-    """
-    Generates a Dirac impulse signal at a specified vertex.
-
-    Parameters
-    ----------
-    lap : csc_matrix
-        Graph Laplacian defining the node count.
-    n : int
-        Index of the vertex where the impulse is applied.
-    ntime : int
-        Number of time steps (columns) in the resulting signal.
-
-    Returns
-    -------
-    np.ndarray
-        A (N x ntime) array with 1.0 at index n and 0.0 elsewhere, in Fortran order.
-    """
-    b: np.ndarray = np.zeros((lap.shape[0],ntime), order='F')
-    b[n] = 1
-
-    return b
-
 class Convolve:
 
     def __init__(self, L:csc_matrix) -> None:

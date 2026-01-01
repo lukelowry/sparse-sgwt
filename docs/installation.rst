@@ -24,7 +24,7 @@ The following dependencies are automatically installed:
 *   **SciPy**
 *   **importlib-resources** (for Python < 3.9)
 
-CHOLMOD Integration
+CHOLMOD
 -------------------
 
 This package leverages the ``CHOLMOD`` library from SuiteSparse for high-performance sparse matrix operations. The package includes pre-compiled shared libraries for common operating systems (Windows, Linux, macOS), so no separate installation of SuiteSparse is typically required.
