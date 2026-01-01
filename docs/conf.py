@@ -1,7 +1,7 @@
 import os
 import sys
 sys.path.insert(0, os.path.abspath('..'))
-import sgwt
+#import sgwt
 
 project = 'Sparse SGWT'
 copyright = '2024, Luke Lowery'
@@ -32,14 +32,9 @@ intersphinx_mapping = {
     "scipy": ("https://docs.scipy.org/doc/scipy/reference", None),
 }
 
-templates_path = ['_templates']
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
+exclude_patterns = ['_build']
 
-source_suffix = ".rst"
-master_doc = "index"
 
-html_theme = 'sphinx_rtd_theme'
-html_static_path = ['_static']
 html_theme_options = {
     "navigation_depth": 2,
 }
