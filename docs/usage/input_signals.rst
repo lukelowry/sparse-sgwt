@@ -21,7 +21,7 @@ For optimal performance, it is highly recommended to create the signal array wit
     n_vertices = L.shape[0]
     n_signals = 10
 
-    # Create a random signal with the recommended memory layout
+    # Create a random signal with the required ordering
     X = np.random.randn(n_vertices, n_signals).astype(np.float64)
     X = np.asfortranarray(X)
 

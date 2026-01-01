@@ -23,7 +23,7 @@ The naming convention is ``METRIC_REGION``:
     import sgwt
 
     # Load the Laplacian for the synthetic USA grid
-    # where edge weights are based on communication delay.
+    # where edge weights are based on phase delay.
     L_usa = sgwt.DELAY_USA
 
     print(type(L_usa))
