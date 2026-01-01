@@ -13,3 +13,5 @@ Performs filtering operations on the larger synthetic East-West US grid (~65k no
 
 .. image:: /_static/images/demo_filters_2_bandpass.png
    :alt: Band-pass filtered signal on East-West Grid Example
+
+.. include:: /_static/text/demo_filters_2_timing.rst

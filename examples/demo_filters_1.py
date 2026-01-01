@@ -7,22 +7,19 @@ from sgwt import DELAY_TEXAS as L
 from sgwt import COORD_TEXAS as C
 
 # Impulses
-X  = impulse(L, n=1200)
-X += impulse(L, n=600)
+X  = impulse(L, n=600)
 
 # Scales
 s = [1e-1]
 
-# Memory Efficient Context
 with Convolve(L) as conv:
-
     LP = conv.lowpass(X, s)
     BP = conv.bandpass(X, s)
     HP = conv.highpass(X, s)
 # DOC_END_CODE_EXCLUDE_PLOT
 # Assuming plot_signal creates and sets the current matplotlib figure
 from demo_plot import plot_signal
-plot_signal(BP[0][:,0], C, 'seismic')
+plot_signal(BP[0][:,0], C, 'berlin')
 
 # Save the figure for documentation
 script_dir = os.path.dirname(os.path.abspath(__file__)) # e.g., .../sparse-sgwt/examples

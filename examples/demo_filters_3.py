@@ -7,21 +7,23 @@ from sgwt import DELAY_USA as L
 from sgwt import COORD_USA as C
 
 # Impulse
-X  = impulse(L, n=15000)
+X  = impulse(L, n=35000)
 
 # Scales
-s = [3e0]
+s = [10]#[3e0]
 
 # Memory Efficient Context
 with Convolve(L) as conv:
 
-    # Third Order Band-Pass
-    BP = conv.bandpass(X, s)[0]
-    BP = conv.bandpass(BP, s)[0]
-    BP = conv.bandpass(BP, s)[0]
+    #  Fourth Order Band-Pass
+    Y = conv.bandpass(X, s)[0]
+    Y = conv.bandpass(Y, s)[0]
+    Y = conv.bandpass(Y, s)[0]
+    Y = conv.bandpass(Y, s)[0]
+
 # DOC_END_CODE_EXCLUDE_PLOT
 from demo_plot import plot_signal
-plot_signal(BP[:,0], C, 'coolwarm')
+plot_signal(Y[:,0], C, 'berlin')
 
 # Save the figure for documentation
 script_dir = os.path.dirname(os.path.abspath(__file__))

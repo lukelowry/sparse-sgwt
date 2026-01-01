@@ -13,6 +13,9 @@ Sparse Graph Signal Processing (GSP)
     :target: ./LICENSE.md
     :alt: License
 
+For detailed documentation, please visit the `documentation website <https://sgwt.readthedocs.io/en/stable/>`_.
+
+
 A high-performance Python library for sparse Graph Signal Processing (GSP) and Spectral Graph Wavelet Transforms (SGWT). This package leverages the ``CHOLMOD`` library for efficient sparse direct solvers, providing significant speedups over traditional dense or iterative methods for large-scale graph convolution.
 
 Key Features

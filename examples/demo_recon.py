@@ -6,7 +6,7 @@ from sgwt import Convolve
 from sgwt import IMPEDANCE_WECC as L
 import numpy as np
 
-# Bus Index, atitude (Y), Longitude (X)
+# Bus Index, Latitude (Y), Longitude (X)
 MEASURMENTS = [
     [ 191    ,-122.45    ,46.719],
     [ 202    ,-101.33    ,46.5  ],
@@ -29,18 +29,14 @@ for idx, long, lat in MEASURMENTS:
 J = np.diagflat(X[:,0]!=0)
 
 # Scale of Recon
-s = 5
+s = [5]
 
 with Convolve(L) as conv:
 
     for i in range(7000):
-
         B = (X - J@Xh).copy(order='F')
-
-        dX = conv.lowpass(B, [s])
-
+        dX = conv.lowpass(B, s)
         Xh += s * dX[0]
-
 # DOC_END_CODE_EXCLUDE_PLOT
 plt.figure(figsize=(8, 6)) # Create a figure for this plot
 plt.scatter(Xh[:,0], Xh[:,1] , c='k', edgecolors='none', label='Reconstructed Signal')
