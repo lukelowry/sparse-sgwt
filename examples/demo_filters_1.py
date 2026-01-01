@@ -12,6 +12,10 @@ from sgwt import COORD_TEXAS as C
 X  = impulse(L, n=1200)
 X += impulse(L, n=600)
 
+# Set font to Times New Roman for a professional look
+plt.rcParams['font.family'] = 'serif'
+plt.rcParams['font.serif'] = ['Times New Roman'] + plt.rcParams['font.serif']
+
 # Scales
 s = [1e-1]
 

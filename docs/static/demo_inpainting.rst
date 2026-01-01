@@ -7,8 +7,11 @@ Reconstructs a smooth signal across the USA grid using only a small fraction (e.
 
 .. literalinclude:: ../../examples/demo_inpainting.py
    :language: python
-   :end-before: # DOC_END_CODE_EXCLUDE_PLOT
    :caption: Signal Inpainting
+   :end-before: # DOC_END_CODE_EXCLUDE_PLOT
+
+.. image:: /_static/images/inpainting_reconstruction.png
+   :alt: Signal Inpainting Reconstruction Example
 
 .. image:: /_static/images/inpainting_reconstruction.png
    :alt: Signal Inpainting Reconstruction Example

@@ -1,3 +1,8 @@
+import os
+from numpy import abs
+import matplotlib.pyplot as plt
+from matplotlib.colors import Normalize
+import matplotlib.cm as cm
 from sgwt import Convolve, impulse
 from sgwt import DELAY_TEXAS as L
 from sgwt import COORD_TEXAS as C

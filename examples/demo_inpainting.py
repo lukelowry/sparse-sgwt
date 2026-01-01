@@ -1,7 +1,10 @@
 import os
-import numpy as np
+
 import matplotlib.pyplot as plt
+
+# DOC_START_CODE_EXCLUDE_IMPORTS
 from sgwt import DyConvolve, DELAY_USA, COORD_USA
+import numpy as np
 
 # Set font to Times New Roman for a professional look
 plt.rcParams['font.family'] = 'serif'
