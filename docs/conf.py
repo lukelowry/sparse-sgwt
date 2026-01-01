@@ -1,18 +1,19 @@
+import os
+import sys
+sys.path.insert(0, os.path.abspath('..'))
 
 extensions = [
     "sphinx.ext.viewcode",
     "sphinx.ext.autosummary",
     "sphinx.ext.mathjax",
-    "sphinx.ext.inheritance_diagram",
-    "sphinx_rtd_theme",
+    "sphinx.ext.inheritance_diagram"
 ]
 
 extensions.append("sphinx.ext.autodoc")
 autodoc_default_options = {
     "members": True,
     "undoc-members": True,
-    "show-inheritance": True,
-    "member-order": "bysource",
+    "member-order": "groupwise",
 }
 
 extensions.append("sphinx.ext.intersphinx")
