@@ -43,5 +43,22 @@ include-package-data = true
     "library/DELAY/*.mat"
 ]
 
+
+[project.optional-dependencies]
+dev = [
+    "matplotlib",
+]
+
+
+docs = [
+    "sphinx",
+    "numpydoc",
+    "sphinxcontrib-bibtex",
+    "sphinx-gallery",
+    "memory_profiler",
+    "sphinx-rtd-theme",
+    "sphinx-copybutton",
+]
+
 [tool.setuptools.packages.find]
 where = [""]

@@ -1,31 +1,10 @@
-Sparse SGWT Documentation
-=========================
+.. include:: ../README.rst
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
+   :caption: Documentation
 
-API Reference
--------------
-
-.. automodule:: sgwt.static
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-.. automodule:: sgwt.dynamic
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-.. automodule:: sgwt.io
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+   api
+   library
+   examples
+   tests
