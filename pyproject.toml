@@ -7,25 +7,37 @@ name = "sgwt"
 version = "0.2.4"
 description = "Sparse Tools for the Spectral Graph Wavelet Transformation and Graph Convolution"
 readme = "README.md"
-license = {file = "LICENSE"}
-authors = [{name = "Luke Lowery"}]
+license = { file = "LICENSE.md" }
+authors = [{name = "Luke Lowery", email = "lukel@tamu.edu"}]
 requires-python = ">=3.7"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "Operating System :: OS Independent",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering",
+]
 dependencies = [
     "numpy",
-    "scipy"
+    "scipy",
+    "importlib-resources>=5.0; python_version < '3.9'"
 ]
+urls = {
+    "Homepage" = "https://github.com/lukelowry/sparse-sgwt",
+    "Repository" = "https://github.com/lukelowry/sparse-sgwt",
+    "Bug Tracker" = "https://github.com/lukelowry/sparse-sgwt/issues",
+}
 
 [tool.setuptools.package-data]
 "sgwt.library" = [
     "dll/*.dll", 
     "dll/*.so", 
     "dll/*.dylib",
-    "KERNELS/*.json",  # Kernels
-    "SIGNALS/*.mat"    # SIGNALS
-    "IMPEDANCE/*.mat", # Laplacians
+    "KERNELS/*.json",
+    "SIGNALS/*.mat",
+    "IMPEDANCE/*.mat",
     "LENGTH/*.mat",
-    "DELAY/*.mat" ,
-
+    "DELAY/*.mat"
 ]
 
 [tool.setuptools.packages.find]

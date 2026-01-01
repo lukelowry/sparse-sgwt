@@ -14,13 +14,15 @@ class BriefColoredResult(unittest.TextTestResult):
     def startTest(self, test):
         super().startTest(test)
 
-    def _print_status(self, color_code, status, test):
+    def _print_status(self, color_code, status, test, msg=None):
         # Handle discovery errors or standard tests
         test_str = str(test)
         if "ModuleImportError" in test_str or "_FailedTest" in test_str:
             desc = f"Load Error: {test_str.split('.')[-1].split(' ')[0]}"
         else:
             desc = test.shortDescription() or test_str.split(' ')[0]
+        if msg:
+            desc += f" - {msg}"
         self.stream.writeln(f"[\033[{color_code}m{status:^7}\033[0m] {desc}")
 
     def addSuccess(self, test):
@@ -33,7 +35,11 @@ class BriefColoredResult(unittest.TextTestResult):
 
     def addError(self, test, err):
         super().addError(test, err)
-        self._print_status("91", "ERROR", test)
+        msg = None
+        if "ModuleImportError" in str(test) or "_FailedTest" in str(test):
+            # err is (exctype, value, tb)
+            msg = str(err[1])
+        self._print_status("91", "ERROR", test, msg)
 
     def addSkip(self, test, reason):
         super().addSkip(test, reason)

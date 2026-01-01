@@ -249,18 +249,8 @@ class cholmod_dense(Structure):
         ("xtype", c_int),       # pattern (0), real (1), complex (2), zomplex (3)
         ("dtype", c_int)        # double (0), single (1)
     ]
-    def __init__(
-        self,
-        *,
-        nrow=0,
-        ncol=0,
-        nzmax=0,
-        d=0,
-        x=None,
-        z=None,
-        xtype=0,
-        dtype=0,
-    ):
+
+    def __init__(self, *, nrow=0, ncol=0, nzmax=0, d=0, x=None, z=None, xtype=0, dtype=0):
         self.nrow = nrow
         self.ncol = ncol
         self.nzmax = nzmax

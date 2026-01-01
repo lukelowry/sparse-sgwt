@@ -9,13 +9,13 @@ Description: Analytical and Vector Fitting methods for GSP & SGWT Convolution
 """
 
 from .cholesky import CholWrapper, cholmod_dense, cholmod_sparse
-from .ration import VFKern
+from .io import VFKern
 
 import numpy as np
 from scipy.sparse import csc_matrix
 
 from ctypes import byref, POINTER
-from typing import Any
+from typing import Any, Union
 
 
 def impulse(lap, n=0, ntime=1):
@@ -98,10 +98,10 @@ class Convolve:
         # Finish cholmod
         self.chol.finish()
 
-    def __call__(self, B, K: VFKern | dict) -> Any:
+    def __call__(self, B, K: Union[VFKern, dict]) -> Any:
         return self.convolve(B, K)
 
-    def convolve(self, B, K: VFKern | dict):
+    def convolve(self, B, K: Union[VFKern, dict]):
         """
         Performs graph convolution using a specified kernel.
 
@@ -337,48 +337,3 @@ class Convolve:
             )
 
         return W
-    
-    def addbranch(self, i, j, w):
-        """
-        Adds a branch to the graph topology and updates the factorization.
-
-        Uses CHOLMOD's updown routines for efficient rank-1 updates.
-
-        Parameters
-        ----------
-        i : int
-            Index of Vertex A.
-        j : int
-            Index of Vertex B.
-        w : float
-            Edge weight.
-        """
-
-        # Make sparse version of the single line lap
-        ws = np.sqrt(w)
-        data    = [ws, -ws]
-        bus_ind = [i ,  j ] # Row Indicies
-        br_ind  = [0 ,  0 ] # Col Indicies
-
-        # Creates Sparse Incidence Matrix of added branch, must free later
-        Cptr = self.chol.triplet_to_chol_sparse(
-            nrow=self.nBus,
-            ncol=1,
-            rows=bus_ind,
-            cols=br_ind,
-            vals=data
-        )
-
-        # Make cholmod_sparse representation
-        ok = self.chol.update(Cptr)
-
-        # Free Cptr now that it has been used
-        self.chol.free_sparse(Cptr)
-
-        # Add to the factorized graph
-        return ok
-    
-    def setup_static_mode(self, npoles):
-        '''
-        This is specifically design for 
-        '''

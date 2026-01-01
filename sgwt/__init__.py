@@ -7,9 +7,6 @@ File: sgwt/__init__.py
 Description: Main package initialization.
 """
 
-# Data Structure
-from .ration import VFKern
-
 # Static Graphs (Typical use case)
 from .static import Convolve, impulse
 
@@ -17,6 +14,11 @@ from .static import Convolve, impulse
 from .dynamic import DyConvolve
 
 from .io import (
+
+    # Vector Fitting Dataclass
+    VFKern,
+
+    # DLL Reader
     get_cholmod_dll,
     
     # Kernels

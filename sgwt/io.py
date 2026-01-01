@@ -7,17 +7,46 @@ File: sgwt/io.py
 Description: I/O utilities for accessing built-in Laplacians, signals, and kernels.
 """
 
-from .ration import VFKern
+import sys
+import os
+
+if sys.version_info >= (3, 9):
+    from importlib.resources import as_file, files
+else:
+    from importlib_resources import as_file, files
+
+from ctypes import CDLL
+from dataclasses import dataclass
 
 import numpy as np
-import os
-from ctypes import CDLL
-from importlib.resources import as_file, files
-from json import load as jsonload
-from typing import Any, Callable
-
 from scipy.io import loadmat
 from scipy.sparse import csc_matrix
+
+from json import load as jsonload
+from typing import Any, Callable
+import numpy.typing as npt
+
+@dataclass
+class VFKern:
+    """
+    Vector Fitting Kernel representation.
+    R: Residual Matrix (nPoles x nScales)
+    Q: Poles Vector (nPoles x 1)
+    D: Offset (nDim x 1)
+    """
+    R: npt.NDArray
+    Q: npt.NDArray
+    D: npt.NDArray
+
+    @classmethod
+    def from_dict(cls, data: dict) -> 'VFKern':
+        """Loads kernel data from a dictionary/JSON structure."""
+        poles = data.get('poles', [])
+        return cls(
+            R=np.array([p['r'] for p in poles]),
+            Q=np.array([p['q'] for p in poles]),
+            D=np.array(data.get('d', []))
+        )
 
 
 def get_cholmod_dll():

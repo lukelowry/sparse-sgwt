@@ -10,19 +10,18 @@ Description: GSP Convolution designed specifically for dynamic graphs
 
 from .cholesky import CholWrapper
 from .cholesky import cholmod_dense, cholmod_sparse
-
-from .ration import VFKern
+from .io import VFKern
 
 import numpy as np
 from scipy.sparse import csc_matrix
 
 from ctypes import byref, POINTER
-from typing import Any
+from typing import Any, Union
 
 
 class DyConvolve:
 
-    def __init__(self, L:csc_matrix, poles: list | VFKern) -> None:
+    def __init__(self, L:csc_matrix, poles: Union[list, VFKern]) -> None:
         """
         Initializes a dynamic convolution context.
         
