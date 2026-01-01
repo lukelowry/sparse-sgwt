@@ -1,5 +1,5 @@
 Kernel Functions
-----------------
+==============
 
 There are three convenience analytical filters available.
 

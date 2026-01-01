@@ -1,5 +1,5 @@
 Kernel Fitting
---------------
+==============
 
 The kernel fitting representation is more generally a vector fitted function, a simple pole expansion of the form:
 

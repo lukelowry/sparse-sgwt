@@ -1,5 +1,5 @@
 Underlying Graph
-----------------
+==============
 
 The module has a small repository of built in graph laplacians that are useful for quick start examples.
 
