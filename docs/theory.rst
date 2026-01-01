@@ -15,6 +15,6 @@ When working with a physical distance as a distance metric: for each branch of l
 .. toctree::
    :maxdepth: 2
 
-   theory_kernel_fitting
-   theory_analytical
-   theory_cholesky
+   theory/theory_kernel_fitting
+   theory/theory_analytical
+   theory/theory_cholesky

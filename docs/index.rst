@@ -6,8 +6,16 @@
 
    installation
    basic_usage
-   examples
    theory
+
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Examples
+
+   examples/examples_static
+   examples/examples_dynamic
+
 
 .. toctree::
    :maxdepth: 2
