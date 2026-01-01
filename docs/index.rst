@@ -13,8 +13,8 @@
    :maxdepth: 2
    :caption: Examples
 
-   examples/examples_static
-   examples/examples_dynamic
+   examples_static
+   examples_dynamic
 
 
 .. toctree::
@@ -27,8 +27,8 @@
    :maxdepth: 2
    :caption: Resources
 
-   library
-   library_json
+   library/library_json
+   library/library_data
 
 .. toctree::
    :maxdepth: 2
