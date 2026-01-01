@@ -3,5 +3,5 @@ Utilities
 
 .. automodule:: sgwt.io
    :members: VFKern
-   :undoc-members:
+   :no-undoc-members:
    :show-inheritance:

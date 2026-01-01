@@ -1,6 +1,6 @@
 .. _demo_dynamic_time:
 
-Performance Comparison
+Performance
 ======================
 
 Compares the execution time and performance between static (``Convolve``) and dynamic (``DyConvolve``) convolution methods.

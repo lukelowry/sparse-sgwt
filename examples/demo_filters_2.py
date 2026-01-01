@@ -14,16 +14,12 @@ X  -= impulse(L, n=35000)
 # Scales
 s = [3e0]
 
-# Memory Efficient Context
-start_time = time.time()
+# Third Order Band-Pass
 with Convolve(L) as conv:
-
-    # Third Order Band-Pass
     BP = conv.bandpass(X, s)[0]
     BP = conv.bandpass(BP, s)[0]
     BP = conv.bandpass(BP, s)[0]
-end_time = time.time()
-execution_time = end_time - start_time
+
 # DOC_END_CODE_EXCLUDE_PLOT
 from demo_plot import plot_signal
 plot_signal(BP[:,0], C, 'coolwarm')
@@ -38,25 +34,5 @@ images_dir = os.path.join(static_dir, 'images')
 os.makedirs(images_dir, exist_ok=True)
 save_path = os.path.join(images_dir, 'demo_filters_2_bandpass.png')
 plt.savefig(save_path, dpi=400, bbox_inches='tight')
-
-# Save timing table for documentation
-text_dir = os.path.join(static_dir, 'text')
-os.makedirs(text_dir, exist_ok=True)
-timing_table_path = os.path.join(text_dir, 'demo_filters_2_timing.rst')
-
-table_content = f"""
-.. list-table:: Performance
-   :header-rows: 1
-   :widths: 25 10
-   :align: left
-
-   * - Operation
-     - Time (s)
-   * - 3rd-Order Band-Pass Convolution
-     - {execution_time:.4f}
-"""
-
-with open(timing_table_path, 'w') as f:
-    f.write(table_content.strip())
 
 plt.show()

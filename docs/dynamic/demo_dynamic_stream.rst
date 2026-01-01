@@ -1,6 +1,6 @@
 .. _demo_dynamic_stream:
 
-Online Stream Processing
+Online Dynamic Processing
 ========================
 
 Simulates an online processor handling a continuous stream of data and topology change events.

@@ -12,15 +12,12 @@ X  = impulse(L, n=35000)
 # Scales
 s = [10]
 
-# Memory Efficient Context
+#  Fourth Order Band-Pass
 with Convolve(L) as conv:
-
-    #  Fourth Order Band-Pass
     Y = conv.bandpass(X, s)[0]
     Y = conv.bandpass(Y, s)[0]
     Y = conv.bandpass(Y, s)[0]
     Y = conv.bandpass(Y, s)[0]
-
 # DOC_END_CODE_EXCLUDE_PLOT
 from demo_plot import plot_signal
 plot_signal(Y[:,0], C, 'berlin')

@@ -1,6 +1,6 @@
 .. _demo_dynamic_topology:
 
-Dynamic Topology Update
+Dynamic Topology
 =======================
 
 Illustrates updating the graph topology (adding branches) on-the-fly without recomputing the entire decomposition.

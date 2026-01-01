@@ -17,6 +17,3 @@ The preferred way to run tests is using the master test runner, which provides a
 .. code-block:: bash
 
     python tests/run_tests.py
-
-.. note::
-   Validation tests currently verify the ``cholmod`` implementation against ``sksparse`` which provides a subset of similar functionality.
