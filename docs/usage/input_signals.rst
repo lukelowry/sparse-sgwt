@@ -1,13 +1,45 @@
 Input Signals
 ==============
 
-A real-valued time-vertex function :math:`X\in\mathbb{R}^{|N|\times|T|}` stored as a 2D numpy array in column-major ordering (i.e., fortran style) can be used. For example, an empty array meeting these specifications:
+The primary input for all filtering operations is a signal defined on the vertices of the graph. This signal should be provided as a NumPy array.
+
+Format and Memory Layout
+------------------------
+
+The signal array ``X`` should have the shape ``(n_vertices, n_timesteps)``, where:
+
+- ``n_vertices`` is the number of nodes in the graph, matching ``L.shape[0]``.
+- ``n_timesteps`` is the number of independent signals or time samples to be processed concurrently.
+
+For optimal performance, it is highly recommended to create the signal array with **column-major (Fortran) ordering** by specifying ``order='F'``. This memory layout aligns with the underlying C-based CHOLMOD library, avoiding costly data re-ordering during computation.
 
 .. code-block:: python
 
-    X = np.empty(
-        shape=(nVert, nTime),
-        order = 'F'
-    )
+    import numpy as np
+    from sgwt import DELAY_USA as L
 
-Although, a ``(N,1)`` array can also be used.
+    n_vertices = L.shape[0]
+    n_signals = 10
+
+    # Create a random signal with the recommended memory layout
+    X = np.random.randn(n_vertices, n_signals).astype(np.float64)
+    X = np.asfortranarray(X)
+
+    # Verify the memory order
+    assert X.flags['F_CONTIGUOUS']
+
+Creating Test Signals with ``impulse``
+--------------------------------------
+
+For testing and examples, the library provides the :func:`~sgwt.io.impulse` helper function to quickly generate a Dirac impulse (a value of 1.0 at one vertex and 0.0 everywhere else).
+
+.. code-block:: python
+
+    from sgwt import impulse
+    from sgwt import DELAY_TEXAS as L
+
+    # Create a signal with a single impulse at vertex 600
+    X_impulse = impulse(L, n=600)
+
+    print(X_impulse.shape)
+    # Output: (2000, 1)

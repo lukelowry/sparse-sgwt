@@ -1,21 +1,43 @@
 Dynamic Graphs
 ==============
 
-In many real-world applications, such as power systems or sensor networks, the underlying graph topology is dynamic. Re-initializing the entire convolution context for every edge update is computationally prohibitive. This example demonstrates the use of ``DyConvolve`` to perform efficient, real-time signal filtering on an evolving graph by leveraging rank-1 updates to adapt existing factorizations on-the-fly.
+In many real-world applications, such as power systems or communication networks, the underlying graph topology is not static. Edges (e.g., transmission lines or communication links) can be added or removed over time. Re-calculating the entire graph factorization for every small change is computationally expensive and not feasible for real-time applications.
+
+The :class:`~sgwt.dynamic.DyConvolve` context is specifically designed for this scenario. It provides high-performance filtering on evolving graphs by leveraging efficient rank-1 updates to the factorization.
+
+The Key Trade-off
+-----------------
+
+To achieve this performance, ``DyConvolve`` requires that the filter poles (or scales) are defined upfront and remain constant. The context pre-factors the graph for each pole, allowing subsequent topology updates and convolutions to be extremely fast.
+
+Usage Example
+-------------
+
+Here is a simple example demonstrating how to initialize the context, update the topology, and see the effect on a filtered signal.
 
 .. code-block:: python
 
-    from sgwt.dynamic import DyConvolve
-    from sgwt import DELAY_USA as L
+    from sgwt import DyConvolve, impulse
+    from sgwt import DELAY_TEXAS as L
 
-    poles = [10.0, 1.0, 0.1]
+    # 1. Define poles upfront (e.g., for a band-pass filter at scale=0.1)
+    poles = [1 / 0.1]
 
+    # 2. Create an impulse signal at a specific node
+    X  = impulse(L, n=1200)
+
+    # 3. Use the DyConvolve context
     with DyConvolve(L, poles) as conv:
-        for f_t, event in stream:
-            if event:
-                conv.addbranch(*event) # Update topology
-            W = conv.bandpass(f_t)     # Filter signal
+        # Filter the signal on the original graph
+        Y_before = conv.bandpass(X)
 
-At each iteration, the matrix ``W`` contains the column vectors which are the filtered version of ``f`` at the 'spatial' scale associated with each pole. So in this example ``W`` be a 3-column matrix representing the signal at three different scales.
+        # 4. Introduce a topology change: add a new edge
+        # This connects node 1200 and 600 with a high weight.
+        conv.addbranch(1200, 600, w=100.0)
 
-See the :doc:`examples` page for more advanced usage scenarios.
+        # 5. Filter the same signal again on the modified graph
+        Y_after = conv.bandpass(X)
+
+In this example, ``Y_after`` will show the impulse signal having propagated from node 1200 to node 600, which would not have occurred in ``Y_before``.
+
+For a more advanced simulation of a real-time data stream with topology events, see the :doc:`/dynamic/demo_dynamic_stream` example.

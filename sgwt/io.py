@@ -1,10 +1,8 @@
-# -*- coding: utf-8 -*-
-"""
-Sparse Spectral Graph Wavelet Transform (SGWT)
-----------------------------------------------
+"""General Utilities
+
+Description: Utilities for accessing built-in data, VFKern, and impulse helper function.
+
 Author: Luke Lowery (lukel@tamu.edu)
-File: sgwt/io.py
-Description: I/O utilities for accessing built-in Laplacians, signals, and kernels.
 """
 
 import sys
@@ -65,7 +63,7 @@ def impulse(lap, n=0, ntime=1):
     Returns
     -------
     np.ndarray
-        A (N x ntime) array with 1.0 at index n and 0.0 elsewhere, in Fortran order.
+        (n x ntime) array with 1.0 at index n and 0.0 elsewhere, in Fortran order.
     """
     b: np.ndarray = np.zeros((lap.shape[0],ntime), order='F')
     b[n] = 1
