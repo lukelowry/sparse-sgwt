@@ -29,7 +29,7 @@ For the quick-start example, we will find the response of a low-pass filter $\ph
 ```python
 import sgwt
 
-# Graph Laplacian
+# CSC Graph Laplacian
 L = sgwt.IMPEDANCE_TX
 
 # Impulse at Vertex n
@@ -73,7 +73,7 @@ X = np.empty(
 )
 ```
 
-Although, a `(nVert,1)` array can also be used.
+Although, a `(N,1)` array can also be used.
 
 ### Kernel Functions
 
@@ -115,3 +115,24 @@ with DyConvolve(L, poles) as conv:
 ```
 
 At each iteration, the matrix `W` contains the column vectors which are the filtered versionf of `f` at the 'spatial' scale associated with each pole. So in this example `W` be a 3-column matrix representing the signal at three different scales.
+
+### Other
+
+This module is also implemented in [Julia](https://github.com/lukelowry/SpectralGraphWavelet.jl) which takes advantage of the native SuiteSparse support.
+
+### References
+
+The `CHOLMOD` library of [SuiteSparse](https://github.com/DrTimothyAldenDavis/SuiteSparse) by Dr. Tim Davis at Texas A&M University.
+
+The graph laplacians used in the examples are derived from the [synthetic grid repository](https://electricgrids.engr.tamu.edu/electric-grid-test-cases/), available thanks to the research of Dr. Adam Birchfield at Texas A&M University. 
+- Birchfield, Adam B. et al. “Grid Structural Characteristics as Validation Criteria for Synthetic Networks”. In: IEEE Trans. on Power Sys. 32.4 (2017)
+
+The theoretical work of this module is derived in part from a [paper presented at HICSS-59](https://scholarspace.manoa.hawaii.edu/items/3f08d29d-db06-41d5-b235-2ee549bd198b), nominated for best paper.
+- Lowery, Luke, Jongoh Baek, and Adam Birchfield. "Using Spectral Graph Wavelets to Analyze Large Power System Oscillation Modes." (2026).
+
+
+
+### Author
+
+- Luke Lowery received the B.S. degree in electrical engineering at Texas A&M University in 2023, where he is currently pursuing the Ph.D. in electrical engineering. His research interests include numerical macromodeling and graph-based signal processing for large power systems.
+- More information can be found [here](https://lukelowry.github.io/).
