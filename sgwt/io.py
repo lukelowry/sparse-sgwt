@@ -56,16 +56,21 @@ def get_cholmod_dll():
     Ensures the DLL directory is added to the system search path (Windows) 
     and returns the CDLL handle.
     """
-    resource = files("sgwt.library") / "dll" / "cholmod.dll"
+    resource = files("sgwt") / "library" / "dll" / "cholmod.dll"
 
     with as_file(resource) as dll_path:
         dll_dir = os.path.dirname(dll_path)
         if hasattr(os, 'add_dll_directory'):
             os.add_dll_directory(dll_dir)
+        else:
+            os.environ['PATH'] = str(dll_dir) + os.pathsep + os.environ['PATH']
+
         try:
             return CDLL(str(dll_path))
-        except:
-            raise Exception("Error Loading DLL")
+        except OSError as e:
+            raise OSError(f"Failed to load DLL at {dll_path}. Error: {e}")
+        except Exception as e:
+            raise Exception(f"Unexpected error loading DLL: {e}")
 
 
 def _load_resource(path: str, loader: Callable[[str], Any]):

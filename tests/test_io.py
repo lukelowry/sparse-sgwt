@@ -24,6 +24,8 @@ class TestSGWTIo(unittest.TestCase):
         try:
             dll = self.sgwt.get_cholmod_dll()
             self.assertIsInstance(dll, CDLL)
+        except OSError as e:
+            self.fail(f"DLL Load Error (OSError): {e}")
         except Exception as e:
             self.fail(f"get_cholmod_dll raised Exception: {e}")
 
