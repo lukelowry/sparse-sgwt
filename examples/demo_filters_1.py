@@ -2,7 +2,6 @@ import os
 import matplotlib.pyplot as plt
 
 # DOC_START_CODE_EXCLUDE_IMPORTS
-
 from sgwt import Convolve, impulse
 from sgwt import DELAY_TEXAS as L
 from sgwt import COORD_TEXAS as C
@@ -10,10 +9,6 @@ from sgwt import COORD_TEXAS as C
 # Impulses
 X  = impulse(L, n=1200)
 X += impulse(L, n=600)
-
-# Set font to Times New Roman for a professional look
-plt.rcParams['font.family'] = 'serif'
-plt.rcParams['font.serif'] = ['Times New Roman'] + plt.rcParams['font.serif']
 
 # Scales
 s = [1e-1]
@@ -24,7 +19,6 @@ with Convolve(L) as conv:
     LP = conv.lowpass(X, s)
     BP = conv.bandpass(X, s)
     HP = conv.highpass(X, s)
-
 # DOC_END_CODE_EXCLUDE_PLOT
 # Assuming plot_signal creates and sets the current matplotlib figure
 from demo_plot import plot_signal

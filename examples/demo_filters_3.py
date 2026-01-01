@@ -19,7 +19,6 @@ with Convolve(L) as conv:
     BP = conv.bandpass(X, s)[0]
     BP = conv.bandpass(BP, s)[0]
     BP = conv.bandpass(BP, s)[0]
-
 # DOC_END_CODE_EXCLUDE_PLOT
 from demo_plot import plot_signal
 plot_signal(BP[:,0], C, 'coolwarm')

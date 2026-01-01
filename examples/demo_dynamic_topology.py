@@ -26,7 +26,6 @@ with DyConvolve(L, poles) as conv:
 
     # Post-Close Convolution
     Y_after = conv.bandpass(X)
-
 # DOC_END_CODE_EXCLUDE_PLOT
 from demo_plot import plot_signal
 

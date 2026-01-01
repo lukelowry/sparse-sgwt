@@ -15,7 +15,6 @@ scales = np.geomspace(1e-5, 1e2, 20)
 poles = 1/scales
 
 with Convolve(L) as conv:
-
     start = time.time()
     for i in range(10):
         Y = conv.bandpass(X, scales)
@@ -23,12 +22,10 @@ with Convolve(L) as conv:
 
 
 with DyConvolve(L, poles) as conv:
-
     start = time.time()
     for i in range(10):
         Y = conv.bandpass(X)
     T2 = time.time() - start
-
 # DOC_END_CODE_EXCLUDE_PLOT
 # Set font to Times New Roman for a professional look (already set above, but kept for clarity if code block was different)
 # plt.rcParams['font.family'] = 'serif'
