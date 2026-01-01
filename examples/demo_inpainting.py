@@ -59,6 +59,7 @@ with DyConvolve(L, poles=[1/SMOOTHING_SCALE]) as conv:
 
 print("Reconstruction complete.")
 
+# DOC_END_CODE_EXCLUDE_PLOT
 # 4. Visualize Results
 fig, (ax1, ax2, ax3) = plt.subplots(3, 1, figsize=(5, 8), sharex=True)
 fig.suptitle(f'Graph Signal Inpainting from {SAMPLE_FRACTION:.1%} of Data', fontsize=14, fontweight='bold')
@@ -97,8 +98,13 @@ for ax in [ax1, ax2, ax3]:
 plt.tight_layout(rect=[0, 0.03, 1, 0.95])
 
 # Save the figure for documentation
-script_dir = os.path.dirname(os.path.abspath(__file__))
-save_path = os.path.join(script_dir, 'inpainting_reconstruction.png')
+# Determine the project root and target static images directory
+script_dir = os.path.dirname(os.path.abspath(__file__)) # e.g., .../sparse-sgwt/examples
+project_root = os.path.abspath(os.path.join(script_dir, '..')) # e.g., .../sparse-sgwt
+static_images_dir = os.path.join(project_root, 'docs', '_static', 'images')
+# Ensure the directory exists
+os.makedirs(static_images_dir, exist_ok=True)
+save_path = os.path.join(static_images_dir, 'inpainting_reconstruction.png')
 plt.savefig(save_path, dpi=400, bbox_inches='tight')
 
 plt.show()

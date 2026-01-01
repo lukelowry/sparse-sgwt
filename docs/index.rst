@@ -5,7 +5,7 @@
    :caption: Getting Started
 
    installation
-   basic_usage
+   usage
    theory
 
 
@@ -19,16 +19,17 @@
 
 .. toctree::
    :maxdepth: 2
-   :caption: API Reference
-
-   api
-
-.. toctree::
-   :maxdepth: 2
    :caption: Resources
 
    library/library_json
    library/library_data
+
+.. toctree::
+   :maxdepth: 2
+   :caption: API Reference
+
+   api
+
 
 .. toctree::
    :maxdepth: 2
