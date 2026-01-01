@@ -32,7 +32,7 @@ For the quick-start example, we will find the response of a low-pass filter $\ph
 import sgwt
 
 # CSC Graph Laplacian
-L = sgwt.IMPEDANCE_TX
+L = sgwt.DELAY_TX
 
 # Impulse at Vertex n
 X = sgwt.impulse(L, n=...)
@@ -118,7 +118,8 @@ At each iteration, the matrix `W` contains the column vectors which are the filt
 
 ## Other
 
-A brief review of the theoretical work used in this module is available in this repository in markdown format [THEORY.md](THEORY.md). Additional examples with descriptions are also available in the [/examples](/examples) directory.
+A brief review of the theoretical work used in this module is available in this repository in markdown format [THEORY.md](THEORY.md). Additional examples with descriptions are also available in the [sgwt/examples](/examples) directory.
+Details regarding the built-in graph library (Laplacians, Signals, Kernels) can be found in [sgwt/library](sgwt/library/README.md).
 
 
 This module is also implemented in [Julia](https://github.com/lukelowry/SpectralGraphWavelet.jl) which takes advantage of the native SuiteSparse support.
