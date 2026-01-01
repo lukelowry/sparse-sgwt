@@ -1,10 +1,8 @@
-# -*- coding: utf-8 -*-
-"""
-Sparse Spectral Graph Wavelet Transform (SGWT)
-----------------------------------------------
+"""General Utilities
+
+Description: Utilities for accessing built-in data, VFKern, and impulse helper function.
+
 Author: Luke Lowery (lukel@tamu.edu)
-File: sgwt/io.py
-Description: I/O utilities for accessing built-in Laplacians, signals, and kernels.
 """
 
 import sys
@@ -49,13 +47,31 @@ class VFKern:
         )
 
 
+def impulse(lap, n=0, ntime=1):
+    """
+    Generates a Dirac impulse signal at a specified vertex.
+
+    Parameters
+    ----------
+    lap : csc_matrix
+        Graph Laplacian defining the node count.
+    n : int
+        Index of the vertex where the impulse is applied.
+    ntime : int
+        Number of time steps (columns) in the resulting signal.
+
+    Returns
+    -------
+    np.ndarray
+        (n x ntime) array with 1.0 at index n and 0.0 elsewhere, in Fortran order.
+    """
+    b: np.ndarray = np.zeros((lap.shape[0],ntime), order='F')
+    b[n] = 1
+
+    return b
+
 def get_cholmod_dll():
-    """
-    Locates and loads the CHOLMOD shared library.
-    
-    Ensures the DLL directory is added to the system search path (Windows) 
-    and returns the CDLL handle.
-    """
+
     resource = files("sgwt") / "library" / "dll" / "cholmod.dll"
 
     with as_file(resource) as dll_path:
@@ -111,13 +127,13 @@ def _lap(k, r): return _load_resource(f"library/{k}/{r}_{k}.mat", lambda p: _mat
 def _sig(k, r): return _load_resource(f"library/SIGNALS/{r}_{k}.mat", _mat_loader)
 def _kern(n):   return _load_resource(f"library/KERNELS/{n}.json", _json_kern_loader)
 
-''' KERNELS '''
+# Kernels
 MEXICAN_HAT     = _kern("MEXICAN_HAT")
 GAUSSIAN_WAV    = _kern("GAUSSIAN_WAV")
 MODIFIED_MORLET = _kern("MODIFIED_MORLET")
 SHANNON         = _kern("SHANNON")
 
-''' LAPLACIANS '''
+# Laplacians
 DELAY_EASTWEST = _lap("DELAY", "EASTWEST")
 DELAY_HAWAII   = _lap("DELAY", "HAWAII")
 DELAY_TEXAS    = _lap("DELAY", "TEXAS")
@@ -136,7 +152,7 @@ LENGTH_TEXAS    = _lap("LENGTH", "TEXAS")
 LENGTH_USA      = _lap("LENGTH", "USA")
 LENGTH_WECC     = _lap("LENGTH", "WECC")
 
-''' SIGNALS '''
+# Signals
 COORD_EASTWEST = _sig("COORDS", "EASTWEST")
 COORD_HAWAII   = _sig("COORDS", "HAWAII")
 COORD_TEXAS    = _sig("COORDS", "TEXAS")

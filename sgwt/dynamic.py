@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
-"""
-Sparse Spectral Graph Wavelet Transform (SGWT)
-----------------------------------------------
+"""Dynamic Graph Convolution for Sparse Spectral Graph Wavelet Transform (SGWT).
+
+This module provides GSP convolution methods specifically designed for dynamic graphs,
+such as those experiencing line closures and opens. It leverages CHOLMOD's updown
+routines for efficient rank-1 updates and requires pre-determined scales/poles.
+
 Author: Luke Lowery (lukel@tamu.edu)
-File: sgwt/dynamic.py
-Description: GSP Convolution designed specifically for dynamic graphs 
-             (e.g., line closures and opens). Requires pre-determined scales.
 """
 
 from .cholesky import CholWrapper
@@ -13,10 +13,11 @@ from .cholesky import cholmod_dense, cholmod_sparse
 from .io import VFKern
 
 import numpy as np
-from scipy.sparse import csc_matrix
+from scipy.sparse import csc_matrix # type: ignore
 
 from ctypes import byref, POINTER
-from typing import Any, Union
+from typing import Any, Union, Optional, Type, List
+from types import TracebackType
 
 
 class DyConvolve:
@@ -43,7 +44,7 @@ class DyConvolve:
         self.chol = CholWrapper(L)
 
         # If VF model given
-        if isinstance(poles, VFKern):
+        if isinstance(poles, VFKern): # type: ignore
             self.poles = poles.Q
             self.R = poles.R
             self.D = poles.D
@@ -57,7 +58,7 @@ class DyConvolve:
 
 
     # Context Manager for using CHOLMOD
-    def __enter__(self):
+    def __enter__(self) -> "DyConvolve":
 
         # Start Cholmod
         self.chol.start()
@@ -86,7 +87,7 @@ class DyConvolve:
 
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(self, exc_type: Optional[Type[BaseException]], exc_val: Optional[BaseException], exc_tb: Optional[TracebackType]) -> Optional[bool]:
 
         # Free the factored matrix object
         self.chol.free_factor(self.chol.fact_ptr)
@@ -108,11 +109,10 @@ class DyConvolve:
         # Finish cholmod
         self.chol.finish()
 
-
-    def __call__(self, B) -> Any:
+    def __call__(self, B: np.ndarray) -> np.ndarray:
         return self.convolve(B)
 
-    def convolve(self, B):
+    def convolve(self, B: np.ndarray) -> np.ndarray:
         """
         Performs graph convolution using the pre-defined kernel.
 
@@ -152,7 +152,7 @@ class DyConvolve:
         return W
     
     
-    def lowpass(self, B, Bset=None):
+    def lowpass(self, B: np.ndarray, Bset: Optional[csc_matrix] = None) -> List[np.ndarray]:
         """
         Computes low-pass filtered scaling coefficients.
         
@@ -200,7 +200,7 @@ class DyConvolve:
 
         return W
     
-    def bandpass(self, B):
+    def bandpass(self, B: np.ndarray) -> List[np.ndarray]:
         """
         Computes band-pass filtered wavelet coefficients.
 
@@ -249,7 +249,7 @@ class DyConvolve:
 
         return W
 
-    def highpass(self, B):
+    def highpass(self, B: np.ndarray) -> List[np.ndarray]:
         """
         Computes high-pass filtered coefficients.
 
@@ -300,7 +300,7 @@ class DyConvolve:
 
         return W
     
-    def addbranch(self, i, j, w):
+    def addbranch(self, i: int, j: int, w: float) -> bool:
         """
         Adds a branch to the graph topology and updates all factorizations.
 

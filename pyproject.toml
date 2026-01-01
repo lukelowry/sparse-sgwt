@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "sgwt"
-version = "0.3.0"
+version = "0.3.1"
 description = "Sparse Tools for the Spectral Graph Wavelet Transformation and Graph Convolution"
 readme = "README.rst"
 license = { file = "LICENSE.md" }
@@ -41,6 +41,23 @@ include-package-data = true
     "library/IMPEDANCE/*.mat",
     "library/LENGTH/*.mat",
     "library/DELAY/*.mat"
+]
+
+
+[project.optional-dependencies]
+dev = [
+    "matplotlib",
+]
+
+
+docs = [
+    "sphinx",
+    "numpydoc",
+    "sphinxcontrib-bibtex",
+    "sphinx-gallery",
+    "memory_profiler",
+    "sphinx-rtd-theme",
+    "sphinx-copybutton",
 ]
 
 [tool.setuptools.packages.find]

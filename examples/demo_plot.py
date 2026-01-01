@@ -1,16 +1,11 @@
-# -*- coding: utf-8 -*-
-"""
-Sparse Spectral Graph Wavelet Transform (SGWT)
-----------------------------------------------
-Author: Luke Lowery (lukel@tamu.edu)
-File: examples/demo_plot.py
-Description: Utility functions for plotting graph signals.
-"""
 from numpy import sort, abs
 import matplotlib.pyplot as plt
 from matplotlib.colors import Normalize
 import matplotlib.cm as cm
 
+# Set font to Times New Roman for a professional look
+plt.rcParams['font.family'] = 'serif'
+plt.rcParams['font.serif'] = ['Times New Roman'] + plt.rcParams['font.serif']
 
 def plot_signal(f, C, cmap='Spectral'):
     '''
@@ -25,4 +20,5 @@ def plot_signal(f, C, cmap='Spectral'):
     norm = Normalize(-mx, mx)
     plt.scatter(L1, L2 , c=f, edgecolors='none', cmap=cm.get_cmap(cmap), norm=norm)
     plt.axis('scaled')   
-    plt.show()
+    ax = plt.gca()
+    ax.set_axis_off()

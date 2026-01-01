@@ -1,72 +1,48 @@
-# -*- coding: utf-8 -*-
-"""
-Example: demo_inpainting.py
-Description: Demonstrates graph signal inpainting (reconstruction) from sparse samples.
-             This example reconstructs a smooth signal across the USA grid using only
-             a small fraction of known data points, leveraging the graph's topology
-             through iterative low-pass filtering.
-"""
-
 import os
-import numpy as np
 import matplotlib.pyplot as plt
-from sgwt import DyConvolve, DELAY_USA, COORD_USA
 
-# Set font to Times New Roman for a professional look
-plt.rcParams['font.family'] = 'serif'
-plt.rcParams['font.serif'] = ['Times New Roman'] + plt.rcParams['font.serif']
+# DOC_START_CODE_EXCLUDE_IMPORTS
+from sgwt import DyConvolve
+from sgwt import DELAY_USA as L
+from sgwt import COORD_USA as C
+import numpy as np
 
 # --- Configuration ---
-# Note: Parameters tuned for fast convergence.
-# Original: N_ITERATIONS=500, SMOOTHING_SCALE=10.0, STEP_SIZE=1.0
-SAMPLE_FRACTION = 0.005  # Use 0.1% of nodes as sensors
-N_ITERATIONS = 100      # Number of reconstruction steps
-SMOOTHING_SCALE = 50.0  # Larger scale propagates info faster
-STEP_SIZE = 1         # Larger step size accelerates convergence
-
-# 1. Setup: Ground Truth Signal and Graph
-L = DELAY_USA
-C = COORD_USA
+SAMPLE_FRACTION = 0.005  # Fraction of nodes used as sensors
+N_ITERATIONS = 100       # Number of reconstruction iterations
+SMOOTHING_SCALE = 50.0   # Scale for error propagation (larger propagates faster)
+STEP_SIZE = 1            # Step size for iterative updates
 n_nodes = L.shape[0]
 
 # Use longitude as a smooth signal over the graph
 X_true = C[:, 0:1].copy(order='F')
 
-# 2. Create Sparse Samples
+# 2. Create Sparse Samples from Ground Truth
 n_samples = int(n_nodes * SAMPLE_FRACTION)
 sample_indices = np.random.choice(n_nodes, n_samples, replace=False)
 
-# A boolean mask efficiently identifies sensor locations
-J_mask = np.zeros(n_nodes, dtype=bool)
-J_mask[sample_indices] = True
-
-# The sampled signal is zero everywhere except at sensor locations
+# Create a boolean mask for sensor locations and initialize sampled signal
+J_mask = np.isin(np.arange(n_nodes), sample_indices)
 X_sampled = np.zeros_like(X_true)
 X_sampled[J_mask] = X_true[J_mask]
 
 # 3. Iterative Reconstruction
-Xh = np.zeros_like(X_true, order='F')  # Start with a zero-signal guess
+Xh = np.zeros_like(X_true, order='F')  # Initialize reconstruction with zeros
 
-# DyConvolve is ideal here, as it pre-factors the system for a fixed scale.
+# DyConvolve pre-factors the system for a fixed scale, ideal for iterative methods.
 with DyConvolve(L, poles=[1/SMOOTHING_SCALE]) as conv:
-    print(f"Reconstructing signal from {n_samples} samples ({SAMPLE_FRACTION:.1%})...")
-
     for i in range(N_ITERATIONS):
         # Calculate error at sensor locations
         error = np.zeros_like(Xh)
         error[J_mask] = X_sampled[J_mask] - Xh[J_mask]
 
         # Propagate error across the graph using a low-pass filter
-        smoothed_error = conv.lowpass(error)[0]
+        smoothed_error = conv.lowpass(error)[0]  # [0] to get the signal, not the scale
 
-        # Update the signal. The DyConvolve.lowpass filter has a 1/scale factor,
+        # Update the signal. The lowpass filter includes a 1/scale factor,
         # so we multiply by the scale to get the pure solver response.
         Xh += STEP_SIZE * smoothed_error * SMOOTHING_SCALE
-
-        if (i + 1) % 100 == 0:
-            print(f"  Iteration {i+1}/{N_ITERATIONS}")
-
-print("Reconstruction complete.")
+# DOC_END_CODE_EXCLUDE_PLOT
 
 # 4. Visualize Results
 fig, (ax1, ax2, ax3) = plt.subplots(3, 1, figsize=(5, 8), sharex=True)
@@ -106,8 +82,13 @@ for ax in [ax1, ax2, ax3]:
 plt.tight_layout(rect=[0, 0.03, 1, 0.95])
 
 # Save the figure for documentation
-script_dir = os.path.dirname(os.path.abspath(__file__))
-save_path = os.path.join(script_dir, 'inpainting_reconstruction.png')
+# Determine the project root and target static images directory
+script_dir = os.path.dirname(os.path.abspath(__file__)) # e.g., .../sparse-sgwt/examples
+project_root = os.path.abspath(os.path.join(script_dir, '..')) # e.g., .../sparse-sgwt
+static_images_dir = os.path.join(project_root, 'docs', '_static', 'images')
+# Ensure the directory exists
+os.makedirs(static_images_dir, exist_ok=True)
+save_path = os.path.join(static_images_dir, 'inpainting_reconstruction.png')
 plt.savefig(save_path, dpi=400, bbox_inches='tight')
 
 plt.show()

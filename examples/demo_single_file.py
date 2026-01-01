@@ -1,12 +1,8 @@
-# -*- coding: utf-8 -*-
-"""
-Sparse Spectral Graph Wavelet Transform (SGWT)
-----------------------------------------------
-Author: Luke Lowery (lukel@tamu.edu)
-File: examples/demo_single_file.py
-Description: Simple demonstration of band-pass filtering on a graph.
-"""
-
+import os
+from numpy import abs
+import matplotlib.pyplot as plt
+from matplotlib.colors import Normalize
+import matplotlib.cm as cm
 from sgwt import Convolve, impulse
 from sgwt import DELAY_TEXAS as L
 from sgwt import COORD_TEXAS as C
