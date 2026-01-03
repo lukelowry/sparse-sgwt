@@ -32,8 +32,8 @@ class Convolve:
             Sparse Graph Laplacian.
         """
 
-        # Store Number of nodes
-        self.nBus = L.shape[0]
+        # Store number of vertices
+        self.n_vertices = L.shape[0]
         
         # Handles symb factor when entering context
         self.chol = CholWrapper(L)
@@ -84,14 +84,14 @@ class Convolve:
         Parameters
         ----------
         B : np.ndarray
-            Input signal array (N x T) with column-major ordering (F).
+            Input signal array (n_vertices, n_timesteps) with column-major ordering (F).
         K : VFKern or dict
             Kernel function (Vector Fitting model) to apply.
 
         Returns
         -------
         np.ndarray
-            Convolved signal (N x T x nDim).
+            Convolved signal (n_vertices, n_timesteps, nDim).
         """
         # 1. Input validation and conversion before heavy lifting
         if isinstance(K, dict):
@@ -145,7 +145,7 @@ class Convolve:
         Parameters
         ----------
         B : np.ndarray
-            Input signal array (N x T).
+            Input signal array (n_vertices, n_timesteps).
         scales : list of float
             List of scales to compute coefficients for.
         Bset : csc_matrix, optional
@@ -207,7 +207,7 @@ class Convolve:
         Parameters
         ----------
         B : np.ndarray
-            Input signal array (N x T).
+            Input signal array (n_vertices, n_timesteps).
         scales : list of float
             List of scales to compute coefficients for.
 
@@ -264,7 +264,7 @@ class Convolve:
         Parameters
         ----------
         B : np.ndarray
-            Input signal array (N x T).
+            Input signal array (n_vertices, n_timesteps).
         scales : list of float
             List of scales to compute coefficients for.
 

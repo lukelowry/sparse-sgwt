@@ -202,7 +202,7 @@ class TestSGWTFunctionality(unittest.TestCase):
 
     def test_impulse_utility(self):
         """Verify the impulse signal generator."""
-        imp = self.sgwt.impulse(self.L, n=5, ntime=2)
+        imp = self.sgwt.impulse(self.L, n=5, n_timesteps=2)
         self.assertEqual(imp.shape, (self.L.shape[0], 2))
         self.assertEqual(imp[5, 0], 1.0)
         self.assertEqual(imp[5, 1], 1.0)

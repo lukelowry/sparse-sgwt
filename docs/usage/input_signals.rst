@@ -8,10 +8,10 @@ Format and Memory Layout
 
 The signal array ``X`` should have the shape ``(n_vertices, n_timesteps)``, where:
 
-- ``n_vertices`` is the number of nodes in the graph, matching ``L.shape[0]``.
+- ``n_vertices`` is the number of vertices (nodes) in the graph, matching ``L.shape[0]``.
 - ``n_timesteps`` is the number of independent signals or time samples to be processed concurrently.
 
-For optimal performance, it is highly recommended to create the signal array with **column-major (Fortran) ordering** by specifying ``order='F'``. This memory layout aligns with the underlying C-based CHOLMOD library, avoiding costly data re-ordering during computation.
+For optimal performance, it is highly recommended to create the signal array with **column-major (Fortran) ordering** by specifying ``order='F'``. This memory layout aligns with the underlying C-based ``CHOLMOD`` library, avoiding costly data re-ordering during computation.
 
 .. code-block:: python
 
@@ -31,7 +31,7 @@ For optimal performance, it is highly recommended to create the signal array wit
 Creating Test Signals with ``impulse``
 --------------------------------------
 
-For testing and examples, the library provides the :func:`~sgwt.io.impulse` helper function to quickly generate a Dirac impulse (a value of 1.0 at one vertex and 0.0 everywhere else).
+For testing and examples, the library provides the :func:`~sgwt.io.impulse` helper function to quickly generate a Dirac impulse (a value of `1` at one vertex and `0` everywhere else).
 
 .. code-block:: python
 

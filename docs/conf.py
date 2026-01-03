@@ -17,7 +17,7 @@ autodoc_default_options = {
 
 # Better API formatting
 autoclass_content = "both"        # Include __init__ docstring in class description
-autodoc_typehints = "signature"   # Show type hints in method signatures
+autodoc_typehints = "description" # Move type hints to parameter descriptions
 add_module_names = False          # Don't show full module path (e.g. sgwt.static.Convolve -> Convolve)
 
 extensions.append("sphinx.ext.intersphinx")
@@ -32,6 +32,24 @@ extensions.append("sphinx_copybutton")
 extensions.append("numpydoc")
 numpydoc_show_class_members = False
 numpydoc_use_plots = True  # Add the plot directive whenever mpl is imported.
+numpydoc_xref_param_type = True
+numpydoc_xref_aliases = {
+    # Common aliases
+    "np": "numpy",
+    "csc_matrix": "scipy.sparse.csc_matrix",
+
+    # Your project's types
+    "VFKern": "sgwt.io.VFKern",
+
+    # Python built-ins and typing module
+    "optional": ":py:obj:`~typing.Optional`",
+    "union": ":py:obj:`~typing.Union`",
+    "list": ":py:class:`list`",
+    "dict": ":py:class:`dict`",
+    "bool": ":py:class:`bool`",
+    "int": ":py:class:`int`",
+    "float": ":py:class:`float`",
+}
 
 
 exclude_patterns = ["_build"]

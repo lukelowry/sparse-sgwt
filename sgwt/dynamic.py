@@ -22,7 +22,7 @@ from types import TracebackType
 
 class DyConvolve:
 
-    def __init__(self, L:csc_matrix, poles: Union[list, VFKern]) -> None:
+    def __init__(self, L:csc_matrix, poles: Union[List[float], VFKern]) -> None:
         """
         Initializes a dynamic convolution context.
         
@@ -37,8 +37,8 @@ class DyConvolve:
             Predetermined set of poles (equivalent to 1/scale for analytical filters).
         """
 
-        # Store Number of nodes
-        self.nBus = L.shape[0]
+        # Store number of vertices
+        self.n_vertices = L.shape[0]
         
         # Handles symb factor when entering context
         self.chol = CholWrapper(L)
@@ -119,12 +119,12 @@ class DyConvolve:
         Parameters
         ----------
         B : np.ndarray
-            Input signal array (N x T) with column-major ordering (F).
+            Input signal array (n_vertices, n_timesteps) with column-major ordering (F).
 
         Returns
         -------
         np.ndarray
-            Convolved signal (N x T x nDim).
+            Convolved signal (n_vertices, n_timesteps, nDim).
         """
 
         if self.R is None:
@@ -161,7 +161,7 @@ class DyConvolve:
         Parameters
         ----------
         B : np.ndarray
-            Input signal array (N x T).
+            Input signal array (n_vertices, n_timesteps).
         Bset : csc_matrix, optional
             Sparse indicator vector for localized coefficient computation.
 
@@ -209,7 +209,7 @@ class DyConvolve:
         Parameters
         ----------
         B : np.ndarray
-            Input signal array (N x T).
+            Input signal array (n_vertices, n_timesteps).
 
         Returns
         -------
@@ -258,7 +258,7 @@ class DyConvolve:
         Parameters
         ----------
         B : np.ndarray
-            Input signal array (N x T).
+            Input signal array (n_vertices, n_timesteps).
 
         Returns
         -------
@@ -326,7 +326,7 @@ class DyConvolve:
 
         # Creates Sparse Incidence Matrix of added branch, must free later
         Cptr = self.chol.triplet_to_chol_sparse(
-            nrow=self.nBus,
+            nrow=self.n_vertices,
             ncol=1,
             rows=bus_ind,
             cols=br_ind,

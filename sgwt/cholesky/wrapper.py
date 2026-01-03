@@ -7,8 +7,10 @@ File: sgwt/cholesky/wrapper.py
 Description: Low-level Python wrapper for the CHOLMOD C library.
 """
 
-from ctypes import byref, cast, POINTER, c_int32
+from ctypes import byref, cast, POINTER, c_int32, CDLL, c_double, c_int, c_size_t, c_int64
 import numpy as np
+from scipy.sparse import csc_matrix
+from typing import List, Optional
 
 from .structs import *
 from ..io import get_cholmod_dll
@@ -65,7 +67,7 @@ class CholWrapper:
     otherwise memory leaks may occur.
     """
 
-    def __init__(self, A) -> None:
+    def __init__(self, A: csc_matrix) -> None:
         """Initializes the CHOLMOD wrapper.
 
         Parameters
@@ -89,7 +91,7 @@ class CholWrapper:
         # TODO Support other solve types
         self.MODE = CHOLMOD_A
 
-    def status(self):
+    def status(self) -> int:
         """
         Returns the status of the CHOLMOD common object.
 
@@ -104,7 +106,7 @@ class CholWrapper:
     # Factorizations
     # --------------------------------------------------------------------------
 
-    def sym_factor(self):
+    def sym_factor(self) -> None:
         """
         Performs symbolic factorization using cholmod_analyze.
         """
@@ -113,7 +115,7 @@ class CholWrapper:
             byref(self.common)
         )
         
-    def num_factor(self, A_ptr, fact_ptr, beta):
+    def num_factor(self, A_ptr, fact_ptr, beta: float) -> None:
         """
         Performs numeric factorization with shifting (cholmod_factorize_p).
         
@@ -144,7 +146,7 @@ class CholWrapper:
     # Solving
     # --------------------------------------------------------------------------
 
-    def solve2(self, fact_ptr, B_ptr, Bset_ptr, X_ptr, Xset_ptr, Y_ptr, E_ptr):
+    def solve2(self, fact_ptr, B_ptr, Bset_ptr, X_ptr, Xset_ptr, Y_ptr, E_ptr) -> int:
         """
         Solves the linear system using cholmod_solve2.
 
@@ -209,7 +211,7 @@ class CholWrapper:
     # Matrix Operations
     # --------------------------------------------------------------------------
 
-    def sdmult(self, matrix_ptr, out_ptr, alpha=1.0, beta=0.0):
+    def sdmult(self, matrix_ptr, out_ptr, alpha: float = 1.0, beta: float = 0.0) -> None:
         """
         Sparse matrix multiplication: out = alpha * (A @ matrix) + beta * matrix.
 
@@ -241,7 +243,7 @@ class CholWrapper:
     # Low Rank Updates
     # --------------------------------------------------------------------------
 
-    def submatrix(self, A_ptr, rset, rsize, cset=None, csize=-1, mode=1, sorted=1):
+    def submatrix(self, A_ptr, rset, rsize: int, cset = None, csize: int = -1, mode: int = 1, sorted: int = 1):
         """
         Extracts a submatrix from a cholmod_sparse matrix.
 
@@ -300,7 +302,7 @@ class CholWrapper:
 
         return Cnew
 
-    def updown(self, update, C_ptr, fact_ptr):
+    def updown(self, update: int, C_ptr, fact_ptr) -> int:
         """
         Updates or downdates the factorization (LDL' +/- CC').
 
@@ -335,7 +337,7 @@ class CholWrapper:
 
         return ok
     
-    def updown_solve(self, update, C_ptr, fact_ptr, X_ptr, deltaB_ptr):
+    def updown_solve(self, update: int, C_ptr, fact_ptr, X_ptr, deltaB_ptr) -> int:
         """Solves a system after a rank-k update/downdate.
 
         This is a wrapper for `cholmod_updown_solve`. It is more efficient
@@ -381,7 +383,7 @@ class CholWrapper:
     # Low Rank Updates Syntax Sugar
     # --------------------------------------------------------------------------
     
-    def update(self, C_ptr, fact_ptr):
+    def update(self, C_ptr, fact_ptr) -> int:
         """
         Calculates new L (factorization) for A + CC^T.
         
@@ -396,7 +398,7 @@ class CholWrapper:
         """
         return self.updown(True, C_ptr, fact_ptr)
         
-    def downdate(self, C_ptr, fact_ptr):
+    def downdate(self, C_ptr, fact_ptr) -> int:
         """
         Calculates new L (factorization) for A - CC^T.
         
@@ -415,7 +417,7 @@ class CholWrapper:
     # Data Structures
     # --------------------------------------------------------------------------
         
-    def numpy_to_chol_sparse(self, A, itype=0, dtype=0) -> cholmod_sparse:
+    def numpy_to_chol_sparse(self, A: csc_matrix, itype: int = 0, dtype: int = 0) -> cholmod_sparse:
         """
         Convert a 2D NumPy array A into a cholmod_sparse struct.
         
@@ -464,7 +466,7 @@ class CholWrapper:
         
         return cholA
     
-    def numpy_to_chol_sparse_vec(self, A, itype=0, dtype=0):
+    def numpy_to_chol_sparse_vec(self, A: csc_matrix, itype: int = 0, dtype: int = 0) -> cholmod_sparse:
         """
         Converts a scipy.sparse matrix to a cholmod_sparse struct for Bset.
 
@@ -558,7 +560,7 @@ class CholWrapper:
         # Return ctype.Structure
         return D
 
-    def chol_dense_to_numpy(self, x_ptr):
+    def chol_dense_to_numpy(self, x_ptr) -> np.ndarray:
         """
         Converts a cholmod_dense pointer to a NumPy array.
 
@@ -593,7 +595,7 @@ class CholWrapper:
         # Copy Cholmod Mem (Must still be freed)
         return x_view.copy(order='F')
 
-    def triplet_to_chol_sparse(self,nrow, ncol, rows, cols, vals, stype=0):
+    def triplet_to_chol_sparse(self, nrow: int, ncol: int, rows: List[int], cols: List[int], vals: List[float], stype: int = 0):
         """
         Create a CHOLMOD sparse matrix from triplet form (rows, cols, vals).
 
@@ -663,7 +665,7 @@ class CholWrapper:
     # Cholmod Context
     # --------------------------------------------------------------------------
 
-    def start(self):
+    def start(self) -> None:
         """
         Starts CHOLMOD (cholmod_start).
         """
@@ -671,7 +673,7 @@ class CholWrapper:
             byref(self.common)
         )
 
-    def finish(self):
+    def finish(self) -> None:
         """
         Finishes CHOLMOD (cholmod_finish).
         """
@@ -684,7 +686,7 @@ class CholWrapper:
     # Freeing Memory
     # --------------------------------------------------------------------------
 
-    def free_factor(self, fact_ptr):
+    def free_factor(self, fact_ptr) -> None:
         """
         Frees a cholmod_factor struct.
 
@@ -694,11 +696,11 @@ class CholWrapper:
             Factor to free.
         """
         self.dll.cholmod_free_factor(
-            fact_ptr, 
+            byref(fact_ptr), 
             byref(self.common)
         )
 
-    def free_dense(self, dense_ptr):
+    def free_dense(self, dense_ptr) -> None:
         """
         Frees a cholmod_dense struct.
 
@@ -708,11 +710,11 @@ class CholWrapper:
             Dense matrix to free.
         """
         self.dll.cholmod_free_dense(
-            dense_ptr, 
+            byref(dense_ptr), 
             byref(self.common)
         )
 
-    def free_sparse(self, sparse_ptr):
+    def free_sparse(self, sparse_ptr) -> None:
         """
         Frees a cholmod_sparse struct.
 
@@ -722,7 +724,7 @@ class CholWrapper:
             Sparse matrix to free.
         """
         self.dll.cholmod_free_sparse(
-            sparse_ptr, 
+            byref(sparse_ptr), 
             byref(self.common)
         )
 
@@ -731,7 +733,7 @@ class CholWrapper:
     # Allocating Memory
     # --------------------------------------------------------------------------
 
-    def allocate_dense(self, nrow, ncol):
+    def allocate_dense(self, nrow: int, ncol: int):
         """Allocates a dense matrix in CHOLMOD.
 
         This is a wrapper for `cholmod_allocate_dense`. The memory is managed
@@ -757,14 +759,14 @@ class CholWrapper:
             byref(self.common)
         )
     
-    def allocate_sparse_matrix(dll, nrow, ncol, nzmax, stype, sorted=True, packed=True, common=None):
+    def allocate_sparse_matrix(self, nrow: int, ncol: int, nzmax: int, stype: int, sorted: bool = True, packed: bool = True):
         """
         Allocate a CHOLMOD sparse matrix entirely in CHOLMOD memory.
         Returns POINTER(cholmod_sparse).
         """
         sorted_flag = 1 if sorted else 0
         packed_flag = 1 if packed else 0
-        return dll.cholmod_allocate_sparse(
+        return self.dll.cholmod_allocate_sparse(
             c_size_t(nrow),
             c_size_t(ncol),
             c_size_t(nzmax),
@@ -772,10 +774,10 @@ class CholWrapper:
             c_int(packed_flag),
             c_int(stype),
             c_int(1),            # numeric type: double
-            byref(common)
+            byref(self.common)
         )
     
-    def alloc_factor(self, n, dtype):
+    def alloc_factor(self, n: int, dtype: int):
         """
         Allocate an empty cholmod_factor structure.
 
@@ -792,10 +794,10 @@ class CholWrapper:
             Allocated factor object. Symbolic and numeric contents are uninitialized.
         """
 
-        L_ptr = self.cholmod.cholmod_alloc_factor(
+        L_ptr = self.dll.cholmod_alloc_factor(
             n,
             dtype,
-            self.common
+            byref(self.common)
         )
 
         if not L_ptr:
@@ -803,7 +805,7 @@ class CholWrapper:
 
         return L_ptr
     
-    def zeros(self, nrow, ncol):
+    def zeros(self, nrow: int, ncol: int):
         """Creates a dense matrix of zeros in CHOLMOD.
 
         This is a wrapper for `cholmod_zeros`. The memory is managed
@@ -852,7 +854,7 @@ class CholWrapper:
 
         L_copy_ptr = self.dll.cholmod_copy_factor(
             L_ptr,
-            self.common
+            byref(self.common)
         )
 
         if not L_copy_ptr:
@@ -864,7 +866,7 @@ class CholWrapper:
     # Configuration Functions
     # --------------------------------------------------------------------------
 
-    def config_function_args(self, dll):
+    def config_function_args(self, dll: CDLL) -> None:
 
         # Symbolic Factorization
         dll.cholmod_analyze.argtypes = [
@@ -995,12 +997,12 @@ class CholWrapper:
         # COPY FUNCTIONS
         dll.cholmod_copy_factor.argtypes = [
             POINTER(cholmod_factor),           # L: Factor to copy
-            POINTER(cholmod_common),           # Common: Workspace/Parameters
+            POINTER(cholmod_common)            # Common: Workspace/Parameters
         ]
 
         # Extras
         # For sparse 'b' vector, like an impulse
-        dll.cholmod_spsolve.argtypes = [
+        dll.cholmod_spsolve.argtypes = [ # type: ignore
             c_int,                             # sys: System to solve
             POINTER(cholmod_factor),           # L: Factorization
             POINTER(cholmod_dense),            # B: Right hand side
@@ -1013,7 +1015,7 @@ class CholWrapper:
             POINTER(cholmod_common)            # Common: Workspace/Parameters
         ]
 
-    def config_return_types(self, dll):
+    def config_return_types(self, dll: CDLL) -> None:
 
         dll.cholmod_analyze.restype = POINTER(cholmod_factor)
         dll.cholmod_factorize_p.restype = c_int
@@ -1035,7 +1037,7 @@ class CholWrapper:
         dll.cholmod_copy_factor.restype = POINTER(cholmod_factor)
         
         # Extras
-        dll.cholmod_spsolve.restype = POINTER(cholmod_sparse)
+        dll.cholmod_spsolve.restype = POINTER(cholmod_sparse) # type: ignore
         dll.cholmod_norm_sparse.restype = c_double
 
 

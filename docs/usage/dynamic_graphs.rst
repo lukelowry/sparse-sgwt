@@ -23,7 +23,7 @@ Here is a simple example demonstrating how to initialize the context, update the
     # 1. Define poles upfront (e.g., for a band-pass filter at scale=0.1)
     poles = [1 / 0.1]
 
-    # 2. Create an impulse signal at a specific node
+    # 2. Create an impulse signal at a specific vertex
     X  = impulse(L, n=1200)
 
     # 3. Use the DyConvolve context
@@ -32,12 +32,12 @@ Here is a simple example demonstrating how to initialize the context, update the
         Y_before = conv.bandpass(X)
 
         # 4. Introduce a topology change: add a new edge
-        # This connects node 1200 and 600 with a high weight.
+        # This connects vertex 1200 and 600 with a high weight.
         conv.addbranch(1200, 600, w=100.0)
 
         # 5. Filter the same signal again on the modified graph
         Y_after = conv.bandpass(X)
 
-In this example, ``Y_after`` will show the impulse signal having propagated from node 1200 to node 600, which would not have occurred in ``Y_before``.
+In this example, ``Y_after`` will show the impulse signal having propagated from vertex 1200 to vertex 600, which would not have occurred in ``Y_before``.
 
 For a more advanced simulation of a real-time data stream with topology events, see the :doc:`/dynamic/demo_dynamic_stream` example.

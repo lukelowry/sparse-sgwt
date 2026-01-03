@@ -13,11 +13,6 @@ Sparse SGWT
     :target: ./LICENSE.md
     :alt: License
 
-.. image:: https://img.shields.io/badge/Changelog-Keep%20a%20Changelog-blue.svg
-    :target: ./CHANGELOG.rst
-    :alt: Changelog
-
-
 A high-performance Python library for sparse Graph Signal Processing (GSP) and Spectral Graph Wavelet Transforms (SGWT). This package leverages the ``CHOLMOD`` library for efficient sparse direct solvers, providing significant speedups over traditional dense or iterative methods for large-scale graph convolution.
 
 Key Features
@@ -50,7 +45,7 @@ Here is a quick example of applying a band-pass filter to an impulse signal on t
     # 1. Load a built-in graph Laplacian, which defines the graph's topology.
     L = sgwt.DELAY_TEXAS
 
-    # 2. Create a vertex-domain signal. Here, a Dirac impulse on the 600th node.
+    # 2. Create a vertex-domain signal. Here, a Dirac impulse on the 600th vertex.
     #    The `impulse` helper function ensures the required column-major memory order.
     signal = sgwt.impulse(L, n=600)
 
@@ -58,14 +53,14 @@ Here is a quick example of applying a band-pass filter to an impulse signal on t
     #    symbolic factorization of the Laplacian for efficient repeated solves.
     with sgwt.Convolve(L) as conv:
         # 4. Apply an analytical band-pass filter. The scale parameter controls
-        #    the filter's center frequency; larger scales target lower frequencies.
+        #    the filter's center frequency.
         filtered_signals = conv.bandpass(signal, scales=[10.0])
 
     # 5. The result is a list of filtered signals, one for each input scale.
     result = filtered_signals[0]
 
-    print(f"Graph has {L.shape[0]} nodes.")
-    print(f"Signal on node 600, shape: {signal.shape}")
+    print(f"Graph has {L.shape[0]} vertices.")
+    print(f"Signal on vertex 600, shape: {signal.shape}")
     print(f"Filtered signal shape: {result.shape}")
 
 Documentation
