@@ -17,7 +17,7 @@ autodoc_default_options = {
 
 # Better API formatting
 autoclass_content = "both"        # Include __init__ docstring in class description
-autodoc_typehints = "description" # Move type hints to parameter descriptions
+autodoc_typehints = "signature"   # Show type hints in signatures, not parameter descriptions
 add_module_names = False          # Don't show full module path (e.g. sgwt.static.Convolve -> Convolve)
 
 extensions.append("sphinx.ext.intersphinx")

@@ -1,9 +1,9 @@
 Sparse SGWT
 ====================================
 
-.. image:: https://badge.fury.io/py/sgwt.svg
-    :target: https://badge.fury.io/py/sgwt
-    :alt: PyPI version
+.. image:: https://img.shields.io/pypi/v/sgwt.svg
+    :target: https://pypi.org/project/sgwt/
+    :alt: PyPI Version
 
 .. image:: https://img.shields.io/pypi/pyversions/sgwt.svg
     :target: https://pypi.org/project/sgwt/
@@ -27,7 +27,7 @@ Key Features
 Installation
 ------------
 
-You can install ``sgwt`` from PyPI:
+You can install ``sgwt`` from the `Python Package Index (PyPI) <https://pypi.org/project/sgwt/>`_:
 
 .. code-block:: bash
 
