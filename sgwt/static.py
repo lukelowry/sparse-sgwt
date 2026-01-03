@@ -85,7 +85,7 @@ class Convolve:
         ----------
         B : np.ndarray
             Input signal array (n_vertices, n_timesteps) with column-major ordering (F).
-        K : VFKern or dict
+        K : Union[VFKern, dict]
             Kernel function (Vector Fitting model) to apply.
 
         Returns
@@ -146,7 +146,7 @@ class Convolve:
         ----------
         B : np.ndarray
             Input signal array (n_vertices, n_timesteps).
-        scales : list of float
+        scales : list[float]
             List of scales to compute coefficients for.
         Bset : csc_matrix, optional
             Sparse indicator vector for localized coefficient computation.
@@ -155,7 +155,7 @@ class Convolve:
 
         Returns
         -------
-        list of np.ndarray
+        list[np.ndarray]
             Filtered signals for each scale.
         """
 
@@ -208,12 +208,12 @@ class Convolve:
         ----------
         B : np.ndarray
             Input signal array (n_vertices, n_timesteps).
-        scales : list of float
+        scales : list[float]
             List of scales to compute coefficients for.
 
         Returns
         -------
-        list of np.ndarray
+        list[np.ndarray]
             Filtered signals for each scale.
         """
 
@@ -265,12 +265,12 @@ class Convolve:
         ----------
         B : np.ndarray
             Input signal array (n_vertices, n_timesteps).
-        scales : list of float
+        scales : list[float]
             List of scales to compute coefficients for.
 
         Returns
         -------
-        list of np.ndarray
+        list[np.ndarray]
             Filtered signals for each scale.
         """
       

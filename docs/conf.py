@@ -14,6 +14,7 @@ autodoc_default_options = {
     "undoc-members": True,
     "member-order": "groupwise",
 }
+autodoc_preserve_defaults = True
 
 # Better API formatting
 autoclass_content = "both"        # Include __init__ docstring in class description
@@ -40,6 +41,7 @@ napoleon_preprocess_types = True
 napoleon_type_aliases = {
     # Common aliases
     "np": "numpy",
+    "np.ndarray": "~numpy.ndarray",
     "csc_matrix": "~scipy.sparse.csc_matrix",
 
     # Your project's types

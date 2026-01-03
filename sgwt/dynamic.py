@@ -33,7 +33,7 @@ class DyConvolve:
         ----------
         L : csc_matrix
             Sparse Graph Laplacian.
-        poles : list or VFKern
+        poles : Union[list[float], VFKern]
             Predetermined set of poles (equivalent to 1/scale for analytical filters).
         """
 
@@ -167,7 +167,7 @@ class DyConvolve:
 
         Returns
         -------
-        list of np.ndarray
+        list[np.ndarray]
             Filtered signals for each pre-defined pole.
         """
 
@@ -213,7 +213,7 @@ class DyConvolve:
 
         Returns
         -------
-        list of np.ndarray
+        list[np.ndarray]
             Filtered signals for each pre-defined pole.
         """
 
@@ -262,7 +262,7 @@ class DyConvolve:
 
         Returns
         -------
-        list of np.ndarray
+        list[np.ndarray]
             Filtered signals for each pre-defined pole.
         """
       

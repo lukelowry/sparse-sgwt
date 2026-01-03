@@ -25,11 +25,19 @@ from typing import Any, Callable, Dict, Union
 
 @dataclass
 class VFKern:
-    """
-    Vector Fitting Kernel representation.
-    R: Residual Matrix (n_poles, n_dims)
-    Q: Poles Vector (n_poles, 1)
-    D: Offset (n_dims, 1)
+    """Vector Fitting Kernel representation.
+
+    A dataclass to store the components of a rational kernel approximation
+    obtained from Vector Fitting.
+
+    Attributes
+    ----------
+    R : np.ndarray
+        Residue matrix of shape (n_poles, n_dims).
+    Q : np.ndarray
+        Poles vector of shape (n_poles,).
+    D : np.ndarray
+        Direct term (offset) of shape (n_dims,).
     """
     R: np.ndarray
     Q: np.ndarray
@@ -37,7 +45,19 @@ class VFKern:
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> 'VFKern':
-        """Loads kernel data from a dictionary/JSON structure."""
+        """Loads kernel data from a dictionary.
+
+        Parameters
+        ----------
+        data : dict
+            A dictionary containing the kernel parameters, typically loaded
+            from a JSON file. It should have 'poles' and 'd' keys.
+
+        Returns
+        -------
+        VFKern
+            A new instance of the VFKern class.
+        """
         poles = data.get('poles', [])
         return cls(
             R=np.array([p.get('r', []) for p in poles]),
