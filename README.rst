@@ -71,7 +71,7 @@ For detailed usage, API reference, and theoretical background, please visit the 
 Citation
 --------
 
-If you use this library in your research, please cite it. The `GitHub repository <https://github.com/lukelowry/sparse-sgwt>`_ includes a ``CITATION.cff`` file that provides citation metadata. On GitHub, you can use the "Cite this repository" button on the sidebar to get the citation in your preferred format (including BibTeX).
+If you use this library in your research, please cite it. The `GitHub repository <https://github.com/lukelowry/sgwt>`_ includes a ``CITATION.cff`` file that provides citation metadata. On GitHub, you can use the "Cite this repository" button on the sidebar to get the citation in your preferred format (including BibTeX).
 
 For convenience, the BibTeX entry for the associated paper is:
 
