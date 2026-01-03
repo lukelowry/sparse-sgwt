@@ -17,7 +17,7 @@ autodoc_default_options = {
 
 # Better API formatting
 autoclass_content = "both"        # Include __init__ docstring in class description
-autodoc_typehints = "signature"   # Show type hints in signatures, not parameter descriptions
+autodoc_typehints = "description"   # Show type hints in signatures, not parameter descriptions
 add_module_names = False          # Don't show full module path (e.g. sgwt.static.Convolve -> Convolve)
 
 extensions.append("sphinx.ext.intersphinx")
@@ -68,3 +68,39 @@ html_theme_options = {
 }
 
 autodoc_mock_imports = ["ctypes"]
+
+# -- Workaround for numpydoc and autodoc_typehints ---------------------------
+# This is a workaround to prevent numpydoc from rendering the 'Parameters'
+# section, which would be redundant when `autodoc_typehints = 'description'`
+# is used. Numpydoc will still process other sections like 'Returns' and
+# 'Examples'.
+# See: https://github.com/numpy/numpydoc/issues/215
+def supress_numpydoc_parameters(app, what, name, obj, options, lines):
+    if what not in ('function', 'method', 'class', 'attribute'):
+        return
+
+    # Find the start of the 'Parameters' section
+    try:
+        param_start_index = lines.index('Parameters')
+    except ValueError:
+        return
+
+    # Check for the underline '----------'
+    if len(lines) <= param_start_index + 1 or not lines[param_start_index + 1].strip().startswith('---'):
+        return
+
+    # Find the end of the 'Parameters' section
+    param_end_index = len(lines)
+    known_sections = ('Returns', 'Yields', 'Receives', 'Other Parameters', 'Attributes', 'Methods', 'See Also', 'Notes', 'Warnings', 'References', 'Examples')
+    
+    for i in range(param_start_index + 2, len(lines)):
+        line_stripped = lines[i].strip()
+        if line_stripped in known_sections and len(lines) > i + 1 and lines[i+1].strip().startswith(('-', '=')):
+            param_end_index = i
+            break
+
+    del lines[param_start_index:param_end_index]
+
+def setup(app):
+    """Register the Sphinx hook."""
+    app.connect('autodoc-process-docstring', supress_numpydoc_parameters)
