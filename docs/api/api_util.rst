@@ -1,7 +1,7 @@
 Utilities
 =================
 
-.. automodule:: sgwt.io
+.. automodule:: sgwt.utils
    :members: VFKern
    :no-undoc-members:
    :show-inheritance:
