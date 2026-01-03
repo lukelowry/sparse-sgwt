@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "sgwt"
-version = "0.3.1"
+version = "0.3.2"
 description = "Sparse Tools for the Spectral Graph Wavelet Transformation and Graph Convolution"
 readme = "README.rst"
 license = { file = "LICENSE.md" }
@@ -23,9 +23,9 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/lukelowry/sparse-sgwt"
-Repository = "https://github.com/lukelowry/sparse-sgwt"
-"Bug Tracker" = "https://github.com/lukelowry/sparse-sgwt/issues"
+Homepage = "https://github.com/lukelowry/sgwt"
+Repository = "https://github.com/lukelowry/sgwt"
+"Bug Tracker" = "https://github.com/lukelowry/sgwt/issues"
 
 [tool.setuptools]
 include-package-data = true

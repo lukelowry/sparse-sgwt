@@ -9,17 +9,27 @@ and this project adheres to `Semantic Versioning <https://semver.org/spec/v2.0.0
 [Unreleased]
 ------------
 
+[0.3.2] - 2026-01-03
+--------------------
+
+Added
+~~~~~
+- ``CHANGELOG.rst`` to track project history.
+- ``CITATION.cff`` for easier citation.
+
 Changed
 ~~~~~~~
+- Renamed internal ``io`` module to ``util`` for better semantic clarity.
 - Renamed ``VFKern`` to ``VFKernel`` for clarity and consistency.
-- ``CHANGELOG.rst`` to track project history.
-- ``CITATION.cff`` for citation.
 - Improved ``README.rst`` layout, usage example, and author links.
 - Enhanced documentation for the data library (``library_data.rst``) with code snippets.
 - Corrected and clarified kernel JSON format documentation (``library_json.rst``).
+- Standardized API and documentation for consistency (e.g., `n_vertices`, `np.ndarray` links, default parameter formatting).
+- Switched documentation parser from `numpydoc` to `sphinx.ext.napoleon` for improved styling and stability.
 
 Fixed
 ~~~~~
+- Updated documentation and packaging to reflect Windows-only compatibility due to the pre-compiled CHOLMOD ``.dll``.
 
 [0.3.1] - 2026-01-01
 --------------------
