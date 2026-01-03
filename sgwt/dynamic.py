@@ -33,7 +33,7 @@ class DyConvolve:
         ----------
         L : csc_matrix
             Sparse Graph Laplacian.
-        poles : Union[list[float], VFKern]
+        poles : list[float] | VFKern
             Predetermined set of poles (equivalent to 1/scale for analytical filters).
         """
 

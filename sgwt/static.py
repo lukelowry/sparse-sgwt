@@ -85,7 +85,7 @@ class Convolve:
         ----------
         B : np.ndarray
             Input signal array (n_vertices, n_timesteps) with column-major ordering (F).
-        K : Union[VFKern, dict]
+        K : VFKern | dict
             Kernel function (Vector Fitting model) to apply.
 
         Returns
@@ -146,11 +146,11 @@ class Convolve:
         ----------
         B : np.ndarray
             Input signal array (n_vertices, n_timesteps).
-        scales : list[float]
+        scales : list[float], default: [1]
             List of scales to compute coefficients for.
         Bset : csc_matrix, optional
             Sparse indicator vector for localized coefficient computation.
-        refactor : bool
+        refactor : bool, default: True
             Whether to perform numeric factorization for each scale.
 
         Returns
@@ -208,7 +208,7 @@ class Convolve:
         ----------
         B : np.ndarray
             Input signal array (n_vertices, n_timesteps).
-        scales : list[float]
+        scales : list[float], default: [1]
             List of scales to compute coefficients for.
 
         Returns
@@ -265,7 +265,7 @@ class Convolve:
         ----------
         B : np.ndarray
             Input signal array (n_vertices, n_timesteps).
-        scales : list[float]
+        scales : list[float], default: [1]
             List of scales to compute coefficients for.
 
         Returns
