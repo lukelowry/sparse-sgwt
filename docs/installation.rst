@@ -27,4 +27,4 @@ The following dependencies are automatically installed:
 CHOLMOD
 -------------------
 
-This package leverages the ``CHOLMOD`` library from SuiteSparse for high-performance sparse matrix operations. The package includes pre-compiled shared libraries for common operating systems (Windows, Linux, macOS), so no separate installation of SuiteSparse is typically required.
+This package leverages the ``CHOLMOD`` library from SuiteSparse for high-performance sparse matrix operations. The package currently includes a pre-compiled shared library only for **Windows**, so it is only compatible with Windows operating systems.
