@@ -131,24 +131,49 @@ class DyConvolve:
             raise Exception("Cannot call without VFKern Object")
 
         # List, malloc, numpy, etc.
+        nVertex = B.shape[0]
+        nTime = B.shape[1]
         nDim = self.R.shape[1]
         X1, Xset = self.X1, self.Xset
         Y, E   = self.Y, self.E
 
-        # Initialize with direct term if it exists
-        W = np.zeros((*B.shape, nDim))
-        if self.D.size > 0:
-            W += self.D
-
+        # (nVert x nTime)
         B_chol = byref(self.chol.numpy_to_chol_dense(B))
-        
+
+        # nPoles of 
+        # (nDim* nVert,  nVert)
+        R_all = [
+            self.chol.allocate_sparse_matrix(nDim*nVertex, nVertex)
+            for pole in self.poles
+        ]
+        # So vertically stacked EYE matricies
+
+        # TODO Load R with actual values
+
+        # Then (running total) output Y needs to be
+        # Shape (N * nDim x T)
+        Y = self.chol.allocate_dense(nDim*nVertex, nTime)
+        # [ Y1 (nVert x Time)  ]
+        # [ Y2 (nVert x Time)  ]
+        #    .....
+        # [ YM (nVert x Time)  ]
+
+
         for fact_ptr, r in zip(self.factors, self.R):
             # The benefit now is we never have to factor, just solve
             self.chol.solve2(fact_ptr, B_chol,  None, X1, Xset, Y, E) 
-            # Before Residue
-            Z = self.chol.chol_dense_to_numpy(X1)
+            # Before Residue 
+
+            # NOTE multiply by large residue eye matrix for each dim
+            # scholmod_sdmult for
+            # Y = Y + R * X1
+            # Where R is sparse
+
             # Cross multiply with residual (SLOW)
-            W += Z[:, :, None]*r  
+
+        # (nDim * nVert, nTime)
+        W = self.chol.chol_dense_to_numpy(X1)
+        
         return W
     
     
