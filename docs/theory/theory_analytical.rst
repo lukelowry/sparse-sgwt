@@ -33,3 +33,10 @@ This filter qualifies as a wavelet generating kernel for the SGWT, since :math:`
 .. math::
 
    \Psi(0)=0  \qquad\text{and}\quad \int_0^{\infty}\dfrac{\Psi^2(x)}{x}\mathrm{d}x <\infty
+
+.. seealso::
+   The analytical filters are implemented as methods on the convolution contexts:
+
+   * :meth:`~sgwt.static.Convolve.lowpass`
+   * :meth:`~sgwt.static.Convolve.bandpass`
+   * :meth:`~sgwt.static.Convolve.highpass`

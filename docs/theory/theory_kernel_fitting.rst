@@ -11,4 +11,8 @@ The kernel fitting representation is more generally a vector fitted function, a 
 
 An iterative pole reallocation procedure is used to converge to a reduced order model. The convolution of some function :math:`\mathbf{f}*g_a` is computed using the Cholesky decomposition and memory efficient re-factors.
 
-For details on the file format used to store these kernels, see :doc:`library_json`.
+.. seealso::
+   :doc:`../library/library_json`
+      For details on the file format used to store these kernels.
+   :doc:`theory_cholesky`
+      For information on the underlying Cholesky-based solver implementation.
