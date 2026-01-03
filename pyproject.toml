@@ -58,7 +58,6 @@ docs = [
     "memory_profiler",
     "sphinx-rtd-theme",
     "sphinx-copybutton",
-    "importlib-metadata; python_version < '3.8'",
 ]
 
 [tool.setuptools.packages.find]

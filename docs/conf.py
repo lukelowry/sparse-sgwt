@@ -1,9 +1,5 @@
-import sys
-if sys.version_info < (3, 8):
-    import importlib_metadata
-else:
-    import importlib.metadata as importlib_metadata
-
+import sgwt
+import importlib.metadata as importlib_metadata
 
 extensions = [
     "sphinx.ext.viewcode",
