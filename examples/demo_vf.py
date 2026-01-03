@@ -2,7 +2,7 @@ import os
 import matplotlib.pyplot as plt
 
 # DOC_START_CODE_EXCLUDE_IMPORTS
-from sgwt import DyConvolve, impulse, VFKern
+from sgwt import DyConvolve, impulse, VFKernel
 from sgwt import IMPEDANCE_EASTWEST as L
 from sgwt import COORD_EASTWEST as C
 from sgwt import MODIFIED_MORLET as Kjson
@@ -11,7 +11,7 @@ from sgwt import MODIFIED_MORLET as Kjson
 X = impulse(L, n=-1000)
 
 # TODO kernel scaling  #  K.scale_kern(...)
-K = VFKern.from_dict(Kjson)
+K = VFKernel.from_dict(Kjson)
 K.Q /= 2000
 K.R /= 2000
 

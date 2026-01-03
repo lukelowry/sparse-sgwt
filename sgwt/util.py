@@ -24,7 +24,7 @@ from json import load as jsonload
 from typing import Any, Callable, Dict, Union
 
 @dataclass
-class VFKern:
+class VFKernel:
     """Vector Fitting Kernel representation.
 
     A dataclass to store the components of a rational kernel approximation
@@ -44,7 +44,7 @@ class VFKern:
     D: np.ndarray
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'VFKern':
+    def from_dict(cls, data: Dict[str, Any]) -> 'VFKernel':
         """Loads kernel data from a dictionary.
 
         Parameters
@@ -55,8 +55,8 @@ class VFKern:
 
         Returns
         -------
-        VFKern
-            A new instance of the VFKern class.
+        VFKernel
+            A new instance of the VFKernel class.
         """
         poles = data.get('poles', [])
         return cls(

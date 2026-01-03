@@ -11,6 +11,7 @@ and this project adheres to `Semantic Versioning <https://semver.org/spec/v2.0.0
 
 Changed
 ~~~~~~~
+- Renamed ``VFKern`` to ``VFKernel`` for clarity and consistency.
 - ``CHANGELOG.rst`` to track project history.
 - ``CITATION.cff`` for citation.
 - Improved ``README.rst`` layout, usage example, and author links.

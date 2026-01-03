@@ -1,7 +1,7 @@
 Kernel JSON
 ==================
 
-The library supports loading spectral kernels defined by rational approximations (Vector Fitting) stored in JSON format. These files are parsed into :class:`~sgwt.io.VFKern` objects for use in convolution.
+The library supports loading spectral kernels defined by rational approximations (Vector Fitting) stored in JSON format. These files are parsed into :class:`~sgwt.util.VFKernel` objects for use in convolution.
 
 JSON Structure
 --------------

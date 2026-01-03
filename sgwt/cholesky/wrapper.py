@@ -13,7 +13,7 @@ from scipy.sparse import csc_matrix
 from typing import List, Optional
 
 from .structs import *
-from ..io import get_cholmod_dll
+from ..util import get_cholmod_dll
 
 # Numeric precision
 CHOLMOD_SINGLE = 0   # 32-bit float

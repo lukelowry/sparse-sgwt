@@ -9,7 +9,7 @@ Author: Luke Lowery (lukel@tamu.edu)
 """
 
 from .cholesky import CholWrapper, cholmod_dense, cholmod_sparse
-from .io import VFKern
+from .util import VFKernel
 
 import numpy as np
 from scipy.sparse import csc_matrix # type: ignore
@@ -74,10 +74,10 @@ class Convolve:
         # Finish cholmod
         self.chol.finish()
 
-    def __call__(self, B: np.ndarray, K: Union[VFKern, dict]) -> np.ndarray:
+    def __call__(self, B: np.ndarray, K: Union[VFKernel, dict]) -> np.ndarray:
         return self.convolve(B, K)
 
-    def convolve(self, B: np.ndarray, K: Union[VFKern, dict]) -> np.ndarray:
+    def convolve(self, B: np.ndarray, K: Union[VFKernel, dict]) -> np.ndarray:
         """
         Performs graph convolution using a specified kernel.
 
@@ -85,7 +85,7 @@ class Convolve:
         ----------
         B : np.ndarray
             Input signal array (n_vertices, n_timesteps) with column-major ordering (F).
-        K : VFKern | dict
+        K : VFKernel | dict
             Kernel function (Vector Fitting model) to apply.
 
         Returns
@@ -95,10 +95,10 @@ class Convolve:
         """
         # 1. Input validation and conversion before heavy lifting
         if isinstance(K, dict):
-            K = VFKern.from_dict(K)
+            K = VFKernel.from_dict(K)
 
-        if not isinstance(K, VFKern):
-            raise TypeError("Kernel K must be a VFKern object or a compatible dictionary.")
+        if not isinstance(K, VFKernel):
+            raise TypeError("Kernel K must be a VFKernel object or a compatible dictionary.")
 
         if K.R is None or K.Q is None:
             raise ValueError("Kernel K must contain residues (R) and poles (Q).")

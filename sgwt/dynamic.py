@@ -10,7 +10,7 @@ Author: Luke Lowery (lukel@tamu.edu)
 
 from .cholesky import CholWrapper
 from .cholesky import cholmod_dense, cholmod_sparse
-from .io import VFKern
+from .util import VFKernel
 
 import numpy as np
 from scipy.sparse import csc_matrix # type: ignore
@@ -22,7 +22,7 @@ from types import TracebackType
 
 class DyConvolve:
 
-    def __init__(self, L:csc_matrix, poles: Union[List[float], VFKern]) -> None:
+    def __init__(self, L:csc_matrix, poles: Union[List[float], VFKernel]) -> None:
         """
         Initializes a dynamic convolution context.
         
@@ -33,7 +33,7 @@ class DyConvolve:
         ----------
         L : csc_matrix
             Sparse Graph Laplacian.
-        poles : list[float] | VFKern
+        poles : list[float] | VFKernel
             Predetermined set of poles (equivalent to 1/scale for analytical filters).
         """
 
@@ -44,7 +44,7 @@ class DyConvolve:
         self.chol = CholWrapper(L)
 
         # If VF model given
-        if isinstance(poles, VFKern): # type: ignore
+        if isinstance(poles, VFKernel): # type: ignore
             self.poles = poles.Q
             self.R = poles.R
             self.D = poles.D
@@ -128,7 +128,7 @@ class DyConvolve:
         """
 
         if self.R is None:
-            raise Exception("Cannot call without VFKern Object")
+            raise Exception("Cannot call without VFKernel Object")
 
         # List, malloc, numpy, etc.
         nDim = self.R.shape[1]

@@ -31,7 +31,7 @@ For optimal performance, it is highly recommended to create the signal array wit
 Creating Test Signals with ``impulse``
 --------------------------------------
 
-For testing and examples, the library provides the :func:`~sgwt.io.impulse` helper function to quickly generate a Dirac impulse (a value of `1` at one vertex and `0` everywhere else).
+For testing and examples, the library provides the :func:`~sgwt.util.impulse` helper function to quickly generate a Dirac impulse (a value of `1` at one vertex and `0` everywhere else).
 
 .. code-block:: python
 

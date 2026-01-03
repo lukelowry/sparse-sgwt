@@ -51,7 +51,7 @@ Vertex-domain signals are provided for some graphs, most commonly geographic coo
 Kernels
 -------
 
-Pre-computed rational approximations for common spectral graph wavelets are available as dictionaries. These can be loaded into :class:`~sgwt.io.VFKern` objects for use with :meth:`~sgwt.static.Convolve.convolve`.
+Pre-computed rational approximations for common spectral graph wavelets are available as dictionaries. These can be loaded into :class:`~sgwt.util.VFKernel` objects for use with :meth:`~sgwt.static.Convolve.convolve`.
 
 *   **MEXICAN_HAT**: Mexican Hat wavelet.
 *   **MODIFIED_MORLET**: Modified Morlet wavelet.
@@ -62,14 +62,14 @@ Pre-computed rational approximations for common spectral graph wavelets are avai
 
 .. code-block:: python
 
-   from sgwt import VFKern, MODIFIED_MORLET
+   from sgwt import VFKernel, MODIFIED_MORLET
 
    # The built-in kernel is a dictionary
    print(type(MODIFIED_MORLET))
    # <class 'dict'>
 
-   # Load it into a VFKern object for use in convolution
-   kernel = VFKern.from_dict(MODIFIED_MORLET)
+   # Load it into a VFKernel object for use in convolution
+   kernel = VFKernel.from_dict(MODIFIED_MORLET)
 
    print(kernel.R.shape)
    # (14, 1)

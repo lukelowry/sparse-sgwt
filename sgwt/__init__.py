@@ -13,10 +13,10 @@ from .static import Convolve
 # Dynamic Graphs (Optimized performance, less versatile)
 from .dynamic import DyConvolve
 
-from .io import (
+from .util import (
 
     # Vector Fitting Dataclass
-    VFKern,
+    VFKernel,
     impulse,
 
     # DLL Reader

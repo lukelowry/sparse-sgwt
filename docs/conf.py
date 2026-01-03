@@ -45,7 +45,7 @@ napoleon_type_aliases = {
     "csc_matrix": "~scipy.sparse.csc_matrix",
 
     # Your project's types
-    "VFKern": "~sgwt.io.VFKern",
+    "VFKernel": "~sgwt.util.VFKernel",
 
     # Python built-ins and typing module
     "optional": "typing.Optional",

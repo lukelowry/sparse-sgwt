@@ -17,7 +17,7 @@ class TestSGWTFunctionality(unittest.TestCase):
         self.sgwt = sgwt
         self.L = sgwt.DELAY_TEXAS
         self.K = sgwt.MODIFIED_MORLET
-        self.VFKern = sgwt.VFKern
+        self.VFKernel = sgwt.VFKernel
         
         self.X = self.sgwt.impulse(self.L, n=100)
         self.scales = [0.1, 1.0, 10.0]
@@ -72,8 +72,8 @@ class TestSGWTFunctionality(unittest.TestCase):
             res = conv.convolve(self.X, self.K)
             self.assertEqual(res.shape[0], self.L.shape[0])
             
-            # Test with VFKern object
-            vk = self.VFKern.from_dict(self.K)
+            # Test with VFKernel object
+            vk = self.VFKernel.from_dict(self.K)
             res_vk = conv.convolve(self.X, vk)
             np.testing.assert_allclose(res, res_vk)
 
@@ -84,13 +84,13 @@ class TestSGWTFunctionality(unittest.TestCase):
                 conv.convolve(self.X, "not a kernel")
             
             with self.assertRaises(ValueError):
-                conv.convolve(self.X, self.VFKern(Q=None, R=None, D=None))
+                conv.convolve(self.X, self.VFKernel(Q=None, R=None, D=None))
 
     def test_vf_direct_term(self):
-        """Verify that the direct term D in VFKern is applied correctly."""
+        """Verify that the direct term D in VFKernel is applied correctly."""
         # Create a simple kernel: 1/(L+I) + 5
         # Result should be (L+I)^-1 * X + 5
-        mock_k = self.VFKern(
+        mock_k = self.VFKernel(
             Q=np.array([1.0]),
             R=np.array([[1.0]]),
             D=np.array([5.0])
@@ -107,7 +107,7 @@ class TestSGWTFunctionality(unittest.TestCase):
     def test_vf_multi_dim_direct_term(self):
         """Verify direct term D broadcasting for multi-dimensional kernels."""
         # Kernel with 2 dimensions, D = [5, 10]
-        mock_k = self.VFKern(
+        mock_k = self.VFKernel(
             Q=np.array([1.0]),
             R=np.array([[1.0, 2.0]]), # 1 pole, 2 dims
             D=np.array([5.0, 10.0])
@@ -122,7 +122,7 @@ class TestSGWTFunctionality(unittest.TestCase):
 
     def test_dy_vf_direct_term(self):
         """Verify direct term D in DyConvolve context."""
-        vk = self.VFKern(
+        vk = self.VFKernel(
             Q=np.array([1.0]),
             R=np.array([[1.0]]),
             D=np.array([10.0])
@@ -136,7 +136,7 @@ class TestSGWTFunctionality(unittest.TestCase):
     def test_convolve_consistency(self):
         """Verify consistency between DyConvolve and Convolve results for all filters and VF."""
         poles = [1.0 / s for s in self.scales]
-        vk = self.VFKern.from_dict(self.K)
+        vk = self.VFKernel.from_dict(self.K)
         
         with self.sgwt.DyConvolve(self.L, vk) as dy_conv:
             dy_vf = dy_conv.convolve(self.X)
