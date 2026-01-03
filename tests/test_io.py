@@ -3,8 +3,8 @@
 Sparse Spectral Graph Wavelet Transform (SGWT)
 ----------------------------------------------
 Author: Luke Lowery (lukel@tamu.edu)
-File: tests/test_io.py
-Description: Tests for I/O utilities, resource loading, and data integrity.
+File: tests/test_util.py
+Description: Tests for general utilities, resource loading, and data integrity.
 """
 import unittest
 
@@ -13,7 +13,7 @@ from scipy.sparse import csc_matrix
 
 from ctypes import CDLL
 
-class TestSGWTIo(unittest.TestCase):
+class TestSGWTUtil(unittest.TestCase):
 
     def setUp(self):
         import sgwt
@@ -30,11 +30,11 @@ class TestSGWTIo(unittest.TestCase):
             self.fail(f"get_cholmod_dll raised Exception: {e}")
 
     def test_kernel_loading(self):
-        """Verify built-in kernels are loaded as VFKern objects with valid data."""
+        """Verify built-in kernels are loaded as VFKernel objects with valid data."""
         kernels = [self.sgwt.MEXICAN_HAT, self.sgwt.MODIFIED_MORLET, self.sgwt.SHANNON]
         for kjson in kernels:
-            k = self.sgwt.VFKern.from_dict(kjson)
-            self.assertIsInstance(k, self.sgwt.VFKern)
+            k = self.sgwt.VFKernel.from_dict(kjson)
+            self.assertIsInstance(k, self.sgwt.VFKernel)
             self.assertGreater(len(k.Q), 0, "Kernel poles (Q) should not be empty")
             self.assertGreater(len(k.R), 0, "Kernel residues (R) should not be empty")
 
@@ -68,8 +68,8 @@ class TestSGWTIo(unittest.TestCase):
         self.assertEqual(self.sgwt.DELAY_TEXAS.shape[0], self.sgwt.COORD_TEXAS.shape[0])
         self.assertEqual(self.sgwt.DELAY_USA.shape[0], self.sgwt.COORD_USA.shape[0])
 
-    def test_vfkern_from_json_logic(self):
-        """Test the VFKern.from_json factory method with mock data."""
+    def test_vfkernel_from_dict_logic(self):
+        """Test the VFKernel.from_dict factory method with mock data."""
         mock_data = {
             'poles': [
                 {'q': 1.0, 'r': [0.1, 0.2]},
@@ -77,14 +77,14 @@ class TestSGWTIo(unittest.TestCase):
             ],
             'd': [0.5, 0.6]
         }
-        kern = self.sgwt.VFKern.from_dict(mock_data)
+        kern = self.sgwt.VFKernel.from_dict(mock_data)
         np.testing.assert_array_equal(kern.Q, [1.0, 2.0])
         np.testing.assert_array_equal(kern.R, [[0.1, 0.2], [0.3, 0.4]])
         np.testing.assert_array_equal(kern.D, [0.5, 0.6])
 
     def test_resource_not_found(self):
         """Loading a non-existent resource raises FileNotFoundError."""
-        from sgwt.io import _load_resource
+        from sgwt.util import _load_resource
         with self.assertRaises(FileNotFoundError):
             _load_resource("library/NON_EXISTENT_FILE.mat", lambda p: p)
 

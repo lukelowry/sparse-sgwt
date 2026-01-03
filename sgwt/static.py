@@ -9,7 +9,7 @@ Author: Luke Lowery (lukel@tamu.edu)
 """
 
 from .cholesky import CholWrapper, cholmod_dense, cholmod_sparse
-from .io import VFKern
+from .util import VFKernel
 
 import numpy as np
 from scipy.sparse import csc_matrix # type: ignore
@@ -32,8 +32,8 @@ class Convolve:
             Sparse Graph Laplacian.
         """
 
-        # Store Number of nodes
-        self.nBus = L.shape[0]
+        # Store number of vertices
+        self.n_vertices = L.shape[0]
         
         # Handles symb factor when entering context
         self.chol = CholWrapper(L)
@@ -74,31 +74,31 @@ class Convolve:
         # Finish cholmod
         self.chol.finish()
 
-    def __call__(self, B: np.ndarray, K: Union[VFKern, dict]) -> np.ndarray:
+    def __call__(self, B: np.ndarray, K: Union[VFKernel, dict]) -> np.ndarray:
         return self.convolve(B, K)
 
-    def convolve(self, B: np.ndarray, K: Union[VFKern, dict]) -> np.ndarray:
+    def convolve(self, B: np.ndarray, K: Union[VFKernel, dict]) -> np.ndarray:
         """
         Performs graph convolution using a specified kernel.
 
         Parameters
         ----------
         B : np.ndarray
-            Input signal array (N x T) with column-major ordering (F).
-        K : VFKern or dict
+            Input signal array (n_vertices, n_timesteps) with column-major ordering (F).
+        K : VFKernel | dict
             Kernel function (Vector Fitting model) to apply.
 
         Returns
         -------
         np.ndarray
-            Convolved signal (N x T x nDim).
+            Convolved signal (n_vertices, n_timesteps, nDim).
         """
         # 1. Input validation and conversion before heavy lifting
         if isinstance(K, dict):
-            K = VFKern.from_dict(K)
+            K = VFKernel.from_dict(K)
 
-        if not isinstance(K, VFKern):
-            raise TypeError("Kernel K must be a VFKern object or a compatible dictionary.")
+        if not isinstance(K, VFKernel):
+            raise TypeError("Kernel K must be a VFKernel object or a compatible dictionary.")
 
         if K.R is None or K.Q is None:
             raise ValueError("Kernel K must contain residues (R) and poles (Q).")
@@ -145,17 +145,17 @@ class Convolve:
         Parameters
         ----------
         B : np.ndarray
-            Input signal array (N x T).
-        scales : list of float
+            Input signal array (n_vertices, n_timesteps).
+        scales : list[float], default: [1]
             List of scales to compute coefficients for.
         Bset : csc_matrix, optional
             Sparse indicator vector for localized coefficient computation.
-        refactor : bool
+        refactor : bool, default: True
             Whether to perform numeric factorization for each scale.
 
         Returns
         -------
-        list of np.ndarray
+        list[np.ndarray]
             Filtered signals for each scale.
         """
 
@@ -207,13 +207,13 @@ class Convolve:
         Parameters
         ----------
         B : np.ndarray
-            Input signal array (N x T).
-        scales : list of float
+            Input signal array (n_vertices, n_timesteps).
+        scales : list[float], default: [1]
             List of scales to compute coefficients for.
 
         Returns
         -------
-        list of np.ndarray
+        list[np.ndarray]
             Filtered signals for each scale.
         """
 
@@ -264,13 +264,13 @@ class Convolve:
         Parameters
         ----------
         B : np.ndarray
-            Input signal array (N x T).
-        scales : list of float
+            Input signal array (n_vertices, n_timesteps).
+        scales : list[float], default: [1]
             List of scales to compute coefficients for.
 
         Returns
         -------
-        list of np.ndarray
+        list[np.ndarray]
             Filtered signals for each scale.
         """
       

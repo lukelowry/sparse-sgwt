@@ -21,56 +21,92 @@ from scipy.io import loadmat
 from scipy.sparse import csc_matrix
 
 from json import load as jsonload
-from typing import Any, Callable
-import numpy.typing as npt
+from typing import Any, Callable, Dict, Union
 
 @dataclass
-class VFKern:
+class VFKernel:
+    """Vector Fitting Kernel representation.
+
+    A dataclass to store the components of a rational kernel approximation
+    obtained from Vector Fitting.
+
+    Attributes
+    ----------
+    R : np.ndarray
+        Residue matrix of shape (n_poles, n_dims).
+    Q : np.ndarray
+        Poles vector of shape (n_poles,).
+    D : np.ndarray
+        Direct term (offset) of shape (n_dims,).
     """
-    Vector Fitting Kernel representation.
-    R: Residual Matrix (nPoles x nScales)
-    Q: Poles Vector (nPoles x 1)
-    D: Offset (nDim x 1)
-    """
-    R: npt.NDArray
-    Q: npt.NDArray
-    D: npt.NDArray
+    R: np.ndarray
+    Q: np.ndarray
+    D: np.ndarray
 
     @classmethod
-    def from_dict(cls, data: dict) -> 'VFKern':
-        """Loads kernel data from a dictionary/JSON structure."""
+    def from_dict(cls, data: Dict[str, Any]) -> 'VFKernel':
+        """Loads kernel data from a dictionary.
+
+        Parameters
+        ----------
+        data : dict
+            A dictionary containing the kernel parameters, typically loaded
+            from a JSON file. It should have 'poles' and 'd' keys.
+
+        Returns
+        -------
+        VFKernel
+            A new instance of the VFKernel class.
+        """
         poles = data.get('poles', [])
         return cls(
-            R=np.array([p['r'] for p in poles]),
-            Q=np.array([p['q'] for p in poles]),
+            R=np.array([p.get('r', []) for p in poles]),
+            Q=np.array([p.get('q', 0) for p in poles]),
             D=np.array(data.get('d', []))
         )
 
 
-def impulse(lap, n=0, ntime=1):
+def impulse(lap: csc_matrix, n: int = 0, n_timesteps: int = 1) -> np.ndarray:
     """
     Generates a Dirac impulse signal at a specified vertex.
 
     Parameters
     ----------
     lap : csc_matrix
-        Graph Laplacian defining the node count.
+        Graph Laplacian defining the number of vertices.
     n : int
         Index of the vertex where the impulse is applied.
-    ntime : int
+    n_timesteps : int
         Number of time steps (columns) in the resulting signal.
 
     Returns
     -------
     np.ndarray
-        (n x ntime) array with 1.0 at index n and 0.0 elsewhere, in Fortran order.
+        (n_vertices, n_timesteps) array with 1.0 at index n and 0.0 elsewhere, in Fortran order.
     """
-    b: np.ndarray = np.zeros((lap.shape[0],ntime), order='F')
+    b: np.ndarray = np.zeros((lap.shape[0], n_timesteps), order='F')
     b[n] = 1
 
     return b
 
-def get_cholmod_dll():
+def get_cholmod_dll() -> CDLL:
+    """Locates and loads the CHOLMOD shared library.
+
+    Handles platform-specific path adjustments to ensure the DLL can be found
+    and loaded by ctypes.
+
+    Raises
+    ------
+    OSError
+        If the DLL file cannot be loaded.
+    Exception
+        For other unexpected errors during loading.
+
+    Returns
+    -------
+    ctypes.CDLL
+        The loaded CHOLMOD DLL object.
+    """
 
     resource = files("sgwt") / "library" / "dll" / "cholmod.dll"
 
@@ -89,7 +125,7 @@ def get_cholmod_dll():
             raise Exception(f"Unexpected error loading DLL: {e}")
 
 
-def _load_resource(path: str, loader: Callable[[str], Any]):
+def _load_resource(path: str, loader: Callable[[str], Any]) -> Any:
     """Centralized resource loader using importlib.resources."""
     with as_file(files("sgwt").joinpath(path)) as file_path:
         if not os.path.exists(file_path):
@@ -97,7 +133,7 @@ def _load_resource(path: str, loader: Callable[[str], Any]):
         return loader(str(file_path))
 
 
-def _mat_loader(path: str, to_csc: bool = False):
+def _mat_loader(path: str, to_csc: bool = False) -> Union[np.ndarray, csc_matrix]:
     """Loads the first data variable from a .mat file."""
     data = loadmat(path, squeeze_me=False)
     keys = [k for k in data if not k.startswith("__")]
@@ -117,15 +153,15 @@ def _mat_loader(path: str, to_csc: bool = False):
     return res
 
 
-def _json_kern_loader(path: str):
+def _json_kern_loader(path: str) -> Dict[str, Any]:
     """Loads a VFKern from a JSON file."""
     with open(path, "r") as f:
         return jsonload(f)
 
 # Factory helpers
-def _lap(k, r): return _load_resource(f"library/{k}/{r}_{k}.mat", lambda p: _mat_loader(p, to_csc=True))
-def _sig(k, r): return _load_resource(f"library/SIGNALS/{r}_{k}.mat", _mat_loader)
-def _kern(n):   return _load_resource(f"library/KERNELS/{n}.json", _json_kern_loader)
+def _lap(k: str, r: str) -> csc_matrix: return _load_resource(f"library/{k}/{r}_{k}.mat", lambda p: _mat_loader(p, to_csc=True)) # type: ignore
+def _sig(k: str, r: str) -> np.ndarray: return _load_resource(f"library/SIGNALS/{r}_{k}.mat", _mat_loader) # type: ignore
+def _kern(n: str) -> Dict[str, Any]:   return _load_resource(f"library/KERNELS/{n}.json", _json_kern_loader)
 
 # Kernels
 MEXICAN_HAT     = _kern("MEXICAN_HAT")

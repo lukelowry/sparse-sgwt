@@ -1,4 +1,5 @@
 import sgwt
+import importlib.metadata as importlib_metadata
 
 extensions = [
     "sphinx.ext.viewcode",
@@ -13,10 +14,11 @@ autodoc_default_options = {
     "undoc-members": True,
     "member-order": "groupwise",
 }
+autodoc_preserve_defaults = True
 
 # Better API formatting
 autoclass_content = "both"        # Include __init__ docstring in class description
-autodoc_typehints = "description" # Move type hints to description
+autodoc_typehints = "none"        # Let Napoleon handle types from the docstring
 add_module_names = False          # Don't show full module path (e.g. sgwt.static.Convolve -> Convolve)
 
 extensions.append("sphinx.ext.intersphinx")
@@ -26,9 +28,34 @@ intersphinx_mapping = {
     "scipy": ("https://docs.scipy.org/doc/scipy/reference", None),
 }
 
-extensions.append("numpydoc")
-numpydoc_show_class_members = False
-numpydoc_use_plots = True  # Add the plot directive whenever mpl is imported.
+extensions.append("sphinx_copybutton")
+
+# Use Napoleon to parse NumPy-style docstrings for a cleaner look
+extensions.append("sphinx.ext.napoleon")
+napoleon_google_docstring = False
+napoleon_numpy_docstring = True
+napoleon_include_init_with_doc = False
+napoleon_use_param = True
+napoleon_use_rtype = True
+napoleon_preprocess_types = True
+napoleon_type_aliases = {
+    # Common aliases
+    "np": "numpy",
+    "np.ndarray": "~numpy.ndarray",
+    "csc_matrix": "~scipy.sparse.csc_matrix",
+
+    # Your project's types
+    "VFKernel": "~sgwt.util.VFKernel",
+
+    # Python built-ins and typing module
+    "optional": "typing.Optional",
+    "union": "typing.Union",
+    "list": "list",
+    "dict": "dict",
+    "bool": "bool",
+    "int": "int",
+    "float": "float",
+}
 
 
 exclude_patterns = ["_build"]
@@ -38,8 +65,8 @@ master_doc = "index"
 project = "Sparse SGWT"
 copyright = "2024, Luke Lowery"
 author = "Luke Lowery"
-version = "0.3.1"
-release = "0.3.1"
+version = importlib_metadata.version("sgwt")
+release = version
 
 html_theme = "sphinx_rtd_theme"
 html_theme_options = {

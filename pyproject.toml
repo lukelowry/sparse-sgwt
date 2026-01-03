@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "sgwt"
-version = "0.3.1"
+version = "0.3.2"
 description = "Sparse Tools for the Spectral Graph Wavelet Transformation and Graph Convolution"
 readme = "README.rst"
 license = { file = "LICENSE.md" }
@@ -13,7 +13,6 @@ requires-python = ">=3.7"
 classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
-    "Operating System :: OS Independent",
     "Intended Audience :: Science/Research",
     "Topic :: Scientific/Engineering",
 ]
@@ -24,18 +23,15 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/lukelowry/sparse-sgwt"
-Repository = "https://github.com/lukelowry/sparse-sgwt"
-"Bug Tracker" = "https://github.com/lukelowry/sparse-sgwt/issues"
+Homepage = "https://github.com/lukelowry/sgwt"
+Repository = "https://github.com/lukelowry/sgwt"
+"Bug Tracker" = "https://github.com/lukelowry/sgwt/issues"
 
 [tool.setuptools]
 include-package-data = true
-
 [tool.setuptools.package-data]
 "sgwt" = [
     "library/dll/*.dll", 
-    "library/dll/*.so", 
-    "library/dll/*.dylib",
     "library/KERNELS/*.json",
     "library/SIGNALS/*.mat",
     "library/IMPEDANCE/*.mat",

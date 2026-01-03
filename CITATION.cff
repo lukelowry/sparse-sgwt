@@ -1,0 +1,21 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it using the metadata from this file."
+title: "Sparse SGWT"
+authors:
+  - family-names: "Lowery"
+    given-names: "Luke"
+version: 0.3.1
+date-released: 2026-01-01
+license: GPL-3.0-only
+repository-code: "https://github.com/lukelowry/sparse-sgwt"
+preferred-citation:
+  type: conference-paper
+  title: "Using Spectral Graph Wavelets to Analyze Large Power System Oscillation Modes"
+  authors:
+  - family-names: "Lowery"
+    given-names: "Luke"
+  - family-names: "Baek"
+    given-names: "Jongoh"
+  - family-names: "Birchfield"
+    given-names: "Adam"
+  year: 2026

@@ -31,13 +31,13 @@ The ``scales`` parameter is a list of floating-point values that control the cut
 Custom Kernels via Vector Fitting
 ---------------------------------
 
-For advanced use cases, you can define arbitrary filter shapes using the :class:`~sgwt.io.VFKern` class. This approach uses a rational approximation (poles and residues) to model the desired frequency response, a technique known as Vector Fitting.
+For advanced use cases, you can define arbitrary filter shapes using the :class:`~sgwt.util.VFKernel` class. This approach uses a rational approximation (poles and residues) to model the desired frequency response, a technique known as Vector Fitting.
 
 The library includes several pre-computed kernels. You can use them by passing the kernel object to ``convolve()``.
 
 .. code-block:: python
 
-    from sgwt import Convolve, impulse, VFKern
+    from sgwt import Convolve, impulse, VFKernel
     from sgwt import DELAY_USA as L
     from sgwt import MODIFIED_MORLET
 
