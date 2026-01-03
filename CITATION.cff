@@ -9,7 +9,7 @@ date-released: 2026-01-01
 license: GPL-3.0-only
 repository-code: "https://github.com/lukelowry/sparse-sgwt"
 preferred-citation:
-  type: article
+  type: conference-paper
   title: "Using Spectral Graph Wavelets to Analyze Large Power System Oscillation Modes"
   authors:
   - family-names: "Lowery"
