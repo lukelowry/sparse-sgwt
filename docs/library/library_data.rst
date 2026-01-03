@@ -32,7 +32,7 @@ Signals
 
 Vertex-domain signals are provided for some graphs, most commonly geographic coordinates.
 
-*   **COORDS**: An :math:`N \times 2` NumPy array containing the longitude and latitude of each node.
+*   **COORDS**: An ``(n_vertices,2)`` NumPy array containing the longitude and latitude of each node.
 
 **Usage**
 
