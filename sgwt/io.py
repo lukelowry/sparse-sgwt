@@ -71,6 +71,23 @@ def impulse(lap, n=0, ntime=1):
     return b
 
 def get_cholmod_dll():
+    """Locates and loads the CHOLMOD shared library.
+
+    Handles platform-specific path adjustments to ensure the DLL can be found
+    and loaded by ctypes.
+
+    Raises
+    ------
+    OSError
+        If the DLL file cannot be loaded.
+    Exception
+        For other unexpected errors during loading.
+
+    Returns
+    -------
+    ctypes.CDLL
+        The loaded CHOLMOD DLL object.
+    """
 
     resource = files("sgwt") / "library" / "dll" / "cholmod.dll"
 

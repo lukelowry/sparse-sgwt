@@ -1,4 +1,9 @@
-import sgwt
+import sys
+if sys.version_info < (3, 8):
+    import importlib_metadata
+else:
+    import importlib.metadata as importlib_metadata
+
 
 extensions = [
     "sphinx.ext.viewcode",
@@ -16,7 +21,7 @@ autodoc_default_options = {
 
 # Better API formatting
 autoclass_content = "both"        # Include __init__ docstring in class description
-autodoc_typehints = "description" # Move type hints to description
+autodoc_typehints = "signature"   # Show type hints in method signatures
 add_module_names = False          # Don't show full module path (e.g. sgwt.static.Convolve -> Convolve)
 
 extensions.append("sphinx.ext.intersphinx")
@@ -25,6 +30,8 @@ intersphinx_mapping = {
     "numpy": ("https://numpy.org/doc/stable", None),
     "scipy": ("https://docs.scipy.org/doc/scipy/reference", None),
 }
+
+extensions.append("sphinx_copybutton")
 
 extensions.append("numpydoc")
 numpydoc_show_class_members = False
@@ -38,8 +45,8 @@ master_doc = "index"
 project = "Sparse SGWT"
 copyright = "2024, Luke Lowery"
 author = "Luke Lowery"
-version = "0.3.1"
-release = "0.3.1"
+version = importlib_metadata.version("sgwt")
+release = version
 
 html_theme = "sphinx_rtd_theme"
 html_theme_options = {

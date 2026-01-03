@@ -36,3 +36,4 @@
    :caption: Development
 
    tests
+   changelog

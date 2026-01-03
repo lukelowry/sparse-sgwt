@@ -1,12 +1,86 @@
 Data Library
 ============
 
-This directory contains built-in graph Laplacians, signals, and spectral kernels used for testing and demonstration of the Sparse SGWT library.
+The ``sgwt`` library includes a repository of built-in graph Laplacians, signals, and spectral kernels for testing and demonstration. These resources can be imported directly from the top-level package.
 
-Available Data
---------------
+Laplacians
+----------
 
-The library includes Laplacians and signals for various synthetic power grid networks. The following table lists the available combinations of graph topologies and data types.
+The library includes Laplacians for various synthetic power grid networks. These are provided as ``scipy.sparse.csc_matrix`` objects. The naming convention is ``METRIC_REGION``.
+
+*   **DELAY**: Edge weights are based on phase distance (:math:`\theta^{-2}`).
+*   **LENGTH**: Edge weights are based on physical transmission line length (:math:`\ell^{-2}`).
+*   **IMPEDANCE**: Edge weights are based on electrical impedance (:math:`|Z|`).
+
+**Usage**
+
+.. code-block:: python
+
+   import sgwt
+
+   # Load the Laplacian for the synthetic Texas grid
+   # where edge weights are based on phase delay.
+   L_texas = sgwt.DELAY_TEXAS
+
+   print(type(L_texas))
+   # <class 'scipy.sparse.csc.csc_matrix'>
+   print(L_texas.shape)
+   # (2000, 2000)
+
+Signals
+-------
+
+Vertex-domain signals are provided for some graphs, most commonly geographic coordinates.
+
+*   **COORDS**: An :math:`N \times 2` NumPy array containing the longitude and latitude of each node.
+
+**Usage**
+
+.. code-block:: python
+
+   import sgwt
+
+   # Load the geographic coordinates for the Texas grid
+   coords_texas = sgwt.COORD_TEXAS
+
+   print(type(coords_texas))
+   # <class 'numpy.ndarray'>
+   print(coords_texas.shape)
+   # (2000, 2)
+
+Kernels
+-------
+
+Pre-computed rational approximations for common spectral graph wavelets are available as dictionaries. These can be loaded into :class:`~sgwt.io.VFKern` objects for use with :meth:`~sgwt.static.Convolve.convolve`.
+
+*   **MEXICAN_HAT**: Mexican Hat wavelet.
+*   **MODIFIED_MORLET**: Modified Morlet wavelet.
+*   **SHANNON**: Shannon (ideal band-pass) wavelet.
+*   **GAUSSIAN_WAV**: Gaussian wavelet.
+
+**Usage**
+
+.. code-block:: python
+
+   from sgwt import VFKern, MODIFIED_MORLET
+
+   # The built-in kernel is a dictionary
+   print(type(MODIFIED_MORLET))
+   # <class 'dict'>
+
+   # Load it into a VFKern object for use in convolution
+   kernel = VFKern.from_dict(MODIFIED_MORLET)
+
+   print(kernel.R.shape)
+   # (14, 1)
+
+.. seealso::
+   See :doc:`library_json` for details on the JSON file format for custom kernels.
+
+Available Data Summary
+----------------------
+
+The following table summarizes the available built-in datasets.
 
 .. list-table::
    :widths: 25 15 15 15 15
@@ -42,29 +116,3 @@ The library includes Laplacians and signals for various synthetic power grid net
      - Yes
      - Yes
      - No
-
-Laplacians
-----------
-
-The library includes Laplacians for various synthetic power grid networks (Texas, Western Interconnection, Eastern Interconnection, etc.). These are provided as compressed sparse column (CSC) matrices.
-
-*   **DELAY**: Edge weights are based on phase distance (:math:`\theta^{-2}`).
-*   **LENGTH**: Edge weights are based on physical transmission line length (:math:`\ell^{-2}`).
-*   **IMPEDANCE**: Edge weights are based on electrical impedance (:math:`|Z|`).
-
-Signals
--------
-
-*   **COORDS**: Vertex-domain signals representing geographic locations. These are :math:`N \times 2` arrays containing the longitude and latitude of each node/bus.
-
-Kernels
--------
-
-*   **KERNELS**: JSON files defining rational approximations (Vector Fitting) for spectral graph wavelets. These are loaded as :class:`sgwt.io.VFKern` objects.
-
-    *   **MEXICAN_HAT**: Mexican Hat wavelet.
-    *   **MODIFIED_MORLET**: Modified Morlet wavelet.
-    *   **SHANNON**: Shannon (ideal band-pass) wavelet.
-    *   **GAUSSIAN_WAV**: Gaussian wavelet.
-
-    See :doc:`library_json` for details on the file format.

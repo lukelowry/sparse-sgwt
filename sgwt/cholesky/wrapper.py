@@ -66,8 +66,13 @@ class CholWrapper:
     """
 
     def __init__(self, A) -> None:
-        """
-        A: csc_matrix - the matrix to be symbolically factored
+        """Initializes the CHOLMOD wrapper.
+
+        Parameters
+        ----------
+        A : scipy.sparse.csc_matrix
+            The sparse matrix (e.g., Graph Laplacian) to be analyzed.
+            It is converted to an internal CHOLMOD sparse format.
         """
         self.dll = get_cholmod_dll()
         
@@ -238,15 +243,35 @@ class CholWrapper:
 
     def submatrix(self, A_ptr, rset, rsize, cset=None, csize=-1, mode=1, sorted=1):
         """
-        Parameters
-            mode
-                2: numerical (conj) if A and/or B are symmetric,
-                1: numerical (non-conj.) if A and/or B are symmetric.
-                0: pattern
-        Returns 
-            POINTER(choldmod_sparse)
-        """
+        Extracts a submatrix from a cholmod_sparse matrix.
 
+        This is a wrapper for `cholmod_submatrix`.
+
+        Parameters
+        ----------
+        A_ptr : POINTER(cholmod_sparse)
+            Pointer to the sparse matrix to extract from.
+        rset : POINTER(c_int32)
+            Set of row indices to extract.
+        rsize : int
+            Number of rows to extract.
+        cset : POINTER(c_int32), optional
+            Set of column indices to extract (default is None).
+        csize : int, optional
+            Number of columns to extract (default is -1 for all columns).
+        mode : int, optional
+            Extraction mode (default is 1):
+            - 0: pattern
+            - 1: numerical (non-conj.)
+            - 2: numerical (conj)
+        sorted : int, optional
+            Whether the input index sets are sorted (default is 1).
+
+        Returns
+        -------
+        POINTER(cholmod_sparse)
+            A pointer to the newly created sparse submatrix.
+        """
         return self.dll.cholmod_submatrix(
             A_ptr,                 # Ptr to sparse Matrix
             rset,                  # rset (int32_t*)
@@ -311,6 +336,29 @@ class CholWrapper:
         return ok
     
     def updown_solve(self, update, C_ptr, fact_ptr, X_ptr, deltaB_ptr):
+        """Solves a system after a rank-k update/downdate.
+
+        This is a wrapper for `cholmod_updown_solve`. It is more efficient
+        than calling `updown` followed by `solve`.
+
+        Parameters
+        ----------
+        update : int
+            1 for update, 0 for downdate.
+        C_ptr : POINTER(cholmod_sparse)
+            Column vector/matrix for the update.
+        fact_ptr : POINTER(cholmod_factor)
+            Factorization to modify.
+        X_ptr : POINTER(cholmod_dense)
+            Solution to the original system.
+        deltaB_ptr : POINTER(cholmod_dense)
+            Change in the right-hand-side B.
+
+        Returns
+        -------
+        int
+            1 if successful, 0 otherwise.
+        """
         # Permute by L->Perm
         Cnew = self._permute_sparse(C_ptr)
 
@@ -684,6 +732,23 @@ class CholWrapper:
     # --------------------------------------------------------------------------
 
     def allocate_dense(self, nrow, ncol):
+        """Allocates a dense matrix in CHOLMOD.
+
+        This is a wrapper for `cholmod_allocate_dense`. The memory is managed
+        by CHOLMOD and must be freed with `free_dense`.
+
+        Parameters
+        ----------
+        nrow : int
+            Number of rows.
+        ncol : int
+            Number of columns.
+
+        Returns
+        -------
+        POINTER(cholmod_dense)
+            A pointer to the newly allocated dense matrix.
+        """
         return self.dll.cholmod_allocate_dense(
             nrow,
             ncol,
@@ -739,6 +804,23 @@ class CholWrapper:
         return L_ptr
     
     def zeros(self, nrow, ncol):
+        """Creates a dense matrix of zeros in CHOLMOD.
+
+        This is a wrapper for `cholmod_zeros`. The memory is managed
+        by CHOLMOD and must be freed with `free_dense`.
+
+        Parameters
+        ----------
+        nrow : int
+            Number of rows.
+        ncol : int
+            Number of columns.
+
+        Returns
+        -------
+        POINTER(cholmod_dense)
+            A pointer to the newly allocated dense matrix filled with zeros.
+        """
         return self.dll.cholmod_zeros(
             nrow,
             ncol,
