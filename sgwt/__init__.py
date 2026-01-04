@@ -19,6 +19,9 @@ from .dynamic import DyConvolve
 # Lanczos Approximation
 from .lanz import LanzConvolve
 
+# LU Decomposition (for complex poles)
+from .lu_convolve import LUConvolve
+
 from .util import (
 
     # Vector Fitting Dataclass
@@ -27,6 +30,7 @@ from .util import (
     impulse,
 
     # DLL Reader
+    get_klu_dll,
     get_cholmod_dll,
     
     # Kernels

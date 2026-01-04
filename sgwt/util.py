@@ -239,6 +239,33 @@ def get_cholmod_dll() -> CDLL:
         except Exception as e:
             raise Exception(f"Unexpected error loading DLL: {e}")
 
+def get_klu_dll() -> CDLL:
+    """Locates and loads the KLU shared library.
+
+    Handles platform-specific path adjustments to ensure the DLL can be found
+    and loaded by ctypes. KLU is part of the SuiteSparse library.
+
+    Raises
+    ------
+    OSError
+        If the DLL file cannot be loaded.
+    Exception
+        For other unexpected errors during loading.
+
+    Returns
+    -------
+    ctypes.CDLL
+        The loaded KLU DLL object.
+    """
+    resource = files("sgwt") / "library" / "dll" / "klu.dll"
+
+    with as_file(resource) as dll_path:
+        dll_dir = os.path.dirname(dll_path)
+        if hasattr(os, 'add_dll_directory'):
+            os.add_dll_directory(dll_dir)
+        else:
+            os.environ['PATH'] = str(dll_dir) + os.pathsep + os.environ['PATH']
+        return CDLL(str(dll_path))
 
 def _load_resource(path: str, loader: Callable[[str], Any]) -> Any:
     """Centralized resource loader using importlib.resources."""

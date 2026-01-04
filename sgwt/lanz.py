@@ -95,8 +95,7 @@ class LanzConvolve:
             q = Q[:, k]
             alpha = np.dot(q, r)
             alphas.append(alpha)
-            
-            # r = r - alpha * q (NumPy is faster for O(N) AXPY than ctypes overhead)
+        
             r -= alpha * q
             
             if k == order - 1: break

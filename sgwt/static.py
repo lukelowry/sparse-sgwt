@@ -115,7 +115,7 @@ class Convolve:
         # Initialize result with direct term if it exists
         W = np.zeros((*B.shape, nDim))
         if K.D.size > 0:
-            W += K.D
+            W += B[..., None] * K.D
 
         A_ptr = byref(self.chol.A)
         fact_ptr = self.chol.fact_ptr

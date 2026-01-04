@@ -138,7 +138,7 @@ class DyConvolve:
         # Initialize with direct term if it exists
         W = np.zeros((*B.shape, nDim))
         if self.D.size > 0:
-            W += self.D
+            W += B[..., None] * self.D
 
         B_chol = byref(self.chol.numpy_to_chol_dense(B))
         
