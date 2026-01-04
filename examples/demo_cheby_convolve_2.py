@@ -29,9 +29,7 @@ kernel = sgwt.ChebyKernel.from_function(f, ORDER, conv_cheb.spectrum_bound, min_
 with conv_cheb: 
     Y_cheb = conv_cheb.convolve(X, kernel)
 with DyConvolve(L, [1.0/s for s in SCALES]) as conv: 
-    Y_dy = conv.bandpass(X)
-    Y_dy = conv.bandpass(Y_dy[0])
-    Y_dy = conv.bandpass(Y_dy[0])
+    Y_dy = conv.bandpass(X, order=3)
 
 # 2. Time convolutions for performance plot
 with conv_cheb:
@@ -43,8 +41,7 @@ with conv_cheb:
 with DyConvolve(L, [1.0/s for s in SCALES]) as conv:
     _ = conv.bandpass(X) # warm-up
     start = time.time()
-    for _ in range(N_ITER): 
-        _ = conv.bandpass(X)
+    for _ in range(N_ITER): _ = conv.bandpass(X, order=3)
     t_dy = (time.time() - start) / N_ITER
 
 # DOC_END_CODE_EXCLUDE_PLOT
@@ -108,12 +105,12 @@ gs_right = gs_main[0, 1].subgridspec(len(SCALES), 2, hspace=0.0, wspace=0.0)
 for i, s in enumerate(SCALES):
     # Chebyshev
     ax_c = fig.add_subplot(gs_right[i, 0])
-    plot_signal(Y_cheb[:, 0, i], C, 'coolwarm', ax=ax_c, dot_size=1)
+    plot_signal(Y_cheb[:, 0, i], C, 'coolwarm', ax=ax_c)
     if i == 0: ax_c.set_title("Chebyshev", fontsize=12, fontweight='bold', pad=10)
 
     # DyConvolve
     ax_d = fig.add_subplot(gs_right[i, 1])
-    plot_signal(Y_dy[i][:, 0], C, 'coolwarm', ax=ax_d, dot_size=1)
+    plot_signal(Y_dy[i][:, 0], C, 'coolwarm', ax=ax_d)
     if i == 0: ax_d.set_title("DyConvolve", fontsize=12, fontweight='bold', pad=10)
     ax_d.text(1.02, 0.5, f"Scale {s}", transform=ax_d.transAxes, rotation=-90, va='center', ha='left', fontweight='bold')
 

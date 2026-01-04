@@ -16,6 +16,9 @@ from .cheb import ChebConvolve
 # Dynamic Graphs (Optimized performance, less versatile)
 from .dynamic import DyConvolve
 
+# Lanczos Approximation
+from .lanz import LanzConvolve
+
 from .util import (
 
     # Vector Fitting Dataclass

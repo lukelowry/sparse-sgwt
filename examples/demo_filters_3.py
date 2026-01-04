@@ -14,10 +14,8 @@ s = [10]
 
 #  Fourth Order Band-Pass
 with Convolve(L) as conv:
-    Y = conv.bandpass(X, s)[0]
-    Y = conv.bandpass(Y, s)[0]
-    Y = conv.bandpass(Y, s)[0]
-    Y = conv.bandpass(Y, s)[0]
+    Y = conv.bandpass(X, s, order=4)[0]
+    
 # DOC_END_CODE_EXCLUDE_PLOT
 from demo_plot import plot_signal
 plot_signal(Y[:,0], C, 'berlin')

@@ -198,11 +198,11 @@ class Convolve:
 
         return W
     
-    def bandpass(self, B: np.ndarray, scales: List[float] = [1]) -> List[np.ndarray]:
+    def bandpass(self, B: np.ndarray, scales: List[float] = [1], order: int = 1) -> List[np.ndarray]:
         """
         Computes band-pass filtered wavelet coefficients at specified scales.
 
-        Uses the analytical form: (1/s) * L / (L + I/s)^2.
+        Uses the analytical form: ((4/s) * L / (L + I/s)^2)^order.
 
         Parameters
         ----------
@@ -210,6 +210,8 @@ class Convolve:
             Input signal array (n_vertices, n_timesteps).
         scales : list[float], default: [1]
             List of scales to compute coefficients for.
+        order : int, default: 1
+            The order of the filter (number of times the operator is applied).
 
         Returns
         -------
@@ -224,7 +226,7 @@ class Convolve:
         Y, E   = self.Y, self.E
 
         # Pointer to b (The function being convolved)
-        B    = byref(self.chol.numpy_to_chol_dense(B))
+        B_chol_struct = self.chol.numpy_to_chol_dense(B)
         A_ptr = byref(self.chol.A)
         fact_ptr = self.chol.fact_ptr
 
@@ -234,18 +236,22 @@ class Convolve:
             # Step 1 -> Numeric Factorization
             self.chol.num_factor(A_ptr, fact_ptr, 1/scale)
             
-            # Step 2 -> Solve Linear System (A + beta*I)^2 x = B
-            self.chol.solve2(fact_ptr, B, None, X2, Xset, Y, E) 
-            self.chol.solve2(fact_ptr, X2, None, X1, Xset, Y, E) 
+            in_ptr = byref(B_chol_struct)
+            for _ in range(order):
+                
+                # Step 2 -> Solve Linear System (A + beta*I)^2 x = in_ptr
+                self.chol.solve2(fact_ptr, in_ptr, None, X2, Xset, Y, E) 
+                self.chol.solve2(fact_ptr, X2, None, X1, Xset, Y, E) 
 
-            # Step 3 ->  Laplacian multiply and scalar normalization 
-            self.chol.sdmult(
-                A_ptr = A_ptr,
-                X_ptr = X1, 
-                Y_ptr = X2,  
-                alpha = 4/scale, 
-                beta  = 0.0
-            )
+                # Step 3 ->  Laplacian multiply and scalar normalization 
+                self.chol.sdmult(
+                    A_ptr = A_ptr,
+                    X_ptr = X1, 
+                    Y_ptr = X2,  
+                    alpha = 4/scale, 
+                    beta  = 0.0
+                )
+                in_ptr = X2
 
             W.append(
                 self.chol.chol_dense_to_numpy(X2)

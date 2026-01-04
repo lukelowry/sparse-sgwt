@@ -19,15 +19,17 @@ SCALES, ORDER, N_ITER = [0.1, 1.0, 10.0], 300, 100
 XMIN = 1e-3
 X = impulse(L, n=600)
 
-def f(x): return np.stack([(4.0/s)*x / (x + 1.0/s)**2 for s in SCALES], axis=1)
+def f(x): return np.stack([((4.0/s)*x / (x + 1.0/s)**2)**2 for s in SCALES], axis=1)
 
 # --- Calculations ---
 conv_cheb = ChebConvolve(L)
 kernel = sgwt.ChebyKernel.from_function(f, ORDER, conv_cheb.spectrum_bound, min_lambda=XMIN)
 
 # 1. Convolve signals for spatial plots
-with conv_cheb: Y_cheb = conv_cheb.convolve(X, kernel)
-with DyConvolve(L, [1.0/s for s in SCALES]) as conv: Y_dy = conv.bandpass(X)
+with conv_cheb: 
+    Y_cheb = conv_cheb.convolve(X, kernel)
+with DyConvolve(L, [1.0/s for s in SCALES]) as conv: 
+    Y_dy = conv.bandpass(X, order=2)
 
 # 2. Time convolutions for performance plot
 with conv_cheb:
@@ -39,7 +41,7 @@ with conv_cheb:
 with DyConvolve(L, [1.0/s for s in SCALES]) as conv:
     _ = conv.bandpass(X) # warm-up
     start = time.time()
-    for _ in range(N_ITER): _ = conv.bandpass(X)
+    for _ in range(N_ITER): _ = conv.bandpass(X, order=2)
     t_dy = (time.time() - start) / N_ITER
 
 # DOC_END_CODE_EXCLUDE_PLOT

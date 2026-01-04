@@ -201,16 +201,18 @@ class DyConvolve:
 
         return W
     
-    def bandpass(self, B: np.ndarray) -> List[np.ndarray]:
+    def bandpass(self, B: np.ndarray, order: int = 1) -> List[np.ndarray]:
         """
         Computes band-pass filtered wavelet coefficients.
 
-        Uses the analytical form: 4qL / (L + qI)^2.
+        Uses the analytical form: (4qL / (L + qI)^2)^order.
 
         Parameters
         ----------
         B : np.ndarray
             Input signal array (n_vertices, n_timesteps).
+        order : int, default: 1
+            The order of the filter (number of times the operator is applied).
 
         Returns
         -------
@@ -225,25 +227,27 @@ class DyConvolve:
         Y, E   = self.Y, self.E
 
         # Pointer to b (The function being convolved)
-        B    = byref(self.chol.numpy_to_chol_dense(B))
+        B_chol_struct = self.chol.numpy_to_chol_dense(B)
         A_ptr = byref(self.chol.A)
-        fact_ptr = self.chol.fact_ptr
 
         # Calculate Scaling Coefficients of 'f' for each scale
         for q, fact_ptr in zip(self.poles, self.factors):
+            
+            in_ptr = byref(B_chol_struct)
+            for _ in range(order):
+                # Step 1 -> Solve Linear System (A + beta*I)^2 x = in_ptr
+                self.chol.solve2(fact_ptr, in_ptr, None, X2, Xset, Y, E) 
+                self.chol.solve2(fact_ptr, X2, None, X1, Xset, Y, E) 
 
-            # Step 1 -> Solve Linear System (A + beta*I)^2 x = B
-            self.chol.solve2(fact_ptr, B, None, X2, Xset, Y, E) 
-            self.chol.solve2(fact_ptr, X2, None, X1, Xset, Y, E) 
-
-            # Step 2 ->  Divide by scale for normalization
-            self.chol.sdmult(
-                A_ptr = A_ptr,
-                X_ptr = X1, 
-                Y_ptr = X2,  
-                alpha = 4*q, 
-                beta  = 0.0
-            )
+                # Step 2 ->  Divide by scale for normalization
+                self.chol.sdmult(
+                    A_ptr = A_ptr,
+                    X_ptr = X1, 
+                    Y_ptr = X2,  
+                    alpha = 4*q, 
+                    beta  = 0.0
+                )
+                in_ptr = X2
 
             W.append(
                 self.chol.chol_dense_to_numpy(X2)
