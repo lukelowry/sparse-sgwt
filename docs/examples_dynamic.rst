@@ -10,3 +10,9 @@ This section provides examples demonstrating the use of dynamic graph convolutio
    dynamic/demo_dynamic_topology
    dynamic/demo_dynamic_time
    dynamic/demo_dynamic_stream
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Performance Benchmarks
+
+   cheby/demo_cheby_time

@@ -191,7 +191,8 @@ class DyConvolve:
             self.chol.solve2(fact_ptr, B,  Bset, X1, Xset, Y, E) 
 
             # Step 2 ->  Multiply by pole  X1 = X1 * q
-            self.chol.sdmult(X1,  X1, 0.0,  q)
+            self.chol.sdmult(byref(self.chol.A), X1,  X1, 0.0,  q)
+
 
             # Save
             W.append(
@@ -225,6 +226,7 @@ class DyConvolve:
 
         # Pointer to b (The function being convolved)
         B    = byref(self.chol.numpy_to_chol_dense(B))
+        A_ptr = byref(self.chol.A)
         fact_ptr = self.chol.fact_ptr
 
         # Calculate Scaling Coefficients of 'f' for each scale
@@ -236,8 +238,9 @@ class DyConvolve:
 
             # Step 2 ->  Divide by scale for normalization
             self.chol.sdmult(
-                matrix_ptr = X1, 
-                out_ptr =X2,  
+                A_ptr = A_ptr,
+                X_ptr = X1, 
+                Y_ptr = X2,  
                 alpha = 4*q, 
                 beta  = 0.0
             )
@@ -287,10 +290,9 @@ class DyConvolve:
 
             # Step 3 ->  X2 = L@X1
             self.chol.sdmult(
-                matrix_ptr = X1, 
-                out_ptr = X2,  
-                alpha = 1.0, 
-                beta  = 0.0
+                A_ptr = byref(self.chol.A),
+                X_ptr = X1, 
+                Y_ptr = X2
             )
 
             # Save

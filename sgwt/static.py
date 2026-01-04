@@ -75,8 +75,8 @@ class Convolve:
         self.chol.finish()
 
     def __call__(self, B: np.ndarray, K: Union[VFKernel, dict]) -> np.ndarray:
-        return self.convolve(B, K)
-
+        return self.convolve(B, K) 
+    
     def convolve(self, B: np.ndarray, K: Union[VFKernel, dict]) -> np.ndarray:
         """
         Performs graph convolution using a specified kernel.
@@ -161,7 +161,7 @@ class Convolve:
 
         # List, malloc, numpy, etc.
         W = []
-        X1, X2 = self.X1, self.X2 
+        X1 = self.X1
         Xset   = self.Xset
         Y, E   = self.Y, self.E
 
@@ -188,8 +188,8 @@ class Convolve:
             # Step 2 -> Solve Linear System (A + beta*I) X1 = B
             self.chol.solve2(fact_ptr, B,  Bset, X1, Xset, Y, E) 
 
-            # Step 3 ->  Divide by scale  X1 = X1/scale
-            self.chol.sdmult(X1,  X1, 0.0,  1/scale)
+            # Step 3 ->  Divide by scale  X1 = X1/scale (A bit pointless to pass A but need to pass something)
+            self.chol.sdmult(byref(self.chol.A), X1,  X1, 0.0,  1/scale)
 
             # Save
             W.append(
@@ -225,8 +225,6 @@ class Convolve:
 
         # Pointer to b (The function being convolved)
         B    = byref(self.chol.numpy_to_chol_dense(B))
-
-        
         A_ptr = byref(self.chol.A)
         fact_ptr = self.chol.fact_ptr
 
@@ -240,10 +238,11 @@ class Convolve:
             self.chol.solve2(fact_ptr, B, None, X2, Xset, Y, E) 
             self.chol.solve2(fact_ptr, X2, None, X1, Xset, Y, E) 
 
-            # Step 3 ->  Divide by scale for normalization
+            # Step 3 ->  Laplacian multiply and scalar normalization 
             self.chol.sdmult(
-                matrix_ptr = X1, 
-                out_ptr =X2,  
+                A_ptr = A_ptr,
+                X_ptr = X1, 
+                Y_ptr = X2,  
                 alpha = 4/scale, 
                 beta  = 0.0
             )
@@ -301,10 +300,9 @@ class Convolve:
 
             # Step 3 ->  X2 = L@X1
             self.chol.sdmult(
-                matrix_ptr = X1, 
-                out_ptr = X2,  
-                alpha = 1.0, 
-                beta  = 0.0
+                A_ptr = byref(self.chol.A),
+                X_ptr = X1, 
+                Y_ptr = X2
             )
 
             # Save

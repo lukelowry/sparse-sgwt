@@ -10,6 +10,9 @@ Description: Main package initialization.
 # Static Graphs (Typical use case)
 from .static import Convolve
 
+# Chebyshev Approximation
+from .cheb import ChebConvolve
+
 # Dynamic Graphs (Optimized performance, less versatile)
 from .dynamic import DyConvolve
 
@@ -17,6 +20,7 @@ from .util import (
 
     # Vector Fitting Dataclass
     VFKernel,
+    ChebyKernel,
     impulse,
 
     # DLL Reader
