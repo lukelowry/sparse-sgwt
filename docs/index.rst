@@ -15,6 +15,7 @@
 
    examples_static
    examples_dynamic
+   examples_cheby
 
 
 .. toctree::

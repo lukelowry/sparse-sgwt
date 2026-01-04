@@ -18,10 +18,10 @@ from dataclasses import dataclass
 
 import numpy as np
 from scipy.io import loadmat
-from scipy.sparse import csc_matrix
+from scipy.sparse import csc_matrix, linalg
 
 from json import load as jsonload
-from typing import Any, Callable, Dict, Union, Optional
+from typing import Any, Callable, Dict, List, Union, Optional
 
 
 @dataclass
@@ -115,6 +115,33 @@ class ChebyKernel:
 
         return cls(C=coeffs, spectrum_bound=spectrum_bound)
 
+    @classmethod
+    def from_function_on_graph(cls, L: csc_matrix, f: Callable[[np.ndarray], np.ndarray], order: int, **kwargs) -> 'ChebyKernel':
+        """
+        Creates a ChebyKernel by fitting a function to a graph's spectrum.
+
+        This is a convenience method that automatically estimates the spectral
+        bound (`lambda_max`) of the graph Laplacian `L` before fitting.
+
+        Parameters
+        ----------
+        L : csc_matrix
+            The Graph Laplacian.
+        f : Callable[[np.ndarray], np.ndarray]
+            The vectorized function to approximate.
+        order : int
+            Order of the Chebyshev polynomial to fit.
+        **kwargs
+            Additional arguments passed to `ChebyKernel.from_function`.
+
+        Returns
+        -------
+        ChebyKernel
+            A new instance with the fitted coefficients.
+        """
+        spectrum_bound = estimate_spectral_bound(L)
+        return cls.from_function(f, order, spectrum_bound, **kwargs)
+
     def _scale_x(self, x: np.ndarray) -> np.ndarray:
         """Maps points from [0, spectrum_bound] to the Chebyshev domain [-1, 1]."""
         return (2.0 / self.spectrum_bound) * x - 1.0
@@ -137,6 +164,28 @@ class ChebyKernel:
 
         y = np.polynomial.chebyshev.chebval(self._scale_x(x), self.C)
         return y.T if y.ndim > 1 else y
+
+def estimate_spectral_bound(L: csc_matrix) -> float:
+    """
+    Estimates the largest eigenvalue (spectral bound) of a matrix.
+
+    This is typically used to find the domain [0, lambda_max] for Chebyshev
+    polynomial approximations.
+
+    Parameters
+    ----------
+    L : csc_matrix
+        The matrix (e.g., Graph Laplacian) for which to estimate the bound.
+
+    Returns
+    -------
+    float
+        An estimate of the largest eigenvalue, scaled by 1.01 for safety.
+    """
+    # Note: Using eigs from scipy.sparse.linalg
+    e_max = linalg.eigs(L, k=1, which='LM', return_eigenvectors=False)
+    return float(e_max[0].real) * 1.01
+
 
 @dataclass
 class VFKernel:
@@ -204,68 +253,46 @@ def impulse(lap: csc_matrix, n: int = 0, n_timesteps: int = 1) -> np.ndarray:
 
     return b
 
-def get_cholmod_dll() -> CDLL:
-    """Locates and loads the CHOLMOD shared library.
-
+def _load_dll(dll_name: str) -> CDLL:
+    """Locates and loads a shared library from the library/dll directory.
+    
     Handles platform-specific path adjustments to ensure the DLL can be found
     and loaded by ctypes.
-
+    
     Raises
     ------
     OSError
         If the DLL file cannot be loaded.
     Exception
         For other unexpected errors during loading.
-
+    
     Returns
     -------
     ctypes.CDLL
-        The loaded CHOLMOD DLL object.
+        The loaded DLL object.
     """
-
-    resource = files("sgwt") / "library" / "dll" / "cholmod.dll"
-
+    resource = files("sgwt") / "library" / "dll" / dll_name
     with as_file(resource) as dll_path:
         dll_dir = os.path.dirname(dll_path)
+        # On Windows, add the DLL's directory to the search path for dependencies
         if hasattr(os, 'add_dll_directory'):
             os.add_dll_directory(dll_dir)
         else:
             os.environ['PATH'] = str(dll_dir) + os.pathsep + os.environ['PATH']
-
         try:
             return CDLL(str(dll_path))
         except OSError as e:
             raise OSError(f"Failed to load DLL at {dll_path}. Error: {e}")
         except Exception as e:
             raise Exception(f"Unexpected error loading DLL: {e}")
+            
+def get_cholmod_dll() -> CDLL:
+    """Locates and loads the CHOLMOD shared library."""
+    return _load_dll("cholmod.dll")
 
 def get_klu_dll() -> CDLL:
-    """Locates and loads the KLU shared library.
-
-    Handles platform-specific path adjustments to ensure the DLL can be found
-    and loaded by ctypes. KLU is part of the SuiteSparse library.
-
-    Raises
-    ------
-    OSError
-        If the DLL file cannot be loaded.
-    Exception
-        For other unexpected errors during loading.
-
-    Returns
-    -------
-    ctypes.CDLL
-        The loaded KLU DLL object.
-    """
-    resource = files("sgwt") / "library" / "dll" / "klu.dll"
-
-    with as_file(resource) as dll_path:
-        dll_dir = os.path.dirname(dll_path)
-        if hasattr(os, 'add_dll_directory'):
-            os.add_dll_directory(dll_dir)
-        else:
-            os.environ['PATH'] = str(dll_dir) + os.pathsep + os.environ['PATH']
-        return CDLL(str(dll_path))
+    """Locates and loads the KLU shared library."""
+    return _load_dll("klu.dll")
 
 def _load_resource(path: str, loader: Callable[[str], Any]) -> Any:
     """Centralized resource loader using importlib.resources."""
@@ -302,33 +329,46 @@ def _lap(k: str, r: str) -> csc_matrix: return _load_resource(f"library/{k}/{r}_
 def _sig(k: str, r: str) -> np.ndarray: return _load_resource(f"library/SIGNALS/{r}_{k}.mat", _mat_loader) # type: ignore
 def _kern(n: str) -> Dict[str, Any]:   return _load_resource(f"library/KERNELS/{n}.json", _json_kern_loader)
 
-# Kernels
-MEXICAN_HAT     = _kern("MEXICAN_HAT")
-GAUSSIAN_WAV    = _kern("GAUSSIAN_WAV")
-MODIFIED_MORLET = _kern("MODIFIED_MORLET")
-SHANNON         = _kern("SHANNON")
+# Lazy loading registry
+_LAZY_REGISTRY = {
+    # Kernels
+    "MEXICAN_HAT":     lambda: _kern("MEXICAN_HAT"),
+    "GAUSSIAN_WAV":    lambda: _kern("GAUSSIAN_WAV"),
+    "MODIFIED_MORLET": lambda: _kern("MODIFIED_MORLET"),
+    "SHANNON":         lambda: _kern("SHANNON"),
 
-# Laplacians
-DELAY_EASTWEST = _lap("DELAY", "EASTWEST")
-DELAY_HAWAII   = _lap("DELAY", "HAWAII")
-DELAY_TEXAS    = _lap("DELAY", "TEXAS")
-DELAY_USA      = _lap("DELAY", "USA")
-DELAY_WECC     = _lap("DELAY", "WECC")
+    # Laplacians
+    "DELAY_EASTWEST":  lambda: _lap("DELAY", "EASTWEST"),
+    "DELAY_HAWAII":    lambda: _lap("DELAY", "HAWAII"),
+    "DELAY_TEXAS":     lambda: _lap("DELAY", "TEXAS"),
+    "DELAY_USA":       lambda: _lap("DELAY", "USA"),
+    "DELAY_WECC":      lambda: _lap("DELAY", "WECC"),
 
-IMPEDANCE_EASTWEST = _lap("IMPEDANCE", "EASTWEST")
-IMPEDANCE_HAWAII   = _lap("IMPEDANCE", "HAWAII")
-IMPEDANCE_TEXAS    = _lap("IMPEDANCE", "TEXAS")
-IMPEDANCE_USA      = _lap("IMPEDANCE", "USA")
-IMPEDANCE_WECC     = _lap("IMPEDANCE", "WECC")
+    "IMPEDANCE_EASTWEST": lambda: _lap("IMPEDANCE", "EASTWEST"),
+    "IMPEDANCE_HAWAII":   lambda: _lap("IMPEDANCE", "HAWAII"),
+    "IMPEDANCE_TEXAS":    lambda: _lap("IMPEDANCE", "TEXAS"),
+    "IMPEDANCE_USA":      lambda: _lap("IMPEDANCE", "USA"),
+    "IMPEDANCE_WECC":     lambda: _lap("IMPEDANCE", "WECC"),
 
-LENGTH_EASTWEST = _lap("LENGTH", "EASTWEST")
-LENGTH_HAWAII   = _lap("LENGTH", "HAWAII")
-LENGTH_TEXAS    = _lap("LENGTH", "TEXAS")
-LENGTH_USA      = _lap("LENGTH", "USA")
-LENGTH_WECC     = _lap("LENGTH", "WECC")
+    "LENGTH_EASTWEST": lambda: _lap("LENGTH", "EASTWEST"),
+    "LENGTH_HAWAII":   lambda: _lap("LENGTH", "HAWAII"),
+    "LENGTH_TEXAS":    lambda: _lap("LENGTH", "TEXAS"),
+    "LENGTH_USA":      lambda: _lap("LENGTH", "USA"),
+    "LENGTH_WECC":     lambda: _lap("LENGTH", "WECC"),
 
-# Signals
-COORD_EASTWEST = _sig("COORDS", "EASTWEST")
-COORD_HAWAII   = _sig("COORDS", "HAWAII")
-COORD_TEXAS    = _sig("COORDS", "TEXAS")
-COORD_USA      = _sig("COORDS", "USA")
+    # Signals
+    "COORD_EASTWEST":  lambda: _sig("COORDS", "EASTWEST"),
+    "COORD_HAWAII":    lambda: _sig("COORDS", "HAWAII"),
+    "COORD_TEXAS":     lambda: _sig("COORDS", "TEXAS"),
+    "COORD_USA":       lambda: _sig("COORDS", "USA"),
+}
+
+def __getattr__(name: str) -> Any:
+    if name in _LAZY_REGISTRY:
+        return _LAZY_REGISTRY[name]()
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+
+def __dir__() -> List[str]:
+    return list(globals().keys()) + list(_LAZY_REGISTRY.keys())
+
+__all__ = list(_LAZY_REGISTRY.keys()) + ["ChebyKernel", "VFKernel", "impulse", "get_cholmod_dll", "get_klu_dll", "estimate_spectral_bound"]

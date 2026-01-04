@@ -9,6 +9,16 @@ and this project adheres to `Semantic Versioning <https://semver.org/spec/v2.0.0
 [Unreleased]
 ------------
 
+Added
+~~~~~
+- New documentation section for Chebyshev approximation examples and benchmarks.
+- Lazy loading for built-in resources (Laplacians, Signals, Kernels) to improve import time and reduce memory usage.
+
+Fixed
+~~~~~
+- Memory leak in ``ChebConvolve`` where C-allocated structures were not freed upon exception.
+- Documentation typos referring to ``VFKern`` instead of ``VFKernel``.
+
 [0.3.2] - 2026-01-03
 --------------------
 

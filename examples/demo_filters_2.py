@@ -1,7 +1,6 @@
 import os
 import matplotlib.pyplot as plt
 
-import time
 # DOC_START_CODE_EXCLUDE_IMPORTS
 from sgwt import Convolve, impulse
 from sgwt import DELAY_EASTWEST as L

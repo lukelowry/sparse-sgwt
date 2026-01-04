@@ -10,7 +10,7 @@ import time
 # Impulse
 X  = impulse(L, n=1200)
 
-# Pre-Determined Polesp
+# Pre-Determined Poles
 scales = np.geomspace(1e-5, 1e2, 20)
 poles = 1/scales
 

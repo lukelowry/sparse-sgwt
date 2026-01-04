@@ -14,14 +14,6 @@ This section provides examples demonstrating static graph filtering operations a
 
 .. toctree::
    :maxdepth: 1
-   :caption: Benchmarks & Alternatives
-
-   cheby/demo_cheby_convolve
-   cheby/demo_cheby_coeffs
-   cheby/demo_cheby_time
-
-.. toctree::
-   :maxdepth: 1
    :caption: Advanced Usage
 
    static/demo_vf

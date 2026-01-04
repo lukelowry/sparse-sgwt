@@ -8,6 +8,8 @@ Test Categories
 
 - **Functionality** (``test_functionality.py``): Validates core features including all filter types (Low-pass, Band-pass, High-pass), Vector Fitting (VF) kernels, and dynamic topology updates via ``DyConvolve``.
 - **I/O Utilities** (``test_io.py``): Ensures built-in Laplacians, signals, and kernels are loaded correctly and the CHOLMOD DLL is accessible.
+- **Chebyshev** (``test_chebyshev.py``): Verifies the accuracy and stability of Chebyshev polynomial approximations for graph filters.
+- **LU Decomposition** (``test_lu.py``): Tests the LU-based convolution method, specifically for handling complex poles which are not supported by the Cholesky solver.
 
 Running Tests
 -------------

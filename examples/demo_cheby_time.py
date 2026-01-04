@@ -12,7 +12,7 @@ import time
 import numpy as np
 import matplotlib.pyplot as plt
 import sgwt
-from sgwt import ChebConvolve, DyConvolve, Convolve, impulse
+from sgwt import ChebyConvolve, DyConvolve, Convolve, impulse
 from sgwt import IMPEDANCE_TEXAS as L
 
 # Professional Plotting Style
@@ -29,25 +29,17 @@ ORDER = 450      # Polynomial order
 N_ITER = 200      # Number of iterations for averaging
 X = impulse(L, n=1200)
 
-# 1. Setup Filter and Kernel
-def analytical_bandpass(x, scale):
-    # Matches the internal form: 4qL / (L + qI)^2 where q = 1/scale
-    q = 1.0 / scale
-    return 4.0 * q * x / (x + q)**2
-
-def f(x): 
-    return np.stack([analytical_bandpass(x, s) for s in SCALES], axis=1)
+# 1. Setup Filter Kernel
+def f(x): return np.stack([sgwt.functions.bandpass(x, scale=s, order=1) for s in SCALES], axis=1)
 
 # Pre-calculate spectral bound and fit kernel (Setup phase)
-temp_conv = ChebConvolve(L)
-ubnd = temp_conv.spectrum_bound
 lbnd = 1e-3
-kernel = sgwt.ChebyKernel.from_function(f, ORDER, ubnd, min_lambda=lbnd )
+kernel = sgwt.ChebyKernel.from_function_on_graph(L, f, ORDER, min_lambda=lbnd)
 
 print(f"Benchmarking on {L.shape[0]} nodes...")
 
 # 2. Time Chebyshev Convolution
-with ChebConvolve(L) as conv_cheb:
+with ChebyConvolve(L) as conv_cheb:
     # Warm up to ensure JIT/cache effects are minimized
     _ = conv_cheb.convolve(X, kernel)
     
@@ -95,7 +87,7 @@ for ax in [ax1, ax2]:
     ax.spines['right'].set_visible(False)
 
 # Plot 1: Spectral Response
-x_plot = np.geomspace(lbnd , ubnd, 1000)
+x_plot = np.geomspace(lbnd , kernel.spectrum_bound, 1000)
 y_true = f(x_plot)
 y_approx = kernel.evaluate(x_plot)
 

@@ -7,7 +7,7 @@ from sgwt import IMPEDANCE_WECC as L
 import numpy as np
 
 # Bus Index, Latitude (Y), Longitude (X)
-MEASURMENTS = [
+MEASUREMENTS = [
     [ 191    ,-122.45    ,46.719],
     [ 202    ,-101.33    ,46.5  ],
     [  17    ,-112.24    ,32.52 ],
@@ -22,7 +22,7 @@ X = np.zeros((nbus, 2)) # Signal, Sparse
 Xh = np.zeros_like(X) # Reconstruction, Dense
 
 # Load Sparse Signal
-for idx, long, lat in MEASURMENTS:
+for idx, long, lat in MEASUREMENTS:
     X[idx] = long, lat
 
 # Sampling operator

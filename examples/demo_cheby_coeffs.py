@@ -21,15 +21,11 @@ plt.rcParams.update({
 
 # DOC_START_CODE_EXCLUDE_IMPORTS
 # 1. Define target filter function
-def bandpass(x):
-    return x / (1 + x)**2
-
-def f(x):
-    return np.array([bandpass(x)]).T
+# The target is an analytical bandpass filter with scale=1.0 and order=1.
+def f(x): return np.array([sgwt.functions.bandpass(x, scale=1.0, order=1)]).T
 
 # 2. Get spectrum bound from the module
-conv = sgwt.ChebConvolve(L)
-ubnd = conv.spectrum_bound
+ubnd = sgwt.estimate_spectral_bound(L)
 
 # 3. Setup evaluation points
 x_eval = np.geomspace(1e-4, ubnd, 1000)
@@ -50,7 +46,7 @@ ax1.plot(x_eval, y_true, 'k--', label='Target Filter', alpha=0.6)
 
 for order in orders:
     # Fit kernel using the module's function (uses quadratic sampling by default)
-    kernel = sgwt.ChebyKernel.from_function(f, order, ubnd)
+    kernel = sgwt.ChebyKernel.from_function(f, order, ubnd, min_lambda=1e-4)
     y_approx = kernel.evaluate(x_eval)
     
     ax1.plot(x_eval, y_approx, label=f'Order {order}')
@@ -63,7 +59,7 @@ xlim = np.min(x_eval), np.max(x_eval)
 ax1.set_xlim(*xlim)
 ax2.set_xlim(*xlim)
 
-ax1.set_title('Chebyshev Approximation Quality (Quadratic Sampling)')
+ax1.set_title('Approximation Quality (Quadratic Sampling)')
 ax1.set_ylabel('Filter Gain')
 ax1.set_xscale('log')
 ax1.legend()

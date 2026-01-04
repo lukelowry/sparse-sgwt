@@ -2,6 +2,6 @@ Utilities
 =================
 
 .. automodule:: sgwt.util
-   :members: VFKern
+   :members: VFKernel
    :no-undoc-members:
    :show-inheritance:

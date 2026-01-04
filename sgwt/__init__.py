@@ -7,60 +7,40 @@ File: sgwt/__init__.py
 Description: Main package initialization.
 """
 
-# Static Graphs (Typical use case)
-from .static import Convolve
+# Static and Dynamic Graphs
+from .cholconv import Convolve, DyConvolve
 
 # Chebyshev Approximation
-from .cheb import ChebConvolve
+from .chebyconv import ChebyConvolve
 
-# Dynamic Graphs (Optimized performance, less versatile)
-from .dynamic import DyConvolve
+# Analytical function generators
+from . import functions
 
-# Lanczos Approximation
-from .lanz import LanzConvolve
-
-# LU Decomposition (for complex poles)
-from .lu_convolve import LUConvolve
+# Import Library resources
+from . import library as _library
 
 from .util import (
-
-    # Vector Fitting Dataclass
     VFKernel,
     ChebyKernel,
     impulse,
-
-    # DLL Reader
-    get_klu_dll,
-    get_cholmod_dll,
-    
-    # Kernels
-    MEXICAN_HAT,
-    GAUSSIAN_WAV,
-    MODIFIED_MORLET,
-    SHANNON,
-    
-    # Laplacians
-    DELAY_EASTWEST,
-    DELAY_HAWAII,
-    DELAY_TEXAS,
-    DELAY_USA,
-    DELAY_WECC,
-    
-    IMPEDANCE_EASTWEST,
-    IMPEDANCE_HAWAII,
-    IMPEDANCE_TEXAS,
-    IMPEDANCE_USA,
-    IMPEDANCE_WECC,
-    
-    LENGTH_EASTWEST,
-    LENGTH_HAWAII,
-    LENGTH_TEXAS,
-    LENGTH_USA,
-    LENGTH_WECC,
-    
-    # Signals
-    COORD_EASTWEST,
-    COORD_HAWAII,
-    COORD_TEXAS,
-    COORD_USA
+    estimate_spectral_bound
 )
+
+# For convenience, expose datasets and some utils from the library subpackage
+# at the top level of the sgwt package.
+_LAZY_RESOURCES = _library._LAZY_RESOURCES
+get_cholmod_dll = _library.get_cholmod_dll
+get_klu_dll = _library.get_klu_dll
+
+def __getattr__(name):
+    if name in _LAZY_RESOURCES:
+        return getattr(_library, name)
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+
+def __dir__():
+    return list(globals().keys()) + _LAZY_RESOURCES
+
+__all__ = [
+    "Convolve", "ChebyConvolve", "DyConvolve", "functions",
+    "VFKernel", "ChebyKernel", "impulse", "get_klu_dll", "get_cholmod_dll", "estimate_spectral_bound"
+] + _LAZY_RESOURCES

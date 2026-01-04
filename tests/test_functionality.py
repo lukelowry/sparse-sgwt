@@ -101,7 +101,7 @@ class TestSGWTFunctionality(unittest.TestCase):
             lp = conv.lowpass(self.X, [1.0])[0]
             
             # res should be lp + 5 (broadcasting over nBus, nTime)
-            expected = lp[:, :, None] + 5.0
+            expected = lp[:, :, None] + self.X[:, :, None] * 5.0
             np.testing.assert_allclose(res, expected)
 
     def test_vf_multi_dim_direct_term(self):
@@ -117,8 +117,8 @@ class TestSGWTFunctionality(unittest.TestCase):
             lp = conv.lowpass(self.X, [1.0])[0]
             
             # Dim 0: lp + 5, Dim 1: 2*lp + 10
-            np.testing.assert_allclose(res[:, :, 0], lp + 5.0)
-            np.testing.assert_allclose(res[:, :, 1], 2.0 * lp + 10.0)
+            np.testing.assert_allclose(res[:, :, 0], lp + self.X * 5.0)
+            np.testing.assert_allclose(res[:, :, 1], 2.0 * lp + self.X * 10.0)
 
     def test_dy_vf_direct_term(self):
         """Verify direct term D in DyConvolve context."""
@@ -130,7 +130,7 @@ class TestSGWTFunctionality(unittest.TestCase):
         with self.sgwt.DyConvolve(self.L, vk) as conv:
             res = conv.convolve(self.X)
             lp = conv.lowpass(self.X)[0]
-            expected = lp[:, :, None] + 10.0
+            expected = lp[:, :, None] + self.X[:, :, None] * 10.0
             np.testing.assert_allclose(res, expected)
 
     def test_convolve_consistency(self):

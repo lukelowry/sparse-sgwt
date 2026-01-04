@@ -42,7 +42,7 @@ The library includes several pre-computed kernels. You can use them by passing t
     from sgwt import MODIFIED_MORLET
 
     # Load a pre-computed Vector Fitting kernel
-    K = VFKern.from_dict(MODIFIED_MORLET)
+    K = VFKernel.from_dict(MODIFIED_MORLET)
     X = impulse(L, n=35000)
 
     with Convolve(L) as conv:

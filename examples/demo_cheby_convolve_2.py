@@ -9,7 +9,7 @@ analytical DyConvolve solver.
 import os, time, numpy as np, matplotlib.pyplot as plt
 # DOC_START_CODE_EXCLUDE_IMPORTS
 import sgwt
-from sgwt import ChebConvolve, DyConvolve, impulse
+from sgwt import ChebyConvolve, DyConvolve, impulse
 from sgwt import DELAY_EASTWEST as L, COORD_EASTWEST as C
 from demo_plot import plot_signal, plot_spectral
 
@@ -19,20 +19,19 @@ SCALES, ORDER, N_ITER = [3], 500, 2
 XMIN = 1e-5
 X = impulse(L, n=65000) - impulse(L, n=35000)
 
-def f(x): return np.stack([((4.0/s)*x / (x + 1.0/s)**2)**3 for s in SCALES], axis=1)
+def f(x): return np.stack([sgwt.functions.bandpass(x, scale=s, order=3) for s in SCALES], axis=1)
 
 # --- Calculations ---
-conv_cheb = ChebConvolve(L)
-kernel = sgwt.ChebyKernel.from_function(f, ORDER, conv_cheb.spectrum_bound, min_lambda=XMIN)
+kernel = sgwt.ChebyKernel.from_function_on_graph(L, f, ORDER, min_lambda=XMIN)
 
 # 1. Convolve signals for spatial plots
-with conv_cheb: 
+with ChebyConvolve(L) as conv_cheb:
     Y_cheb = conv_cheb.convolve(X, kernel)
 with DyConvolve(L, [1.0/s for s in SCALES]) as conv: 
     Y_dy = conv.bandpass(X, order=3)
 
 # 2. Time convolutions for performance plot
-with conv_cheb:
+with ChebyConvolve(L) as conv_cheb:
     _ = conv_cheb.convolve(X, kernel) # warm-up
     start = time.time()
     for _ in range(N_ITER): _ = conv_cheb.convolve(X, kernel)
@@ -47,7 +46,7 @@ with DyConvolve(L, [1.0/s for s in SCALES]) as conv:
 # DOC_END_CODE_EXCLUDE_PLOT
 
 # 3. Calculate spectral approximation error
-x_eval = np.geomspace(XMIN, conv_cheb.spectrum_bound, 1000)
+x_eval = np.geomspace(XMIN, kernel.spectrum_bound, 1000)
 y_true = f(x_eval)
 y_approx = kernel.evaluate(x_eval)
 errors = np.mean((y_true - y_approx)**2, axis=0) # MSE for each scale
@@ -119,6 +118,6 @@ script_dir = os.path.dirname(os.path.abspath(__file__))
 project_root = os.path.abspath(os.path.join(script_dir, '..'))
 static_images_dir = os.path.join(project_root, 'docs', '_static', 'images')
 os.makedirs(static_images_dir, exist_ok=True)
-save_path = os.path.join(static_images_dir, 'demo_cheby_convolve.png')
+save_path = os.path.join(static_images_dir, 'demo_cheby_convolve_2.png')
 plt.savefig(save_path, dpi=400, bbox_inches='tight')
 plt.show()

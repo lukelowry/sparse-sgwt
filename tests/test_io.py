@@ -29,6 +29,16 @@ class TestSGWTUtil(unittest.TestCase):
         except Exception as e:
             self.fail(f"get_cholmod_dll raised Exception: {e}")
 
+    def test_klu_loading(self):
+        """Verify that the KLU DLL can be located and loaded."""
+        try:
+            dll = self.sgwt.get_klu_dll()
+            self.assertIsInstance(dll, CDLL)
+        except OSError as e:
+            self.fail(f"KLU DLL Load Error (OSError): {e}")
+        except Exception as e:
+            self.fail(f"get_klu_dll raised Exception: {e}")
+
     def test_kernel_loading(self):
         """Verify built-in kernels are loaded as VFKernel objects with valid data."""
         kernels = [self.sgwt.MEXICAN_HAT, self.sgwt.MODIFIED_MORLET, self.sgwt.SHANNON]
