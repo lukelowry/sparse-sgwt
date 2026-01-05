@@ -498,7 +498,7 @@ class CholWrapper:
     # Data Structures
     # --------------------------------------------------------------------------
         
-    def numpy_to_chol_sparse(self, A: csc_matrix, itype: int = 0, dtype: int = 0) -> tuple[cholmod_sparse, tuple]:
+    def numpy_to_chol_sparse(self, A: csc_matrix, itype: int = 0, dtype: int = 0):
         """
         Convert a 2D NumPy array A into a cholmod_sparse struct.
         
