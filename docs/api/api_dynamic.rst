@@ -1,4 +1,4 @@
-Dynamic Convolution (`DyConvolve`)
+Dynamic Convolution
 ==================================
 
 .. autoclass:: sgwt.DyConvolve

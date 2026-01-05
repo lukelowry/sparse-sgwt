@@ -4,29 +4,29 @@ Analytical Filters
 Low-Pass Spectral Graph Filter
 ------------------------------
 
-The low-pass filter is *refinable*, as it is a self-similar rational function. The refinability makes it useful for signal smoothing across a range of spatial scales.
+The low-pass filter is a refinable, self-similar rational function useful for signal smoothing. The `scale` parameter, :math:`s`, controls the cutoff frequency.
 
 .. math::
 
-   \phi(\mathbf{\Lambda}) = \dfrac{I}{\mathbf{\Lambda}+I} 
+   \phi_s(\mathbf{\Lambda}) = \frac{I}{s\mathbf{\Lambda} + I}
 
 High-Pass Spectral Graph Filter
 -------------------------------
 
-The proposed high-pass filter acts as a container for variations over the graph below a given spatial scale.
+The high-pass filter isolates high-frequency variations on the graph.
 
 .. math::
 
-   \mu(\mathbf{\Lambda}) = \dfrac{\mathbf{\Lambda}}{\mathbf{\Lambda}+I}
+   \mu_s(\mathbf{\Lambda}) = \frac{s\mathbf{\Lambda}}{s\mathbf{\Lambda} + I}
 
 Band-Pass Spectral Graph Filter
 -------------------------------
 
-A convenient closed-form wavelet generating kernel was found to be a useful kernel as an alternative to the vector-fitting procedure if a particular filter does not need to be designed. 
+A convenient closed-form wavelet generating kernel that serves as an alternative to custom-designed filters. The scale :math:`s` adjusts the center frequency of the band.
 
 .. math::
 
-   \Psi(\mathbf{\Lambda}) = \dfrac{4\mathbf{\Lambda}}{(\mathbf{\Lambda}+I)^2} 
+   \Psi_s(\mathbf{\Lambda}) = \frac{4s\mathbf{\Lambda}}{(s\mathbf{\Lambda}+I)^2}
 
 This filter qualifies as a wavelet generating kernel for the SGWT, since :math:`\Psi(0)=0` and the admissibility condition is satisfied. The admissibility constant of this band-pass filter is :math:`C_f=8/3`.
 

@@ -1,6 +1,14 @@
 Chebyshev Approximation
 =====================================
 
+A Chebyshev approximation represents a spectral filter :math:`g(\lambda)` as a sum of Chebyshev polynomials :math:`T_k`:
+
+.. math::
+
+   g(\lambda) \approx \sum_{k=0}^{N} c_k T_k\left(\frac{2\lambda}{\lambda_{\text{max}}} - 1\right)
+
+where :math:`\lambda_{\text{max}}` is the largest eigenvalue of the graph Laplacian and :math:`c_k` are the fitted coefficients. This allows for convolution via an efficient recurrence relation (Clenshaw's algorithm).
+
 While ``sgwt`` is optimized for sparse direct solvers (rational filters), it provides a ``ChebyKernel`` implementation as an alternative for specific use cases and performance benchmarking.
 
 The ``ChebyKernel`` class allows you to approximate arbitrary continuous functions on the graph spectrum. This is primarily used for:

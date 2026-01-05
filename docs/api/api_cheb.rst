@@ -1,4 +1,4 @@
-Chebyshev Convolution (`ChebyConvolve`)
+Chebyshev Convolution
 =======================================
 
 .. autoclass:: sgwt.ChebyConvolve

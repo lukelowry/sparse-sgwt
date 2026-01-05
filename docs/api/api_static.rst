@@ -1,4 +1,4 @@
-Static Convolution (`Convolve`)
+Static Convolution
 ===============================
 
 .. autoclass:: sgwt.Convolve
