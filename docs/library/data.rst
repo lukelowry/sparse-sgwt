@@ -50,8 +50,7 @@ Vertex-domain signals are provided for some graphs, most commonly geographic coo
 
 Kernels
 -------
-
-Pre-computed rational approximations for common spectral graph wavelets are available as dictionaries. These can be loaded into :class:`~sgwt.util.VFKernel` objects for use with :meth:`~sgwt.static.Convolve.convolve`.
+Pre-computed rational approximations for common spectral graph wavelets are available as dictionaries. These can be loaded into :class:`~sgwt.VFKernel` objects for use with :meth:`~sgwt.Convolve.convolve`.
 
 *   **MEXICAN_HAT**: Mexican Hat wavelet.
 *   **MODIFIED_MORLET**: Modified Morlet wavelet.

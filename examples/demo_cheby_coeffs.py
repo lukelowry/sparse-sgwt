@@ -6,12 +6,12 @@ This demo illustrates how the order of the Chebyshev polynomial affects the
 accuracy of the filter approximation across the graph spectrum.
 """
 
-import os
 import sgwt
 import numpy as np
-import matplotlib.pyplot as plt
 from sgwt import IMPEDANCE_TEXAS as L
-
+# DOC_START_CODE_EXCLUDE_IMPORTS
+import os
+import matplotlib.pyplot as plt
 # Professional Plotting Style
 plt.rcParams.update({
     "font.family": "serif",
@@ -19,9 +19,8 @@ plt.rcParams.update({
     "mathtext.fontset": "stix",
 })
 
-# DOC_START_CODE_EXCLUDE_IMPORTS
 # 1. Define target filter function
-# The target is an analytical bandpass filter with scale=1.0 and order=1.
+# The target is the analytical bandpass filter
 def f(x): return np.array([sgwt.functions.bandpass(x, scale=1.0, order=1)]).T
 
 # 2. Get spectrum bound from the module

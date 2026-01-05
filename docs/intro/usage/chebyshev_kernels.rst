@@ -7,7 +7,7 @@ The ``ChebyKernel`` class allows you to approximate arbitrary continuous functio
 
 1. **Performance Benchmarking**: Comparing the efficiency of polynomial recurrence against sparse direct solves.
 2. **Non-Rational Kernels**: Approximating spectral shapes that are difficult to represent with rational functions.
-3. **Avoiding Factorization**: In scenarios where the overhead of a sparse Cholesky factorization is undesirable, though ``DyConvolve`` usually mitigates this.
+3. **Avoiding Factorization**: In scenarios where the overhead of a sparse Cholesky factorization is undesirable.
 
 Basic Usage
 -----------

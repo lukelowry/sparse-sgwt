@@ -7,28 +7,36 @@ analytical DyConvolve solver.
 """
 
 import os, time, numpy as np, matplotlib.pyplot as plt
+from demo_plot import plot_signal, plot_spectral
+plt.rcParams.update({"font.family": "serif", "font.serif": ["Times New Roman"], "mathtext.fontset": "stix"})
+from sgwt import COORD_TEXAS as C
+
 # DOC_START_CODE_EXCLUDE_IMPORTS
 import sgwt
 from sgwt import ChebyConvolve, DyConvolve, impulse
-from sgwt import IMPEDANCE_TEXAS as L, COORD_TEXAS as C
-from demo_plot import plot_signal, plot_spectral
+from sgwt import IMPEDANCE_TEXAS as L
 
-plt.rcParams.update({"font.family": "serif", "font.serif": ["Times New Roman"], "mathtext.fontset": "stix"})
-
-SCALES, ORDER, N_ITER = [0.1, 1.0, 10.0], 300, 100
+SCALES =  [0.1, 1.0, 10.0]
+ORDER = 300
 XMIN = 1e-3
-X = impulse(L, n=600) # Impulse at a specific node
 
-def f(x): return np.stack([sgwt.functions.bandpass(x, scale=s, order=2) for s in SCALES], axis=1)
+def f(x): 
+    return np.stack([
+        sgwt.functions.bandpass(x, scale=s, order=2) for s in SCALES], 
+    axis=1)
 
-# --- Calculations ---
 kernel = sgwt.ChebyKernel.from_function_on_graph(L, f, ORDER, min_lambda=XMIN)
 
-# 1. Convolve signals for spatial plots
+X = impulse(L, n=600) 
+
 with ChebyConvolve(L) as conv_cheb:
     Y_cheb = conv_cheb.convolve(X, kernel)
+
 with DyConvolve(L, [1.0/s for s in SCALES]) as conv: 
     Y_dy = conv.bandpass(X, order=2)
+
+# DOC_END_CODE_EXCLUDE_PLOT
+N_ITER = 100
 
 # 2. Time convolutions for performance plot
 with ChebyConvolve(L) as conv_cheb:
@@ -43,7 +51,7 @@ with DyConvolve(L, [1.0/s for s in SCALES]) as conv:
     for _ in range(N_ITER): _ = conv.bandpass(X, order=2)
     t_dy = (time.time() - start) / N_ITER
 
-# DOC_END_CODE_EXCLUDE_PLOT
+
 
 # 3. Calculate spectral approximation error
 x_eval = np.geomspace(XMIN, kernel.spectrum_bound, 1000)

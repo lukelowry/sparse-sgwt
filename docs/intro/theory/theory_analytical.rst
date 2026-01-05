@@ -37,6 +37,6 @@ This filter qualifies as a wavelet generating kernel for the SGWT, since :math:`
 .. seealso::
    The analytical filters are implemented as methods on the convolution contexts:
 
-   * :meth:`~sgwt.static.Convolve.lowpass`
-   * :meth:`~sgwt.static.Convolve.bandpass`
-   * :meth:`~sgwt.static.Convolve.highpass`
+   * :meth:`~sgwt.Convolve.lowpass`
+   * :meth:`~sgwt.Convolve.bandpass`
+   * :meth:`~sgwt.Convolve.highpass`
