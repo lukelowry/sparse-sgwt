@@ -85,10 +85,10 @@ For convenience, the BibTeX entry for the associated paper is:
 
 .. code-block:: bibtex
 
-    @inproceedings{lowery-sgwt-YYYY,
+    @inproceedings{lowery-sgwt-2026,
       title={Using Spectral Graph Wavelets to Analyze Large Power System Oscillation Modes},
       author={Lowery, Luke and Baek, Jongoh and Birchfield, Adam},
-      year={YYYY}
+      year={2026}
     }
 
 Author
