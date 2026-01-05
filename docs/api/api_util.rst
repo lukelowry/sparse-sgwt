@@ -1,4 +1,4 @@
-Kernels & Utilities
+Utilities
 ===================
 
 This section covers the kernel objects used for defining filters and other helper functions.

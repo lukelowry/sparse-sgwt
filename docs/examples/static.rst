@@ -1,4 +1,4 @@
-Static Graph Examples
+Static Graphs
 =====================
 
 This section provides examples demonstrating static graph filtering operations and advanced usage patterns.

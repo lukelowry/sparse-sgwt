@@ -3,15 +3,15 @@ API Reference
 
 .. toctree::
    :maxdepth: 2
-   :caption: Convolution Contexts
+   :caption: Graph Convolution
 
-   api/api_static
-   api/api_dynamic
-   api/api_cheb
+   api_static
+   api_dynamic
+   api_cheb
 
 .. toctree::
    :maxdepth: 2
    :caption: Kernels & Functions
 
-   api/api_util
-   api/api_functions
+   api_util
+   api_functions

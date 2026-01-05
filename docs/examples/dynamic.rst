@@ -1,4 +1,4 @@
-Dynamic Graph Examples
+Dynamic Graphs
 ======================
 
 This section provides examples demonstrating the use of dynamic graph convolutions with ``DyConvolve``.

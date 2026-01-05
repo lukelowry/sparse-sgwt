@@ -1,4 +1,4 @@
-Chebyshev & Benchmarks
+Benchmarks
 ======================
 
 This section focuses on the Chebyshev polynomial approximation capabilities of ``sgwt``, including accuracy analysis and performance comparisons against direct solvers.

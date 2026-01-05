@@ -1,4 +1,4 @@
-Analytical Filter Functions
+Math Functions
 ===========================
 
 This module provides scalar implementations of common analytical filter functions

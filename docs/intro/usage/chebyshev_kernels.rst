@@ -1,4 +1,4 @@
-Chebyshev Approximation (Alternative)
+Chebyshev Approximation
 =====================================
 
 While ``sgwt`` is optimized for sparse direct solvers (rational filters), it provides a ``ChebyKernel`` implementation as an alternative for specific use cases and performance benchmarking.
