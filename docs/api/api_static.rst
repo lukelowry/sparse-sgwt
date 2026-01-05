@@ -1,7 +1,7 @@
-Static Graph Convolution
-========================
+Static Convolution
+===============================
 
-.. automodule:: sgwt.static
+.. autoclass:: sgwt.Convolve
    :members:
    :undoc-members:
    :show-inheritance:

@@ -1,7 +1,6 @@
 import os
 import matplotlib.pyplot as plt
 
-import time
 # DOC_START_CODE_EXCLUDE_IMPORTS
 from sgwt import Convolve, impulse
 from sgwt import DELAY_EASTWEST as L
@@ -16,9 +15,7 @@ s = [3e0]
 
 # Third Order Band-Pass
 with Convolve(L) as conv:
-    BP = conv.bandpass(X, s)[0]
-    BP = conv.bandpass(BP, s)[0]
-    BP = conv.bandpass(BP, s)[0]
+    BP = conv.bandpass(X, s, order=3)[0]
 
 # DOC_END_CODE_EXCLUDE_PLOT
 from demo_plot import plot_signal

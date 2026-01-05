@@ -6,8 +6,18 @@ All notable changes to this project will be documented in this file.
 The format is based on `Keep a Changelog <https://keepachangelog.com/en/1.0.0/>`_,
 and this project adheres to `Semantic Versioning <https://semver.org/spec/v2.0.0.html>`_.
 
-[Unreleased]
+[0.3.3] - 2026-01-05
 ------------
+
+Added
+~~~~~
+- New documentation section for Chebyshev approximation examples and benchmarks.
+- Lazy loading for built-in resources (Laplacians, Signals, Kernels) to improve import time and reduce memory usage.
+
+Fixed
+~~~~~
+- Offset ``d_a`` of Kernel Fitted approximation correctly implemented
+- Documentation typos referring to ``VFKern`` instead of ``VFKernel``.
 
 [0.3.2] - 2026-01-03
 --------------------

@@ -82,10 +82,11 @@ class CholWrapper:
         self.config_function_args(self.dll)
         self.config_return_types(self.dll)
 
-        # Parse matrix to cholmod_sparse
-        self.A = self.numpy_to_chol_sparse(A) # Parse to Cholmod format
-        
-        # Make choldmod_common struct
+        # Parse matrix to cholmod_sparse, keeping underlying numpy arrays alive
+        # to prevent garbage collection and dangling pointers.
+        self.A, self._A_data_arrays = self.numpy_to_chol_sparse(A)
+
+        # Make cholmod_common struct
         self.common = cholmod_common()
 
         # TODO Support other solve types
@@ -211,32 +212,112 @@ class CholWrapper:
     # Matrix Operations
     # --------------------------------------------------------------------------
 
-    def sdmult(self, matrix_ptr, out_ptr, alpha: float = 1.0, beta: float = 0.0) -> None:
+    def sdmult(self, A_ptr, X_ptr, Y_ptr,  alpha: float = 1, beta: float = 0, transpose: bool = False) -> None:
         """
+        Y = alpha * (A @ X) + beta * Y
+
         Sparse matrix multiplication: out = alpha * (A @ matrix) + beta * matrix.
 
         Parameters
         ----------
-        matrix_ptr : POINTER(cholmod_dense)
-            Input dense matrix.
-        out_ptr : POINTER(cholmod_dense)
+        A_ptr : POINTER(cholmod_sparse)
+            The sparse matrix to apply
+        X_ptr : POINTER(cholmod_dense)
+            Input dense matrix to undergo multiplication
+        Y_ptr : POINTER(cholmod_dense)
             Output dense matrix.
         alpha : float, optional
             Scaling factor for A @ matrix.
         beta : float, optional
-            Scaling factor for matrix.
+            Scaling factor for Y matrix
+        transpose : bool, optional
+            If true, use A^T instead of A
         """
         Alpha = (c_double * 2)(alpha, 0.0) 
         Beta  = (c_double * 2)(beta, 0.0) 
 
         self.dll.cholmod_sdmult(
-            byref(self.A),  # Left matrix always Laplacian
-            0,              # Do not Transpose = 0
+            A_ptr,  # Left matrix always Laplacian
+            transpose,              # Do not Transpose = 0
             Alpha,          # out += Alpha * (Lap @ matrix)
             Beta,           # out += Beta * matrix
-            matrix_ptr,     # Input
-            out_ptr,        # Output
+            X_ptr,     # Input
+            Y_ptr,        # Output
             byref(self.common) 
+        )
+
+    def norm_dense(self, X_ptr, norm_type: int = 2) -> float:
+        """
+        Computes the norm of a dense matrix.
+
+        Parameters
+        ----------
+        X_ptr : POINTER(cholmod_dense)
+            The dense matrix to compute the norm of.
+        norm_type : int, optional
+            Type of norm: 0: infinity norm, 1: 1-norm, 2: 2-norm (Frobenius).
+            Defaults to 2.
+
+        Returns
+        -------
+        float
+            The computed norm.
+        """
+        return self.dll.cholmod_norm_dense(X_ptr, norm_type, byref(self.common))
+
+    def norm_sparse(self, A_ptr, norm_type: int = 0) -> float:
+        """
+        Computes the norm of a sparse matrix.
+
+        Parameters
+        ----------
+        A_ptr : POINTER(cholmod_sparse)
+            The sparse matrix to compute the norm of.
+        norm_type : int, optional
+            Type of norm: 0: infinity norm, 1: 1-norm. Defaults to 0.
+        """
+        return self.dll.cholmod_norm_sparse(A_ptr, norm_type, byref(self.common))
+
+    def add(self, A_ptr, B_ptr, alpha: float = 1, beta: float = 1, mode: int = 1, sorted: bool = True):
+        """
+        Computes C = alpha*A + beta*B for sparse matrices.
+
+        This is a wrapper for `cholmod_add`.
+
+        Parameters
+        ----------
+        A_ptr : POINTER(cholmod_sparse)
+            Pointer to the first sparse matrix.
+        B_ptr : POINTER(cholmod_sparse)
+            Pointer to the second sparse matrix.
+        alpha : float, optional
+            Scaling factor for A, defaults to 1.
+        beta : float, optional
+            Scaling factor for B, defaults to 1.
+        mode : int, optional
+            - 1: numerical (non-conj.) if A and/or B are symmetric (default).
+            - 2: numerical (conj) if A and/or B are symmetric.
+            - 0: pattern only.
+        sorted : bool, optional
+            This argument is ignored by modern CHOLMOD versions but is kept for signature compatibility. The result is always sorted.
+
+        Returns
+        -------
+        POINTER(cholmod_sparse)
+            A pointer to the newly created sparse matrix C. This memory is managed by CHOLMOD and must be freed with `free_sparse`.
+        """
+        Alpha = (c_double * 2)(alpha, 0.0)
+        Beta = (c_double * 2)(beta, 0.0)
+        sorted_flag = 1 if sorted else 0
+
+        return self.dll.cholmod_add(
+            A_ptr,
+            B_ptr,
+            Alpha,
+            Beta,
+            mode,
+            sorted_flag,
+            byref(self.common)
         )
 
     # --------------------------------------------------------------------------
@@ -417,7 +498,7 @@ class CholWrapper:
     # Data Structures
     # --------------------------------------------------------------------------
         
-    def numpy_to_chol_sparse(self, A: csc_matrix, itype: int = 0, dtype: int = 0) -> cholmod_sparse:
+    def numpy_to_chol_sparse(self, A: csc_matrix, itype: int = 0, dtype: int = 0):
         """
         Convert a 2D NumPy array A into a cholmod_sparse struct.
         
@@ -432,7 +513,9 @@ class CholWrapper:
         
         Returns
         -------
-            cholmod_sparse instance (sorted, packed)
+        (cholmod_sparse, tuple)
+            A tuple containing the cholmod_sparse instance and a tuple of the
+            underlying numpy arrays (x, i, p) that must be kept in scope.
         """
 
         #  Get Shape
@@ -464,7 +547,7 @@ class CholWrapper:
         cholA.sorted = 1           # Sorted = True
         cholA.packed = 1           # packed = True
         
-        return cholA
+        return cholA, (x, i, p)
     
     def numpy_to_chol_sparse_vec(self, A: csc_matrix, itype: int = 0, dtype: int = 0) -> cholmod_sparse:
         """
@@ -830,9 +913,129 @@ class CholWrapper:
             byref(self.common)
         )
     
+    def eye(self, nrow: int, ncol: int):
+        """Creates a dense identity matrix in CHOLMOD.
+
+        This is a wrapper for `cholmod_eye`. The memory is managed
+        by CHOLMOD and must be freed with `free_dense`.
+
+        Parameters
+        ----------
+        nrow : int
+            Number of rows.
+        ncol : int
+            Number of columns.
+
+        Returns
+        -------
+        POINTER(cholmod_dense)
+            A pointer to the newly allocated dense identity matrix.
+        """
+        return self.dll.cholmod_eye(
+            nrow,
+            ncol,
+            CHOLMOD_REAL,  # xtype: real
+            byref(self.common)
+        )
+    
+    def speye(self, nrow: int, ncol: int):
+        """Creates a sparse identity matrix in CHOLMOD.
+
+        This is a wrapper for `cholmod_speye`. The memory is managed
+        by CHOLMOD and must be freed with `free_sparse`.
+
+        Parameters
+        ----------
+        nrow : int
+            Number of rows.
+        ncol : int
+            Number of columns.
+
+        Returns
+        -------
+        POINTER(cholmod_sparse)
+            A pointer to the newly allocated sparse identity matrix.
+        """
+        return self.dll.cholmod_speye(
+            nrow,
+            ncol,
+            CHOLMOD_REAL,  # xtype: real
+            byref(self.common)
+        )
+    
+    def spzeros(self, nrow: int, ncol: int, nzmax: int, xtype: int = CHOLMOD_REAL):
+        """Creates a sparse matrix with no entries (all zeros).
+
+        This is a wrapper for `cholmod_spzeros`. The memory is managed
+        by CHOLMOD and must be freed with `free_sparse`. This is useful
+        for creating a sparse matrix structure that will be filled later.
+        The matrix created is in CSC format and is marked as sorted and packed.
+
+        Parameters
+        ----------
+        nrow : int
+            Number of rows.
+        ncol : int
+            Number of columns.
+        nzmax : int
+            The number of non-zero entries to allocate space for. If zero,
+            a matrix with no allocated space for entries is created.
+        xtype : int, optional
+            The value type of the matrix (e.g., CHOLMOD_REAL, CHOLMOD_PATTERN).
+            Defaults to CHOLMOD_REAL.
+
+        Returns
+        -------
+        POINTER(cholmod_sparse)
+            A pointer to the newly allocated sparse matrix.
+        """
+        return self.dll.cholmod_spzeros(
+            nrow,
+            ncol,
+            nzmax,
+            xtype,
+            byref(self.common)
+        )
+    
     # --------------------------------------------------------------------------
     # Copying
     # --------------------------------------------------------------------------
+
+    def copy_dense(self, X_ptr, Y_ptr = None):
+        """
+        Copies a cholmod_dense matrix.
+
+        If `Y_ptr` is provided, copies X into Y (using `cholmod_copy_dense2`).
+        If `Y_ptr` is None, creates and returns a new copy of X (using `cholmod_copy_dense`).
+
+        Parameters
+        ----------
+        X_ptr : POINTER(cholmod_dense)
+            The source dense matrix to copy.
+        Y_ptr : POINTER(cholmod_dense), optional
+            The pre-allocated destination dense matrix. If None, a new matrix
+            is created. Defaults to None.
+
+        Returns
+        -------
+        POINTER(cholmod_dense) or int
+            - If `Y_ptr` is None, returns a pointer to the newly created dense matrix.
+              This memory is managed by CHOLMOD and must be freed with `free_dense`.
+            - If `Y_ptr` is provided, returns an integer status (1 for success).
+        """
+        if Y_ptr is None:
+            # Create a new copy
+            return self.dll.cholmod_copy_dense(
+                X_ptr,
+                byref(self.common)
+            )
+        else:
+            # Copy into an existing matrix
+            return self.dll.cholmod_copy_dense2(
+                X_ptr,
+                Y_ptr,
+                byref(self.common)
+            )
 
     def copy_factor(self, L_ptr):
         """
@@ -916,6 +1119,16 @@ class CholWrapper:
             POINTER(cholmod_common),           # Common: Workspace/Parameters
         ]
 
+        dll.cholmod_add.argtypes = [
+            POINTER(cholmod_sparse),           # A: Sparse matrix
+            POINTER(cholmod_sparse),           # B: Sparse matrix
+            POINTER(c_double),                 # alpha: Scalar (alpha[2])
+            POINTER(c_double),                 # beta: Scalar (beta[2])
+            c_int,                             # mode: numerical/pattern
+            c_int,                             # sorted: ignored
+            POINTER(cholmod_common),           # Common: Workspace/Parameters
+        ]
+
         # Permutation func needed for updown
         dll.cholmod_submatrix.argtypes = [
             POINTER(cholmod_sparse),           # A: Matrix to slice
@@ -994,6 +1207,39 @@ class CholWrapper:
             POINTER(cholmod_common)            # Common: Workspace/Parameters
         ]
 
+        dll.cholmod_eye.argtypes = [
+            c_size_t,                          # nrow: Number of rows
+            c_size_t,                          # ncol: Number of columns
+            c_int,                             # xtype: Pattern/Real/Complex
+            POINTER(cholmod_common)            # Common: Workspace/Parameters
+        ]
+
+        dll.cholmod_speye.argtypes = [
+            c_size_t,                          # nrow: Number of rows
+            c_size_t,                          # ncol: Number of columns
+            c_int,                             # xtype: Pattern/Real/Complex
+            POINTER(cholmod_common)            # Common: Workspace/Parameters
+        ]
+
+        dll.cholmod_spzeros.argtypes = [
+            c_size_t,                          # nrow: Number of rows
+            c_size_t,                          # ncol: Number of columns
+            c_size_t,                          # nzmax: Max non-zeros
+            c_int,                             # xtype: Pattern/Real/Complex
+            POINTER(cholmod_common)            # Common: Workspace/Parameters
+        ]
+
+        dll.cholmod_copy_dense.argtypes = [
+            POINTER(cholmod_dense),            # X: Dense matrix to copy
+            POINTER(cholmod_common)            # Common: Workspace/Parameters
+        ]
+
+        dll.cholmod_copy_dense2.argtypes = [
+            POINTER(cholmod_dense),            # X: Source dense matrix
+            POINTER(cholmod_dense),            # Y: Destination dense matrix
+            POINTER(cholmod_common)            # Common: Workspace/Parameters
+        ]
+
         # COPY FUNCTIONS
         dll.cholmod_copy_factor.argtypes = [
             POINTER(cholmod_factor),           # L: Factor to copy
@@ -1009,6 +1255,12 @@ class CholWrapper:
             POINTER(cholmod_common)            # Common: Workspace/Parameters
         ]
 
+        dll.cholmod_norm_dense.argtypes = [
+            POINTER(cholmod_dense),            # X: Dense matrix
+            c_int,                             # norm: 0=inf, 1=1, 2=2
+            POINTER(cholmod_common)            # Common: Workspace/Parameters
+        ]
+
         dll.cholmod_norm_sparse.argtypes = [
             POINTER(cholmod_sparse),           # A: Sparse matrix
             c_int,                             # norm: 0=inf, 1=1
@@ -1021,6 +1273,7 @@ class CholWrapper:
         dll.cholmod_factorize_p.restype = c_int
         dll.cholmod_solve2.restype = c_int  
         dll.cholmod_solve.restype = POINTER(cholmod_dense)
+        dll.cholmod_add.restype = POINTER(cholmod_sparse)
         dll.cholmod_sdmult.restype = c_int
         dll.cholmod_submatrix.restype = POINTER(cholmod_sparse)
         dll.cholmod_updown.restype = c_int
@@ -1034,10 +1287,16 @@ class CholWrapper:
         dll.cholmod_allocate_dense.restype = POINTER(cholmod_dense)
         dll.cholmod_alloc_factor.restype = POINTER(cholmod_factor)
         dll.cholmod_zeros.restype = POINTER(cholmod_dense)
+        dll.cholmod_eye.restype = POINTER(cholmod_dense)
+        dll.cholmod_speye.restype = POINTER(cholmod_sparse)
+        dll.cholmod_spzeros.restype = POINTER(cholmod_sparse)
+        dll.cholmod_copy_dense.restype = POINTER(cholmod_dense)
+        dll.cholmod_copy_dense2.restype = c_int
         dll.cholmod_copy_factor.restype = POINTER(cholmod_factor)
         
         # Extras
         dll.cholmod_spsolve.restype = POINTER(cholmod_sparse) # type: ignore
+        dll.cholmod_norm_dense.restype = c_double
         dll.cholmod_norm_sparse.restype = c_double
 
 
