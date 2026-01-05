@@ -19,7 +19,7 @@ Key Features
 ------------
 
 - **High-Performance Sparse Solvers**: Direct integration with the ``CHOLMOD`` library for optimized sparse Cholesky factorizations and linear system solves.
-- **Generalized Graph Convolution**: Support for arbitrary spectral kernels via rational approximation (*Kernel Fitting*) and standard analytical filters (low-pass, band-pass, high-pass).
+- **Generalized Graph Convolution**: Support for arbitrary spectral kernels via polynomial approximation (Chebyshev) and standard analytical filters (low-pass, band-pass, high-pass).
 - **Dynamic Topology Support**: Specialized routines for graphs with evolving structures, utilizing efficient rank-1 updates for real-time topology changes.
 - **Resource-Aware Execution**: Context-managed memory allocation and workspace reuse to minimize overhead in high-throughput applications.
 - **Integrated Graph Repository**: Built-in access to standardized graph Laplacians and signals from power systems and infrastructure networks.
@@ -77,14 +77,13 @@ For convenience, the BibTeX entry for the associated paper is:
 
 .. code-block:: bibtex
 
-    @inproceedings{lowery-sgwt-2026,
+    @inproceedings{lowery-sgwt-YYYY,
       title={Using Spectral Graph Wavelets to Analyze Large Power System Oscillation Modes},
       author={Lowery, Luke and Baek, Jongoh and Birchfield, Adam},
-      year={2026}
+      year={YYYY}
     }
 
 Author
-------
 
 This module was developed by Luke Lowery during his PhD studies at Texas A&M University. You can learn more on his `research page <https://lukelowry.github.io/>`_ or view his publications on `Google Scholar <https://scholar.google.com/citations?user=CTynuRMAAAAJ&hl=en>`_.
 

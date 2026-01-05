@@ -9,7 +9,17 @@ and this project adheres to `Semantic Versioning <https://semver.org/spec/v2.0.0
 [Unreleased]
 ------------
 
-[0.3.2] - 2026-01-03
+Added
+~~~~~
+- New documentation section for Chebyshev approximation examples and benchmarks.
+- Lazy loading for built-in resources (Laplacians, Signals, Kernels) to improve import time and reduce memory usage.
+
+Fixed
+~~~~~
+- Offset ``d_a`` of Kernel Fitted approximation correctly implemented
+- Documentation typos referring to ``VFKern`` instead of ``VFKernel``.
+
+[0.3.2] - YYYY-MM-DD
 --------------------
 
 Added
@@ -31,7 +41,7 @@ Fixed
 ~~~~~
 - Updated documentation and packaging to reflect Windows-only compatibility due to the pre-compiled CHOLMOD ``.dll``.
 
-[0.3.1] - 2026-01-01
+[0.3.1] - YYYY-MM-DD
 --------------------
 
 Added

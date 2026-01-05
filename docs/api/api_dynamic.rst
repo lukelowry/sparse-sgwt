@@ -1,7 +1,7 @@
-Dynamic Graph Convolution
-=========================
+Dynamic Convolution (`DyConvolve`)
+==================================
 
-.. automodule:: sgwt.dynamic
+.. autoclass:: sgwt.DyConvolve
    :members:
    :undoc-members:
    :show-inheritance:

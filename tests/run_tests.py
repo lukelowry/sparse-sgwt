@@ -72,12 +72,12 @@ def run_all_tests():
 
     print("\n" + "═"*45)
     print(f"║ {'TEST RESULTS SUMMARY':^41} ║")
-    print("╠" + "═"*43 + "╣")
+    print(f"╠" + "═"*43 + "╣")
     print(f"║ Total Tests Run: {result.testsRun:>24} ║")
     print(f"║ \033[92mPassed:          {passed:>24}\033[0m ║")
     print(f"║ \033[91mFailed/Errors:   {failed:>24}\033[0m ║")
     print(f"║ \033[93mSkipped:         {skipped:>24}\033[0m ║")
-    print("╠" + "═"*43 + "╣")
+    print(f"╠" + "═"*43 + "╣")
     
     status_text = "PASSED" if result.wasSuccessful() else "FAILED"
     color = "92" if result.wasSuccessful() else "91"

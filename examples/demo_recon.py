@@ -7,7 +7,7 @@ from sgwt import IMPEDANCE_WECC as L
 import numpy as np
 
 # Bus Index, Latitude (Y), Longitude (X)
-MEASURMENTS = [
+MEASUREMENTS = [
     [ 191    ,-122.45    ,46.719],
     [ 202    ,-101.33    ,46.5  ],
     [  17    ,-112.24    ,32.52 ],
@@ -22,7 +22,7 @@ X = np.zeros((nbus, 2)) # Signal, Sparse
 Xh = np.zeros_like(X) # Reconstruction, Dense
 
 # Load Sparse Signal
-for idx, long, lat in MEASURMENTS:
+for idx, long, lat in MEASUREMENTS:
     X[idx] = long, lat
 
 # Sampling operator
@@ -36,7 +36,7 @@ with Convolve(L) as conv:
     for i in range(7000):
         B = (X - J@Xh).copy(order='F')
         dX = conv.lowpass(B, s)
-        Xh += s * dX[0]
+        Xh += s[0] * dX[0]
 # DOC_END_CODE_EXCLUDE_PLOT
 plt.figure(figsize=(8, 6)) # Create a figure for this plot
 plt.scatter(Xh[:,0], Xh[:,1] , c='k', edgecolors='none', label='Reconstructed Signal')
