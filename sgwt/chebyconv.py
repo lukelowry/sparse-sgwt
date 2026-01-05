@@ -18,7 +18,11 @@ class ChebyConvolve:
     def __init__(self, L: csc_matrix) -> None:
         """
         Initializes a Chebyshev convolution context.
-        
+
+        This context manager is used to perform graph convolutions via
+        Chebyshev polynomial approximation. It estimates the spectral bound
+        of the Laplacian upon initialization.
+
         Parameters
         ----------
         L : csc_matrix
@@ -57,7 +61,28 @@ class ChebyConvolve:
                 self.chol.free_sparse(EYE)
 
     def convolve(self, B: np.ndarray, C: ChebyKernel) -> np.ndarray:
-        """Performs graph convolution using Chebyshev polynomial approximation."""
+        """
+        Performs graph convolution using Chebyshev polynomial approximation.
+
+        This method implements Clenshaw's algorithm for the stable evaluation of
+        the Chebyshev series on the graph signal `B`.
+
+        Parameters
+        ----------
+        B : np.ndarray
+            Input signal array of shape (n_vertices,) or (n_vertices, n_signals).
+        C : ChebyKernel
+            A `ChebyKernel` object containing the Chebyshev coefficients and
+            the spectral bound of the approximation.
+
+        Returns
+        -------
+        np.ndarray
+            The convolved signal. The shape of the output is
+            (n_vertices, n_signals, n_dims) for a 2D input `B`, or
+            (n_vertices, n_dims) for a 1D input `B`. `n_dims` is the
+            number of filter dimensions in the kernel.
+        """
         input_was_1d = False
         if B.ndim == 1:
             B = B[:, np.newaxis]
