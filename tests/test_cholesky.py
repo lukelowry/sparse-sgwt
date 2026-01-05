@@ -10,7 +10,7 @@ Description: Core functionality tests validating filters and dynamic updates
 import unittest
 import numpy as np
 
-class TestSGWTFunctionality(unittest.TestCase):
+class TestCholesky(unittest.TestCase):
     
     def setUp(self):
         import sgwt

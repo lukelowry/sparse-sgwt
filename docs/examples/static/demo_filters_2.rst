@@ -5,7 +5,7 @@ Filtering on East-West Grid
 
 Performs filtering operations on the larger synthetic East-West US grid (~65k nodes).
 
-.. literalinclude:: ../../examples/demo_filters_2.py
+.. literalinclude:: ../../../examples/demo_filters_2.py
    :language: python
    :start-after: # DOC_START_CODE_EXCLUDE_IMPORTS
    :end-before: # DOC_END_CODE_EXCLUDE_PLOT

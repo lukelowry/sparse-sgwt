@@ -36,7 +36,7 @@ with Convolve(L) as conv:
     for i in range(7000):
         B = (X - J@Xh).copy(order='F')
         dX = conv.lowpass(B, s)
-        Xh += s * dX[0]
+        Xh += s[0] * dX[0]
 # DOC_END_CODE_EXCLUDE_PLOT
 plt.figure(figsize=(8, 6)) # Create a figure for this plot
 plt.scatter(Xh[:,0], Xh[:,1] , c='k', edgecolors='none', label='Reconstructed Signal')

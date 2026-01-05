@@ -10,7 +10,7 @@ from sgwt import MODIFIED_MORLET as Kjson
 # Signal Input
 X = impulse(L, n=-1000)
 
-# TODO kernel scaling  #  K.scale_kern(...)
+# NOTE: This is a temporary scaling workaround. A proper scaling method on the kernel object should be used.
 K = VFKernel.from_dict(Kjson)
 K.Q /= 2000
 K.R /= 2000

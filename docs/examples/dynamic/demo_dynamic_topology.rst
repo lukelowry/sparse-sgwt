@@ -5,7 +5,7 @@ Dynamic Topology
 
 Illustrates updating the graph topology (adding branches) on-the-fly without recomputing the entire decomposition.
 
-.. literalinclude:: ../../examples/demo_dynamic_topology.py
+.. literalinclude:: ../../../examples/demo_dynamic_topology.py
    :language: python
    :start-after: # DOC_START_CODE_EXCLUDE_IMPORTS
    :end-before: # DOC_END_CODE_EXCLUDE_PLOT

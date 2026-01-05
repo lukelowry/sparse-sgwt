@@ -4,26 +4,26 @@
    :maxdepth: 2
    :caption: Getting Started
 
-   installation
-   usage
-   theory
+   intro/installation
+   intro/usage
+   intro/theory
 
 
 .. toctree::
    :maxdepth: 2
    :caption: Examples
 
-   examples_static
-   examples_dynamic
-   examples_cheby
+   examples/static
+   examples/dynamic
+   examples/cheby
 
 
 .. toctree::
    :maxdepth: 2
    :caption: Resources
 
-   library/library_json
-   library/library_data
+   library/json
+   library/data
 
 .. toctree::
    :maxdepth: 2
@@ -36,5 +36,5 @@
    :maxdepth: 2
    :caption: Development
 
-   tests
-   changelog
+   dev/tests
+   dev/changelog

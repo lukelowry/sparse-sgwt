@@ -75,7 +75,7 @@ Pre-computed rational approximations for common spectral graph wavelets are avai
    # (14, 1)
 
 .. seealso::
-   See :doc:`library_json` for details on the JSON file format for custom kernels.
+   See :doc:`json` for details on the JSON file format for custom kernels.
 
 Available Data Summary
 ----------------------

@@ -77,14 +77,13 @@ For convenience, the BibTeX entry for the associated paper is:
 
 .. code-block:: bibtex
 
-    @inproceedings{lowery-sgwt-2026,
+    @inproceedings{lowery-sgwt-YYYY,
       title={Using Spectral Graph Wavelets to Analyze Large Power System Oscillation Modes},
       author={Lowery, Luke and Baek, Jongoh and Birchfield, Adam},
-      year={2026}
+      year={YYYY}
     }
 
 Author
-------
 
 This module was developed by Luke Lowery during his PhD studies at Texas A&M University. You can learn more on his `research page <https://lukelowry.github.io/>`_ or view his publications on `Google Scholar <https://scholar.google.com/citations?user=CTynuRMAAAAJ&hl=en>`_.
 

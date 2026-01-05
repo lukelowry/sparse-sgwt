@@ -5,7 +5,7 @@ Online Dynamic Processing
 
 Simulates an online processor handling a continuous stream of data and topology change events.
 
-.. literalinclude:: ../../examples/demo_dynamic_stream.py
+.. literalinclude:: ../../../examples/demo_dynamic_stream.py
    :language: python
    :start-after: # DOC_START_CODE_EXCLUDE_IMPORTS
    :end-before: # DOC_END_CODE_EXCLUDE_PLOT

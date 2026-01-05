@@ -1,7 +1,7 @@
-Chebyshev Convolution
-=====================
+Chebyshev Convolution (`ChebyConvolve`)
+=======================================
 
-.. automodule:: sgwt.cheb
+.. autoclass:: sgwt.ChebyConvolve
    :members:
    :undoc-members:
    :show-inheritance:
