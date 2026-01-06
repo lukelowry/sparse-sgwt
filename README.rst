@@ -71,7 +71,7 @@ Here is a quick example of applying a band-pass filter to an impulse signal on t
     print(f"Filtered signal shape: {result.shape}")
 
 More Examples
---------
+-------------
 
 The `examples/ <https://github.com/lukelowry/sgwt/tree/main/examples>`_ directory contains a comprehensive suite of demonstrations, also rendered in the `Examples <https://sgwt.readthedocs.io/en/stable/examples/static.html>`_ section of the documentation. Key applications include:
 
