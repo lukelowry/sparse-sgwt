@@ -29,7 +29,7 @@ Repository = "https://github.com/lukelowry/sgwt"
 
 [tool.setuptools]
 include-package-data = true
-packages = ["sgwt", "sgwt.tests"]
+packages = { find = {} }
 [tool.setuptools.package-data]
 "sgwt" = [
     "library/dll/*.dll", 
