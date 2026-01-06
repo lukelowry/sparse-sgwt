@@ -29,6 +29,7 @@ Repository = "https://github.com/lukelowry/sgwt"
 
 [tool.setuptools]
 include-package-data = true
+packages = ["sgwt", "sgwt.tests"]
 [tool.setuptools.package-data]
 "sgwt" = [
     "library/dll/*.dll", 
@@ -44,6 +45,10 @@ dev = [
     "matplotlib",
 ]
 
+test = [
+    "pytest",
+]
+
 docs = [
     "sphinx",
     "numpydoc",
@@ -53,6 +58,3 @@ docs = [
     "sphinx-rtd-theme",
     "sphinx-copybutton",
 ]
-
-[tool.setuptools.packages.find]
-where = [""]

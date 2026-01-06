@@ -19,7 +19,7 @@ Key Features
 ------------
 
 - **High-Performance Sparse Solvers**: Direct integration with the ``CHOLMOD`` library for optimized sparse Cholesky factorizations and linear system solves.
-- **Generalized Graph Convolution**: Support for arbitrary spectral kernels via polynomial approximation (Chebyshev) and standard analytical filters (low-pass, band-pass, high-pass).
+- **Generalized Graph Convolution**: Support for arbitrary spectral kernels via rational approximation (Kernel Fitting), polynomial approximation (Chebyshev), and standard analytical filters (low-pass, band-pass, high-pass).
 - **Dynamic Topology Support**: Specialized routines for graphs with evolving structures, utilizing efficient rank-1 updates for real-time topology changes.
 - **Resource-Aware Execution**: Context-managed memory allocation and workspace reuse to minimize overhead in high-throughput applications.
 - **Integrated Graph Repository**: Built-in access to standardized graph Laplacians and signals from power systems and infrastructure networks.
@@ -33,10 +33,17 @@ You can install ``sgwt`` from the `Python Package Index (PyPI) <https://pypi.org
 
     pip install sgwt
 
+
+
+Documentation
+-------------
+
+For detailed usage, API reference, and theoretical background, please visit the `documentation website <https://sgwt.readthedocs.io/en/stable/>`_.
+
 Usage Example
 -------------
 
-Here is a quick example of applying a band-pass filter to an impulse signal on the built-in Texas grid Laplacian.
+Here is a quick example of applying a band-pass filter to an impulse signal on the built-in synthetic Texas grid Laplacian.
 
 .. code-block:: python
 
@@ -63,7 +70,7 @@ Here is a quick example of applying a band-pass filter to an impulse signal on t
     print(f"Signal on vertex 600, shape: {signal.shape}")
     print(f"Filtered signal shape: {result.shape}")
 
-Examples
+More Examples
 --------
 
 The `examples/ <https://github.com/lukelowry/sgwt/tree/main/examples>`_ directory contains a comprehensive suite of demonstrations, also rendered in the `Examples <https://sgwt.readthedocs.io/en/stable/examples/static.html>`_ section of the documentation. Key applications include:
@@ -71,10 +78,18 @@ The `examples/ <https://github.com/lukelowry/sgwt/tree/main/examples>`_ director
 - **Static Filtering**: Basic low-pass, band-pass, and high-pass filtering on various graph sizes.
 - **Dynamic Graphs**: Real-time topology updates, performance comparisons, and online stream processing.
 
-Documentation
--------------
 
-For detailed usage, API reference, and theoretical background, please visit the `documentation website <https://sgwt.readthedocs.io/en/stable/>`_.
+Testing
+-------
+
+The package includes a comprehensive test suite to verify its correctness. To run the tests on an installed version of ``sgwt``, first install the test dependencies and then run pytest:
+
+.. code-block:: bash
+
+    pip install sgwt[test]
+    pytest --pyargs sgwt.tests
+
+For more detailed instructions, including how to run tests from a source checkout, see the `Validation Tests <https://sgwt.readthedocs.io/en/stable/dev/tests.html>`_ section in the documentation.
 
 Citation
 --------
@@ -85,17 +100,17 @@ For convenience, the BibTeX entry for the associated paper is:
 
 .. code-block:: bibtex
 
-    @inproceedings{lowery-sgwt-YYYY,
+    @inproceedings{lowery-sgwt-2026,
       title={Using Spectral Graph Wavelets to Analyze Large Power System Oscillation Modes},
       author={Lowery, Luke and Baek, Jongoh and Birchfield, Adam},
-      year={YYYY}
+      year={2026}
     }
 
 Author
 
-This module was developed by Luke Lowery during his PhD studies at Texas A&M University. You can learn more on his `research page <https://lukelowry.github.io/>`_ or view his publications on `Google Scholar <https://scholar.google.com/citations?user=CTynuRMAAAAJ&hl=en>`_.
+Luke Lowery developed this module during his PhD studies at Texas A&M University. You can learn more on his `research page <https://lukelowry.github.io/>`_ or view his publications on `Google Scholar <https://scholar.google.com/citations?user=CTynuRMAAAAJ&hl=en>`_.
 
-An alternative implementation in `Julia <https://github.com/lukelowry/SpectralGraphWavelet.jl>`_ is also available, which takes advantage of native SuiteSparse support.
+An alternative implementation in `Julia <https://github.com/lukelowry/SpectralGraphWavelet.jl>`_ is also available and leverages native SuiteSparse support.
 
 Acknowledgements
 ----------------

@@ -6,21 +6,20 @@ Author: Luke Lowery (lukel@tamu.edu)
 File: tests/test_chebyshev.py
 Description: Tests for Chebyshev polynomial approximation and convolution.
 """
-import unittest
 import numpy as np
 from scipy.sparse import diags
 import sgwt
 
-class TestChebyshev(unittest.TestCase):
-    def setUp(self):
+class TestChebyshev:
+    def setup_method(self, method):
         # Create a simple 10x10 Laplacian (Path graph)
         n = 10
         # 2 on diag, -1 on off-diag
         self.L = diags([2, -1, -1], [0, 1, -1], shape=(n, n)).tocsc()
         self.X = np.eye(n) # Impulse on every node
 
-    def test_kernel_fitting(self):
-        """Test that ChebyKernel correctly approximates a function."""
+    def test_chebykernel_from_function_approximates_correctly(self):
+        """Test ChebyKernel.from_function correctly approximates a given function."""
         # f(x) = x
         # Domain [0, 4] (approx max eigenvalue of path graph is < 4)
         bound = 4.0
@@ -36,17 +35,17 @@ class TestChebyshev(unittest.TestCase):
         
         np.testing.assert_allclose(y_approx.flatten(), y_true, atol=1e-2)
 
-    def test_from_function_on_graph(self):
-        """Test the convenience method for fitting from a graph."""
+    def test_chebykernel_from_function_on_graph_estimates_bound(self):
+        """Test the from_function_on_graph factory method."""
         f = lambda x: np.exp(-x)
         # This should run without error and produce a valid kernel
         kern = sgwt.ChebyKernel.from_function_on_graph(self.L, f, order=10)
-        self.assertIsInstance(kern, sgwt.ChebyKernel)
-        self.assertGreater(kern.spectrum_bound, 0)
-        self.assertEqual(kern.C.shape[0], 11)
+        assert isinstance(kern, sgwt.ChebyKernel)
+        assert kern.spectrum_bound > 0
+        assert kern.C.shape[0] == 11
 
-    def test_convolve_identity(self):
-        """Test convolution with identity kernel f(x)=1."""
+    def test_cheby_convolution_with_identity_kernel_returns_input(self):
+        """Test convolution with an identity kernel (f(x)=1) returns the input signal."""
         ubnd = sgwt.estimate_spectral_bound(self.L)
         # f(x) = 1
         # We can manually create a kernel: T0=1, others=0
@@ -60,8 +59,8 @@ class TestChebyshev(unittest.TestCase):
             # Result should be X * 1 = X
             np.testing.assert_allclose(res.squeeze(), self.X, atol=1e-10)
 
-    def test_convolve_laplacian(self):
-        """Test convolution with f(x)=x, which should apply L."""
+    def test_cheby_convolution_with_linear_kernel_applies_laplacian(self):
+        """Test convolution with a linear kernel (f(x)=x) correctly applies the Laplacian."""
         # Fit f(x) = x
         f = lambda x: x
         kern = sgwt.ChebyKernel.from_function_on_graph(self.L, f, order=10)
@@ -72,11 +71,11 @@ class TestChebyshev(unittest.TestCase):
             expected = self.L @ self.X
             np.testing.assert_allclose(res.squeeze(), expected, atol=1e-2)
 
-    def test_high_order(self):
-        """Test high order polynomial to ensure recurrence stability."""
+    def test_cheby_convolution_with_high_order_is_stable(self):
+        """Test that a high-order polynomial approximation remains numerically stable."""
         f = lambda x: np.exp(-x)
         kern = sgwt.ChebyKernel.from_function_on_graph(self.L, f, order=50)
         with sgwt.ChebyConvolve(self.L) as conv:
             res = conv.convolve(self.X, kern)
-            self.assertFalse(np.any(np.isnan(res)))
-            self.assertFalse(np.any(np.isinf(res)))
+            assert not np.any(np.isnan(res))
+            assert not np.any(np.isinf(res))

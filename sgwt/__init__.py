@@ -16,28 +16,28 @@ from .chebyconv import ChebyConvolve
 # Analytical function generators
 from . import functions
 
-# Import Library resources
-from . import library as _library
-
+# Import util to access its lazy-loading capabilities and expose key components
+from . import util
 from .util import (
     VFKernel,
     ChebyKernel,
     impulse,
-    estimate_spectral_bound
+    estimate_spectral_bound,
+    get_cholmod_dll,
+    get_klu_dll,
 )
 
-# For convenience, expose datasets and some utils from the library subpackage
-# at the top level of the sgwt package.
-_LAZY_RESOURCES = _library._LAZY_RESOURCES
-get_cholmod_dll = _library.get_cholmod_dll
-get_klu_dll = _library.get_klu_dll
+# Delegate lazy-loading of data resources to the util module
+_LAZY_RESOURCES = list(util._LAZY_REGISTRY.keys())
 
 def __getattr__(name):
+    """Lazily loads data resources (Laplacians, signals, etc.) on first access."""
     if name in _LAZY_RESOURCES:
-        return getattr(_library, name)
+        return getattr(util, name)
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
 def __dir__():
+    """Improves tab-completion for lazy-loaded attributes."""
     return list(globals().keys()) + _LAZY_RESOURCES
 
 __all__ = [
