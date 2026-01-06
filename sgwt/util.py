@@ -303,7 +303,12 @@ def _load_resource(path: str, loader: Callable[[str], Any]) -> Any:
 
 
 def _mat_loader(path: str, to_csc: bool = False) -> Union[np.ndarray, csc_matrix]:
-    """Loads the first data variable from a .mat file."""
+    """
+    Loads data from a .mat file.
+    
+    If a single variable is present, it is returned. If multiple variables
+    are found, they are flattened and stacked into columns of a single array.
+    """
     data = loadmat(path, squeeze_me=False)
     keys = [k for k in data if not k.startswith("__")]
     

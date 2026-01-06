@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "sgwt"
-version = "0.3.3"
+version = "0.3.4"
 description = "Sparse Tools for the Spectral Graph Wavelet Transformation and Graph Convolution"
 readme = "README.rst"
 license = { file = "LICENSE.md" }
@@ -29,6 +29,7 @@ Repository = "https://github.com/lukelowry/sgwt"
 
 [tool.setuptools]
 include-package-data = true
+packages = { find = {} }
 [tool.setuptools.package-data]
 "sgwt" = [
     "library/dll/*.dll", 
@@ -44,6 +45,10 @@ dev = [
     "matplotlib",
 ]
 
+test = [
+    "pytest",
+]
+
 docs = [
     "sphinx",
     "numpydoc",
@@ -53,6 +58,3 @@ docs = [
     "sphinx-rtd-theme",
     "sphinx-copybutton",
 ]
-
-[tool.setuptools.packages.find]
-where = [""]

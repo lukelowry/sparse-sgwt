@@ -33,6 +33,13 @@ You can install ``sgwt`` from the `Python Package Index (PyPI) <https://pypi.org
 
     pip install sgwt
 
+
+
+Documentation
+-------------
+
+For detailed usage, API reference, and theoretical background, please visit the `documentation website <https://sgwt.readthedocs.io/en/stable/>`_.
+
 Usage Example
 -------------
 
@@ -63,7 +70,7 @@ Here is a quick example of applying a band-pass filter to an impulse signal on t
     print(f"Signal on vertex 600, shape: {signal.shape}")
     print(f"Filtered signal shape: {result.shape}")
 
-Examples
+More Examples
 --------
 
 The `examples/ <https://github.com/lukelowry/sgwt/tree/main/examples>`_ directory contains a comprehensive suite of demonstrations, also rendered in the `Examples <https://sgwt.readthedocs.io/en/stable/examples/static.html>`_ section of the documentation. Key applications include:
@@ -71,10 +78,18 @@ The `examples/ <https://github.com/lukelowry/sgwt/tree/main/examples>`_ director
 - **Static Filtering**: Basic low-pass, band-pass, and high-pass filtering on various graph sizes.
 - **Dynamic Graphs**: Real-time topology updates, performance comparisons, and online stream processing.
 
-Documentation
--------------
 
-For detailed usage, API reference, and theoretical background, please visit the `documentation website <https://sgwt.readthedocs.io/en/stable/>`_.
+Testing
+-------
+
+The package includes a comprehensive test suite to verify its correctness. To run the tests on an installed version of ``sgwt``, first install the test dependencies and then run pytest:
+
+.. code-block:: bash
+
+    pip install sgwt[test]
+    pytest --pyargs sgwt.tests
+
+For more detailed instructions, including how to run tests from a source checkout, see the `Validation Tests <https://sgwt.readthedocs.io/en/stable/dev/tests.html>`_ section in the documentation.
 
 Citation
 --------
