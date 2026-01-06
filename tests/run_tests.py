@@ -4,88 +4,38 @@ Sparse Spectral Graph Wavelet Transform (SGWT)
 ----------------------------------------------
 Author: Luke Lowery (lukel@tamu.edu)
 File: tests/run_tests.py
-Description: Master test script to discover and run all validation tests.
+Description: Master test script to discover and run all validation tests using pytest.
 """
-import unittest
+import pytest
 import sys
 import os
 
-class BriefColoredResult(unittest.TextTestResult):
-    def startTest(self, test):
-        super().startTest(test)
-
-    def _print_status(self, color_code, status, test, msg=None):
-        # Handle discovery errors or standard tests
-        test_str = str(test)
-        if "ModuleImportError" in test_str or "_FailedTest" in test_str:
-            desc = f"Load Error: {test_str.split('.')[-1].split(' ')[0]}"
-        else:
-            desc = test.shortDescription() or test_str.split(' ')[0]
-        if msg:
-            desc += f" - {msg}"
-        self.stream.writeln(f"[\033[{color_code}m{status:^7}\033[0m] {desc}")
-
-    def addSuccess(self, test):
-        super().addSuccess(test)
-        self._print_status("92", "PASSED", test)
-
-    def addFailure(self, test, err):
-        super().addFailure(test, err)
-        self._print_status("91", "FAILED", test)
-
-    def addError(self, test, err):
-        super().addError(test, err)
-        msg = None
-        if "ModuleImportError" in str(test) or "_FailedTest" in str(test):
-            # err is (exctype, value, tb)
-            msg = str(err[1])
-        self._print_status("91", "ERROR", test, msg)
-
-    def addSkip(self, test, reason):
-        super().addSkip(test, reason)
-        self._print_status("93", "SKIPPED", test)
-
 def run_all_tests():
+    """
+    Discovers and runs all tests in the 'tests' directory using pytest.
+    
+    Ensures the project root is in the Python path for correct module imports.
+    """
     # Get the directory where this script is located
     test_dir = os.path.abspath(os.path.dirname(__file__))
     root_dir = os.path.abspath(os.path.join(test_dir, '..'))
 
     # Ensure both root and tests are in path for imports
-    if root_dir not in sys.path: sys.path.insert(0, root_dir)
-    if test_dir not in sys.path: sys.path.insert(0, test_dir)
+    if root_dir not in sys.path:
+        sys.path.insert(0, root_dir)
+    if test_dir not in sys.path:
+        sys.path.insert(0, test_dir)
     
-    loader = unittest.TestLoader()
-    suite = loader.discover(test_dir, pattern='test_*.py')
+    # Run pytest. Pytest will automatically discover and run tests.
+    # The exit code is 0 if all tests pass.
+    # We pass the test directory to be explicit.
+    # Pytest will discover tests based on `pytest.ini` or default discovery.
+    # Any arguments passed to this script will be forwarded to pytest.
+    args = sys.argv[1:]
+    retcode = pytest.main(args)
     
-    if suite.countTestCases() == 0:
-        print(f"Error: No tests found in {test_dir}")
-        return False
-
-    # Use our custom result class for colored, descriptive output
-    runner = unittest.TextTestRunner(resultclass=BriefColoredResult, verbosity=0)
-    result = runner.run(suite)
-
-    # Summary
-    passed  = result.testsRun - len(result.failures) - len(result.errors) - len(result.skipped)
-    failed  = len(result.failures) + len(result.errors)
-    skipped = len(result.skipped)
-
-    print("\n" + "═"*45)
-    print(f"║ {'TEST RESULTS SUMMARY':^41} ║")
-    print(f"╠" + "═"*43 + "╣")
-    print(f"║ Total Tests Run: {result.testsRun:>24} ║")
-    print(f"║ \033[92mPassed:          {passed:>24}\033[0m ║")
-    print(f"║ \033[91mFailed/Errors:   {failed:>24}\033[0m ║")
-    print(f"║ \033[93mSkipped:         {skipped:>24}\033[0m ║")
-    print(f"╠" + "═"*43 + "╣")
-    
-    status_text = "PASSED" if result.wasSuccessful() else "FAILED"
-    color = "92" if result.wasSuccessful() else "91"
-    print(f"║ OVERALL STATUS:      \033[{color}m{status_text:>20}\033[0m ║")
-    print("╚" + "═"*43 + "╝\n")
-    
-    return result.wasSuccessful()
+    return retcode == pytest.ExitCode.OK
 
 if __name__ == "__main__":
-    success = run_all_tests()
-    sys.exit(not success)
+    if not run_all_tests():
+        sys.exit(1)

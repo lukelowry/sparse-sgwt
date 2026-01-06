@@ -632,6 +632,14 @@ class DyConvolve:
             Edge weight.
         """
 
+        # Validate node indices to prevent C-level errors
+        if not (0 <= i < self.n_vertices and 0 <= j < self.n_vertices):
+            return False
+
+        # Validate weight to prevent math domain error from sqrt
+        if w < 0:
+            raise ValueError("math domain error: weight w must be non-negative.")
+
         ok = True
 
         # Make sparse version of the single line lap
