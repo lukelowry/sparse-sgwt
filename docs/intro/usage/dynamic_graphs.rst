@@ -3,7 +3,7 @@ Dynamic Graphs
 
 In many real-world applications, such as power systems or communication networks, the underlying graph topology is not static. Edges (e.g., transmission lines or communication links) can be added or removed over time. Re-calculating the entire graph factorization for every small change is computationally expensive and not feasible for real-time applications.
 
-The :class:`~sgwt.dynamic.DyConvolve` context is specifically designed for this scenario. It provides high-performance filtering on evolving graphs by leveraging efficient rank-1 updates to the factorization.
+The :class:`~sgwt.DyConvolve` context is specifically designed for this scenario. It provides high-performance filtering on evolving graphs by leveraging efficient rank-1 updates to the factorization.
 
 The Key Trade-off
 -----------------
