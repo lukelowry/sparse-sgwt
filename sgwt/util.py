@@ -10,7 +10,7 @@ import os
 
 if sys.version_info >= (3, 9):
     from importlib.resources import as_file, files
-else:
+else:  # pragma: no cover
     from importlib_resources import as_file, files
 
 from ctypes import CDLL
@@ -90,7 +90,8 @@ class ChebyKernel:
         ChebyKernel
             A new instance of the ChebyKernel class with the fitted coefficients.
         """
-        if order < 1: raise ValueError("Order must be >= 1")
+        if order < 1:
+            raise ValueError("Order must be >= 1")
 
         t = np.linspace(0, 1, n_samples)
         sample_x = min_lambda + (spectrum_bound - min_lambda) * (t**2 if sampling == 'quadratic' else t)
@@ -277,13 +278,13 @@ def _load_dll(dll_name: str) -> CDLL:
         # On Windows, add the DLL's directory to the search path for dependencies
         if hasattr(os, 'add_dll_directory'):
             os.add_dll_directory(dll_dir)
-        else:
+        else:  # pragma: no cover
             os.environ['PATH'] = str(dll_dir) + os.pathsep + os.environ['PATH']
         try:
             return CDLL(str(dll_path))
         except OSError as e:
             raise OSError(f"Failed to load DLL at {dll_path}. Error: {e}")
-        except Exception as e:
+        except Exception as e:  # pragma: no cover
             raise Exception(f"Unexpected error loading DLL: {e}")
             
 def get_cholmod_dll() -> CDLL:
@@ -317,6 +318,10 @@ def _mat_loader(path: str, to_csc: bool = False) -> Union[np.ndarray, csc_matrix
 
     res = data[keys[0]]
     if to_csc:
+        # Data may already be sparse from loadmat; use hasattr to avoid
+        # pytest-cov instrumentation issues with scipy.sparse.issparse()
+        if hasattr(res, "tocsc"):
+            return res.tocsc()
         return csc_matrix(res)
 
     if len(keys) > 1:

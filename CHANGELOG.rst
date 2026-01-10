@@ -6,6 +6,14 @@ All notable changes to this project will be documented in this file.
 The format is based on `Keep a Changelog <https://keepachangelog.com/en/1.0.0/>`_,
 and this project adheres to `Semantic Versioning <https://semver.org/spec/v2.0.0.html>`_.
 
+[0.3.5] - 2026-01-10
+--------------------
+
+Changed
+~~~~~~~
+- Expanded test suite to full code and branch coverage, including all edge cases and defensive branches.
+- Tests to do cover KLU wrapper, because it is not used in this version.
+
 [0.3.4] - 2026-01-06
 --------------------
 

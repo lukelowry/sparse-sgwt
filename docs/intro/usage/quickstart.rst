@@ -37,8 +37,8 @@ What's Happening in This Example?
     - ``scales = [0.1, 1.0, 10.0]``: We specify the scales for our band-pass filter. In spectral graph filtering, the scale is inversely related to frequency. Smaller scales target high-frequency components (details, sharp changes), while larger scales target low-frequency components (smooth variations).
 
 3.  **Perform the Convolution**
-    - ``with Convolve(L) as conv:``: This is the core of the library. We create a :class:`~sgwt.static.Convolve` context. Upon entry, it performs an efficient one-time symbolic factorization of the graph Laplacian ``L``. This pre-computation makes all subsequent filtering operations extremely fast. The context also manages all the low-level memory required by the CHOLMOD backend.
-    - ``filtered_signals = conv.bandpass(signal, scales)``: Inside the context, we call the :meth:`~sgwt.static.Convolve.bandpass` method. It solves the underlying linear systems to apply the filter kernel at each of the specified scales.
+    - ``with Convolve(L) as conv:``: This is the core of the library. We create a :class:`~sgwt.Convolve` context. Upon entry, it performs an efficient one-time symbolic factorization of the graph Laplacian ``L``. This pre-computation makes all subsequent filtering operations extremely fast. The context also manages all the low-level memory required by the CHOLMOD backend.
+    - ``filtered_signals = conv.bandpass(signal, scales)``: Inside the context, we call the :meth:`~sgwt.Convolve.bandpass` method. It solves the underlying linear systems to apply the filter kernel at each of the specified scales.
 
 4.  **Inspect the Output**
     - The result, ``filtered_signals``, is a Python list where each element is a NumPy array corresponding to the filtered signal at one of the input scales. All arrays have the same shape as the input ``signal``.
