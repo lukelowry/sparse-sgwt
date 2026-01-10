@@ -43,7 +43,7 @@ You can install ``sgwt`` from the `Python Package Index (PyPI) <https://pypi.org
 Documentation
 -------------
 
-For detailed usage, API reference, and theoretical background, please visit the `documentation website <https://sgwt.readthedocs.io/en/stable/>`_.
+For detailed usage, API reference, and theoretical background, please visit the `documentation website <https://sgwt.readthedocs.io/>`_.
 
 Usage Example
 -------------
