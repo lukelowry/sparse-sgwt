@@ -1,19 +1,21 @@
 Sparse SGWT
 ====================================
 
-.. image:: https://img.shields.io/pypi/v/sgwt.svg
+|pypi| |python| |license| |coverage|
+
+.. |pypi| image:: https://img.shields.io/pypi/v/sgwt.svg
     :target: https://pypi.org/project/sgwt/
     :alt: PyPI Version
 
-.. image:: https://img.shields.io/pypi/pyversions/sgwt.svg
+.. |python| image:: https://img.shields.io/pypi/pyversions/sgwt.svg
     :target: https://pypi.org/project/sgwt/
     :alt: Python Version
 
-.. image:: https://img.shields.io/badge/License-GPLv3-blue.svg
+.. |license| image:: https://img.shields.io/badge/License-GPLv3-blue.svg
     :target: ./LICENSE.md
     :alt: License
 
-.. image:: https://img.shields.io/badge/coverage-100%25-brightgreen.svg
+.. |coverage| image:: https://img.shields.io/badge/coverage-100%25-brightgreen.svg
     :alt: Coverage
 
 A high-performance Python library for sparse Graph Signal Processing (GSP) and Spectral Graph Wavelet Transforms (SGWT). This package leverages the ``CHOLMOD`` library for efficient sparse direct solvers, providing significant speedups over traditional dense or iterative methods for large-scale graph convolution.
