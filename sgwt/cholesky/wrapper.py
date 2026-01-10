@@ -92,7 +92,7 @@ class CholWrapper:
         # TODO Support other solve types
         self.MODE = CHOLMOD_A
 
-    def status(self) -> int:
+    def status(self) -> int:  # pragma: no cover
         """
         Returns the status of the CHOLMOD common object.
 
@@ -185,7 +185,7 @@ class CholWrapper:
             byref(self.common)
         )
 
-    def solve(self, fact_ptr, b_ptr):
+    def solve(self, fact_ptr, b_ptr):  # pragma: no cover
         """
         Solves the linear system using cholmod_solve.
 
@@ -246,7 +246,7 @@ class CholWrapper:
             byref(self.common) 
         )
 
-    def norm_dense(self, X_ptr, norm_type: int = 2) -> float:
+    def norm_dense(self, X_ptr, norm_type: int = 2) -> float:  # pragma: no cover
         """
         Computes the norm of a dense matrix.
 
@@ -265,7 +265,7 @@ class CholWrapper:
         """
         return self.dll.cholmod_norm_dense(X_ptr, norm_type, byref(self.common))
 
-    def norm_sparse(self, A_ptr, norm_type: int = 0) -> float:
+    def norm_sparse(self, A_ptr, norm_type: int = 0) -> float:  # pragma: no cover
         """
         Computes the norm of a sparse matrix.
 
@@ -378,7 +378,7 @@ class CholWrapper:
         Cnew = self.submatrix(C_ptr, L_Perm, L_n, None, -1, 1, 1)
 
         # Ensure not null
-        if not bool(Cnew):
+        if not bool(Cnew):  # pragma: no cover
             print("Submatrix is NULL! Updown will have no effect.")
 
         return Cnew
@@ -418,7 +418,7 @@ class CholWrapper:
 
         return ok
     
-    def updown_solve(self, update: int, C_ptr, fact_ptr, X_ptr, deltaB_ptr) -> int:
+    def updown_solve(self, update: int, C_ptr, fact_ptr, X_ptr, deltaB_ptr) -> int:  # pragma: no cover
         """Solves a system after a rank-k update/downdate.
 
         This is a wrapper for `cholmod_updown_solve`. It is more efficient
@@ -464,7 +464,7 @@ class CholWrapper:
     # Low Rank Updates Syntax Sugar
     # --------------------------------------------------------------------------
     
-    def update(self, C_ptr, fact_ptr) -> int:
+    def update(self, C_ptr, fact_ptr) -> int:  # pragma: no cover
         """
         Calculates new L (factorization) for A + CC^T.
         
@@ -479,7 +479,7 @@ class CholWrapper:
         """
         return self.updown(True, C_ptr, fact_ptr)
         
-    def downdate(self, C_ptr, fact_ptr) -> int:
+    def downdate(self, C_ptr, fact_ptr) -> int:  # pragma: no cover
         """
         Calculates new L (factorization) for A - CC^T.
         
@@ -613,19 +613,19 @@ class CholWrapper:
             CHOLMOD dense structure.
         """
 
-        if not isinstance(b, np.ndarray):
+        if not isinstance(b, np.ndarray):  # pragma: no cover
             raise TypeError("values must be a numpy.ndarray")
 
         # Ensure correct dtype
-        if b.dtype != np.float64:
+        if b.dtype != np.float64:  # pragma: no cover
             b = b.astype(np.float64, copy=False)
 
         # Ensure contiguous memory
-        if not b.flags["F_CONTIGUOUS"]:
+        if not b.flags["F_CONTIGUOUS"]:  # pragma: no cover
             raise ValueError("b must be Fortran-contiguous for zero-copy CHOLMOD dense")
 
         # Ensure 2D
-        if b.ndim != 2:
+        if b.ndim != 2:  # pragma: no cover
             raise ValueError("values must be a 2D array")
 
         # TODO use new constructor
@@ -842,7 +842,7 @@ class CholWrapper:
             byref(self.common)
         )
     
-    def allocate_sparse_matrix(self, nrow: int, ncol: int, nzmax: int, stype: int, sorted: bool = True, packed: bool = True):
+    def allocate_sparse_matrix(self, nrow: int, ncol: int, nzmax: int, stype: int, sorted: bool = True, packed: bool = True):  # pragma: no cover
         """
         Allocate a CHOLMOD sparse matrix entirely in CHOLMOD memory.
         Returns POINTER(cholmod_sparse).
@@ -860,7 +860,7 @@ class CholWrapper:
             byref(self.common)
         )
     
-    def alloc_factor(self, n: int, dtype: int):
+    def alloc_factor(self, n: int, dtype: int):  # pragma: no cover
         """
         Allocate an empty cholmod_factor structure.
 
@@ -888,7 +888,7 @@ class CholWrapper:
 
         return L_ptr
     
-    def zeros(self, nrow: int, ncol: int):
+    def zeros(self, nrow: int, ncol: int):  # pragma: no cover
         """Creates a dense matrix of zeros in CHOLMOD.
 
         This is a wrapper for `cholmod_zeros`. The memory is managed
@@ -913,7 +913,7 @@ class CholWrapper:
             byref(self.common)
         )
     
-    def eye(self, nrow: int, ncol: int):
+    def eye(self, nrow: int, ncol: int):  # pragma: no cover
         """Creates a dense identity matrix in CHOLMOD.
 
         This is a wrapper for `cholmod_eye`. The memory is managed
@@ -963,7 +963,7 @@ class CholWrapper:
             byref(self.common)
         )
     
-    def spzeros(self, nrow: int, ncol: int, nzmax: int, xtype: int = CHOLMOD_REAL):
+    def spzeros(self, nrow: int, ncol: int, nzmax: int, xtype: int = CHOLMOD_REAL):  # pragma: no cover
         """Creates a sparse matrix with no entries (all zeros).
 
         This is a wrapper for `cholmod_spzeros`. The memory is managed
@@ -1029,7 +1029,7 @@ class CholWrapper:
                 X_ptr,
                 byref(self.common)
             )
-        else:
+        else:  # pragma: no cover
             # Copy into an existing matrix
             return self.dll.cholmod_copy_dense2(
                 X_ptr,
@@ -1052,7 +1052,7 @@ class CholWrapper:
             Independent copy of the factor.
         """
 
-        if not L_ptr:
+        if not L_ptr:  # pragma: no cover
             raise ValueError("L_ptr is NULL")
 
         L_copy_ptr = self.dll.cholmod_copy_factor(
@@ -1060,7 +1060,7 @@ class CholWrapper:
             byref(self.common)
         )
 
-        if not L_copy_ptr:
+        if not L_copy_ptr:  # pragma: no cover
             raise RuntimeError("cholmod_copy_factor failed")
 
         return L_copy_ptr

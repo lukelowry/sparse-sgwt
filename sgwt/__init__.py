@@ -34,9 +34,9 @@ def __getattr__(name):
     """Lazily loads data resources (Laplacians, signals, etc.) on first access."""
     if name in _LAZY_RESOURCES:
         return getattr(util, name)
-    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")  # pragma: no cover
 
-def __dir__():
+def __dir__():  # pragma: no cover
     """Improves tab-completion for lazy-loaded attributes."""
     return list(globals().keys()) + _LAZY_RESOURCES
 

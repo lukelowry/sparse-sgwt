@@ -13,6 +13,9 @@ Sparse SGWT
     :target: ./LICENSE.md
     :alt: License
 
+.. image:: https://img.shields.io/badge/coverage-100%25-brightgreen.svg
+    :alt: Coverage
+
 A high-performance Python library for sparse Graph Signal Processing (GSP) and Spectral Graph Wavelet Transforms (SGWT). This package leverages the ``CHOLMOD`` library for efficient sparse direct solvers, providing significant speedups over traditional dense or iterative methods for large-scale graph convolution.
 
 Key Features

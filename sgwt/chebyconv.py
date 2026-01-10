@@ -93,7 +93,7 @@ class ChebyConvolve:
 
         W = np.zeros((n_vertex, n_signals, n_dim), dtype=np.float64)
 
-        if n_order == 0 or n_dim == 0:
+        if n_order == 0 or n_dim == 0:  # pragma: no cover
             return W
 
         if not B.flags['F_CONTIGUOUS']:

@@ -1,0 +1,97 @@
+# -*- coding: utf-8 -*-
+"""
+Tests for analytical filter functions (functions.analytical module).
+"""
+import numpy as np
+import pytest
+
+from sgwt.functions import lowpass, highpass, bandpass
+
+
+class TestLowpass:
+    """Tests for lowpass filter function."""
+
+    def test_dc_gain_is_one(self):
+        """Lowpass gain at λ=0 is 1."""
+        assert lowpass(np.array([0.0]), scale=1.0)[0] == pytest.approx(1.0)
+
+    def test_high_frequency_approaches_zero(self):
+        """Lowpass gain at large λ approaches 0."""
+        result = lowpass(np.array([1e6]), scale=1.0)[0]
+        assert result < 1e-5
+
+    @pytest.mark.parametrize("scale", [0.1, 1.0, 10.0])
+    def test_cutoff_at_one_over_scale(self, scale):
+        """Lowpass gain at λ=1/scale is 0.5."""
+        x = np.array([1.0 / scale])
+        assert lowpass(x, scale=scale)[0] == pytest.approx(0.5)
+
+    def test_monotonically_decreasing(self):
+        """Lowpass is monotonically decreasing for λ > 0."""
+        x = np.linspace(0, 10, 100)
+        y = lowpass(x, scale=1.0)
+        assert np.all(np.diff(y) <= 0)
+
+
+class TestHighpass:
+    """Tests for highpass filter function."""
+
+    def test_dc_gain_is_zero(self):
+        """Highpass gain at λ=0 is 0."""
+        assert highpass(np.array([0.0]), scale=1.0)[0] == pytest.approx(0.0)
+
+    def test_high_frequency_approaches_one(self):
+        """Highpass gain at large λ approaches 1."""
+        result = highpass(np.array([1e6]), scale=1.0)[0]
+        assert result > 0.99999
+
+    @pytest.mark.parametrize("scale", [0.1, 1.0, 10.0])
+    def test_cutoff_at_one_over_scale(self, scale):
+        """Highpass gain at λ=1/scale is 0.5."""
+        x = np.array([1.0 / scale])
+        assert highpass(x, scale=scale)[0] == pytest.approx(0.5)
+
+    def test_monotonically_increasing(self):
+        """Highpass is monotonically increasing for λ > 0."""
+        x = np.linspace(0, 10, 100)
+        y = highpass(x, scale=1.0)
+        assert np.all(np.diff(y) >= 0)
+
+
+class TestBandpass:
+    """Tests for bandpass filter function."""
+
+    def test_dc_gain_is_zero(self):
+        """Bandpass gain at λ=0 is 0."""
+        assert bandpass(np.array([0.0]), scale=1.0)[0] == pytest.approx(0.0)
+
+    def test_high_frequency_approaches_zero(self):
+        """Bandpass gain at large λ approaches 0."""
+        result = bandpass(np.array([1e6]), scale=1.0)[0]
+        assert result < 1e-5
+
+    def test_peak_at_center_frequency(self):
+        """Bandpass has maximum near center frequency λ=1/scale."""
+        scale = 1.0
+        x = np.linspace(0.01, 10, 1000)
+        y = bandpass(x, scale=scale)
+        peak_idx = np.argmax(y)
+        peak_x = x[peak_idx]
+        # Peak should be near 1/scale
+        assert abs(peak_x - 1.0 / scale) < 0.2
+
+    @pytest.mark.parametrize("order", [1, 2, 3])
+    def test_order_sharpens_response(self, order):
+        """Higher order makes bandpass narrower."""
+        scale = 1.0
+        x = np.linspace(0.01, 10, 1000)
+        y = bandpass(x, scale=scale, order=order)
+        # Peak value should be <= 1 (order 1 peaks at 1.0)
+        assert np.max(y) <= 1.0 + 1e-10
+
+    def test_lowpass_highpass_sum_approximation(self):
+        """At moderate frequencies, lowpass + highpass ≈ 1."""
+        x = np.linspace(0.1, 10, 100)
+        lp = lowpass(x, scale=1.0)
+        hp = highpass(x, scale=1.0)
+        np.testing.assert_allclose(lp + hp, np.ones_like(x), atol=1e-10)

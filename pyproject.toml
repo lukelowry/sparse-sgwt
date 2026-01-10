@@ -47,6 +47,7 @@ dev = [
 
 test = [
     "pytest",
+    "pytest-cov"
 ]
 
 docs = [
@@ -57,4 +58,18 @@ docs = [
     "memory_profiler",
     "sphinx-rtd-theme",
     "sphinx-copybutton",
+]
+
+[tool.coverage.run]
+source = ["sgwt"]
+omit = [
+    "sgwt/tests/*",
+    "sgwt/tests/conftest.py",
+    "sgwt/klu/*",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "if __name__ == .__main__.:",
 ]

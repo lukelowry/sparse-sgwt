@@ -2,3 +2,5 @@ build
 *.pyc
 *.egg-info
 dist
+.vscode/settings.json
+.coverage
