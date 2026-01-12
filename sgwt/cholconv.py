@@ -43,6 +43,7 @@ class Convolve:
 
     
     def __enter__(self) -> "Convolve":
+
         # Start Cholmod
         self.chol.start()
 
@@ -60,7 +61,7 @@ class Convolve:
 
         return self
 
-    def __exit__(self, exc_type: Optional[Type[BaseException]], exc_val: Optional[BaseException], exc_tb: Optional[TracebackType]) -> Optional[bool]:
+    def __exit__(self, exc_type, exc_val, exc_tb):
 
         # Free the factored matrix object
         self.chol.free_factor(self.chol.fact_ptr)
@@ -141,11 +142,13 @@ class Convolve:
 
         return W
     
-    def lowpass(self, B: np.ndarray, scales: List[float] = [1], Bset: Optional[csc_matrix] = None, refactor: bool = True) -> List[np.ndarray]:
+    def lowpass(self, B: np.ndarray, scales: List[float] = [1], Bset: Optional[csc_matrix] = None, refactor: bool = True, order = 1) -> List[np.ndarray]:
         """
         Computes low-pass filtered scaling coefficients at specified scales.
 
         Uses the analytical form: I / (sL + I).
+
+        Warning: orders > 1 may cause issues if Bset is passed, untested
 
         Parameters
         ----------
@@ -164,24 +167,24 @@ class Convolve:
             Filtered signals for each scale.
         """
 
+        # Pointer to b (The function being convolved)
+        if not B.flags['F_CONTIGUOUS']:  # pragma: no cover
+            B = np.asfortranarray(B)
+
+
+        # Using this requires the number of columns in f to be 1
+        if Bset is not None:  # pragma: no cover
+            Bset = byref(self.chol.numpy_to_chol_sparse_vec(Bset))
+
         # List, malloc, numpy, etc.
         W = []
         X1 = self.X1
         Xset   = self.Xset
         Y, E   = self.Y, self.E
 
-        # Pointer to b (The function being convolved)
-        if not B.flags['F_CONTIGUOUS']:  # pragma: no cover
-            B = np.asfortranarray(B)
-        B    = byref(self.chol.numpy_to_chol_dense(B))
-
-        # Using this requires the number of columns in f to be 1
-        if Bset is not None:  # pragma: no cover
-            Bset = byref(self.chol.numpy_to_chol_sparse_vec(Bset))
-
-        
-        A_ptr = byref(self.chol.A)
-        fact_ptr = self.chol.fact_ptr
+        B_chol_struct = self.chol.numpy_to_chol_dense(B)
+        A_ptr         = byref(self.chol.A)
+        fact_ptr      = self.chol.fact_ptr
 
 
         # Calculate Scaling Coefficients of 'f' for each scale
@@ -191,18 +194,25 @@ class Convolve:
             # In some instances it will alreayd be factord at appropriate scale, so we allow option to skip
             if refactor:
                 self.chol.num_factor(A_ptr, fact_ptr, 1/scale)
-            
-            # Step 2 -> Solve Linear System (A + beta*I) X1 = B
-            self.chol.solve2(fact_ptr, B,  Bset, X1, Xset, Y, E) 
 
-            # Step 3 ->  Divide by scale  X1 = X1/scale (A bit pointless to pass A but need to pass something)
-            self.chol.sdmult(byref(self.chol.A), X1,  X1, 0.0,  1/scale)
+            # Only relevant for order > 1
+            in_ptr = byref(B_chol_struct)
+
+            # Solve more than once iff order > 1
+            for _ in range(order):
+            
+                # Step 2 -> Solve Linear System (A + beta*I) X1 = B
+                self.chol.solve2(fact_ptr, in_ptr,  Bset, X1, Xset, Y, E) 
+
+                # Step 3 ->  Divide by scale  X1 = X1/scale (A bit pointless to pass A but need to pass something)
+                self.chol.sdmult(A_ptr, X1,  X1, 0.0,  1/scale)
+
+                in_ptr = X1
 
             # Save
             W.append(
                 self.chol.chol_dense_to_numpy(X1)
             )
-
         return W
 
     def bandpass(self, B: np.ndarray, scales: List[float] = [1], order: int = 1) -> List[np.ndarray]:
@@ -226,17 +236,20 @@ class Convolve:
             Filtered signals for each scale.
         """
 
-        # List, malloc, numpy, etc.
-        W = []
-        X1, X2 = self.X1, self.X2 
-        Xset   = self.Xset
-        Y, E   = self.Y, self.E
-
-        # Pointer to b (The function being convolved)
+        
         if not B.flags['F_CONTIGUOUS']:  # pragma: no cover
             B = np.asfortranarray(B)
+
+        
+        # Pointer to bB (The function being convolved)
         B_chol_struct = self.chol.numpy_to_chol_dense(B)
-        A_ptr = byref(self.chol.A)
+
+        # List, malloc, numpy, etc.
+        W        = []
+        X1, X2   = self.X1, self.X2 
+        Xset     = self.Xset
+        Y, E     = self.Y, self.E
+        A_ptr    = byref(self.chol.A)
         fact_ptr = self.chol.fact_ptr
 
         # Calculate Scaling Coefficients of 'f' for each scale
@@ -245,6 +258,7 @@ class Convolve:
             # Step 1 -> Numeric Factorization
             self.chol.num_factor(A_ptr, fact_ptr, 1/scale)
             
+            # Solve more than once iff order > 1
             in_ptr = byref(B_chol_struct)
             for _ in range(order):
                 
@@ -462,7 +476,7 @@ class DyConvolve:
         return W
     
     
-    def lowpass(self, B: np.ndarray, Bset: Optional[csc_matrix] = None) -> List[np.ndarray]:
+    def lowpass(self, B: np.ndarray, Bset: Optional[csc_matrix] = None, order = 1) -> List[np.ndarray]:
         """
         Computes low-pass filtered scaling coefficients.
         
@@ -487,27 +501,35 @@ class DyConvolve:
         Xset  = self.Xset
         Y, E  = self.Y, self.E
 
-        # Pointer to b (The function being convolved)
-        B    = byref(self.chol.numpy_to_chol_dense(B))
-
         # Using this requires the number of columns in f to be 1
         if Bset is not None:  # pragma: no cover
             Bset = byref(self.chol.numpy_to_chol_sparse_vec(Bset))
 
+        # Pointer to b (The function being convolved)
+        A_ptr         = byref(self.chol.A)
+        B_chol_struct = self.chol.numpy_to_chol_dense(B)
+
+
         # Calculate Scaling Coefficients of 'f' for each scale
         for q, fact_ptr in zip(self.poles, self.factors):
 
-            # Step 1 -> Solve Linear System (A + beta*I) X1 = B
-            self.chol.solve2(fact_ptr, B,  Bset, X1, Xset, Y, E) 
+            in_ptr = byref(B_chol_struct)
 
-            # Step 2 ->  Multiply by pole  X1 = X1 * q
-            self.chol.sdmult(byref(self.chol.A), X1,  X1, 0.0,  q)
+            for _ in range(order):
 
+                # Step 1 -> Solve Linear System (A + beta*I) X1 = B
+                self.chol.solve2(fact_ptr, in_ptr,  Bset, X1, Xset, Y, E) 
+
+                # Step 2 ->  Multiply by pole  X1 = X1 * q
+                self.chol.sdmult(A_ptr, X1,  X1, 0.0,  q)
+
+                in_ptr = X1
 
             # Save
             W.append(
                 self.chol.chol_dense_to_numpy(X1)
             )
+            
 
         return W
     
