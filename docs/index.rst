@@ -1,30 +1,32 @@
-Overview
-========
+Welcome to Project Documentation
+================================
 
-.. include:: ../README.rst
-   :start-after: ====================================
-
+.. -----------------------------------------------------------------------------
+.. HTML Sidebar structure
+.. -----------------------------------------------------------------------------
 .. only:: html
 
    .. toctree::
       :hidden:
-      :maxdepth: 2
-      
-      Overview <self>
+
+      overview
       theory/index
-      library/index
       examples/index
+      library/index
       api/index
       dev/index
 
+.. -----------------------------------------------------------------------------
+.. PDF Structure (Strict Chapter Hierarchy)
+.. -----------------------------------------------------------------------------
+.. only:: latex
 
-.. toctree::
-   :maxdepth: 2
-   :caption: User Guide
+   .. toctree::
+      :maxdepth: 2
 
-   usage/underlying_graph
-   usage/input_signals
-   usage/kernel_functions
-   usage/chebyshev_kernels
-   usage/dynamic_graphs
-   theory/index
+      overview
+      theory/index
+      examples/index
+      library/index
+      api/index
+      dev/index
