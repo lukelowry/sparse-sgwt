@@ -38,8 +38,9 @@ class TestLibraryKernels:
         kernel_dict = getattr(sgwt, kernel_name)
         kern = sgwt.VFKernel.from_dict(kernel_dict)
         assert isinstance(kern, sgwt.VFKernel)
-        assert len(kern.Q) > 0
-        assert len(kern.R) > 0
+        # Kernels should have at least one pole and residue
+        assert len(kern.Q) > 0, f"{kernel_name} should have at least one pole"
+        assert len(kern.R) > 0, f"{kernel_name} should have at least one residue matrix row"
 
     def test_vfkernel_from_dict_parses_correctly(self):
         """VFKernel.from_dict correctly parses poles, residues, and D."""
@@ -76,9 +77,12 @@ class TestLibraryLaplacians:
         """Built-in Laplacians are square csc_matrix with nonzero entries."""
         L = getattr(sgwt, laplacian_name)
         # Use .format check for coverage compatibility (scipy class identity issues)
-        assert L.format == "csc"
-        assert L.shape[0] == L.shape[1]
-        assert L.nnz > 0
+        assert L.format == "csc", f"{laplacian_name} should be CSC format"
+        assert L.shape[0] == L.shape[1], f"{laplacian_name} should be square matrix"
+        # Laplacians should have at least diagonal entries (n nonzeros minimum)
+        min_nnz = L.shape[0]
+        assert L.nnz >= min_nnz, \
+            f"{laplacian_name} has {L.nnz} nonzeros, expected at least {min_nnz}"
 
     def test_laplacian_is_symmetric(self):
         """Built-in Laplacians are symmetric."""
@@ -169,9 +173,14 @@ class TestChebyKernelFromFunction:
         assert result.shape == (10, 2)
 
     def test_order_less_than_one_raises_valueerror(self):
-        """Order < 1 raises ValueError."""
+        """Order < 1 raises ValueError with descriptive message."""
         with pytest.raises(ValueError, match="Order must be >= 1"):
             sgwt.ChebyKernel.from_function(lambda x: x, order=0, spectrum_bound=1.0)
+
+    def test_negative_order_raises(self):
+        """Negative order raises ValueError."""
+        with pytest.raises(ValueError, match="Order must be >= 1"):
+            sgwt.ChebyKernel.from_function(lambda x: x, order=-5, spectrum_bound=1.0)
 
 
 class TestMatLoader:
@@ -255,7 +264,10 @@ class TestEstimateSpectralBound:
     def test_returns_positive_value(self, small_laplacian):
         """Spectral bound estimate is positive."""
         bound = sgwt.estimate_spectral_bound(small_laplacian)
-        assert bound > 0
+        # Spectral bound should be positive and reasonable (> 0.01 for real graphs)
+        min_bound = 0.01
+        assert bound > min_bound, \
+            f"Expected spectral bound >{min_bound}, got {bound}"
 
     def test_bound_exceeds_max_eigenvalue(self, small_laplacian):
         """Bound is >= largest eigenvalue (with small margin)."""
@@ -275,8 +287,11 @@ class TestChebyKernelFromFunctionOnGraph:
         kernel = ChebyKernel.from_function_on_graph(
             small_laplacian, lambda x: np.exp(-x), order=10
         )
-        assert kernel.C.shape[0] > 0
-        assert kernel.spectrum_bound > 0
+        # Should produce at least 1 Chebyshev coefficient
+        assert kernel.C.shape[0] > 0, "Kernel should have at least one Chebyshev coefficient"
+        # Spectral bound should be positive and reasonable
+        assert kernel.spectrum_bound > 0.01, \
+            f"Expected reasonable spectral bound, got {kernel.spectrum_bound}"
 
 
 class TestChebyKernelEvaluate:

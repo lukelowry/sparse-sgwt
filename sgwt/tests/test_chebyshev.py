@@ -25,7 +25,9 @@ class TestChebyKernel:
         f = lambda x: np.exp(-x)
         kern = sgwt.ChebyKernel.from_function_on_graph(small_laplacian, f, order=10)
         assert isinstance(kern, sgwt.ChebyKernel)
-        assert kern.spectrum_bound > 0
+        # Spectral bound should be positive and reasonable
+        assert kern.spectrum_bound > 0.01, \
+            f"Expected reasonable spectral bound, got {kern.spectrum_bound}"
         assert kern.C.shape[0] == 11  # order + 1
 
     @pytest.mark.parametrize("order", [5, 10, 20])

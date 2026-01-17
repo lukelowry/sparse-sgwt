@@ -10,6 +10,6 @@ scalable graph convolutions.
 .. toctree::
    :maxdepth: 2
 
-   theory/theory_graph
-   theory/theory_analytical
-   theory/theory_kernel_fitting
+   theory_graph
+   theory_analytical
+   theory_kernel_fitting

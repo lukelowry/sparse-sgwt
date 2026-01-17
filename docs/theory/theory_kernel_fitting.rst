@@ -14,18 +14,16 @@ Instead of a polynomial, we approximate the filter kernel :math:`g(\lambda)` as 
 
 .. math::
 
-    g(\lambda) \approx d + \sum_{k=1}^{K} \frac{r_k}{\lambda - p_k}
+    g(\lambda) \approx d + \sum_{k=1}^{K} \frac{r_k}{\lambda + q_k}
 
 **The Computational Advantage**
 This mathematical transformation changes the nature of the computation. Applying the filter no longer relies on high-degree matrix multiplication. Instead, it becomes a series of **linear system solves**:
 
 .. math::
 
-    (\mathbf{L} - p_k \mathbf{I}) \mathbf{z}_k = \mathbf{x}
+    (\mathbf{L} + q_k \mathbf{I}) \mathbf{y}_k = \mathbf{x}
 
-Because power grid graphs are physically sparse (buses are only connected to a few neighbors), these linear systems are extremely sparse. We can solve them efficiently using **Sparse Cholesky Factorization**.
-
-**Why this is better:**
+Because power grid graphs are physically sparse (buses are only connected to a few neighbors), these linear systems are extremely sparse. We can solve them efficiently using **Sparse Cholesky Factorization**. This is better the polynomial approaches, due to:
 
 1.  **Speed:** For large, sparse matrices, a Cholesky solve is orders of magnitude faster than the dense operations required by high-degree polynomials.
 2.  **Precision:** Rational functions can approximate sharp transitions (like step functions) with far fewer terms than polynomials.

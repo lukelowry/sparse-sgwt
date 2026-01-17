@@ -1,12 +1,12 @@
-.. include:: overview.rst
+.. include:: overview/index.rst
 
 .. toctree::
    :hidden:
    :maxdepth: 2 
    
-   intro/usage
-   intro/theory
+   overview/index
+   theory/theory
    library/index
    examples/index
-   api/api
+   api/index
    dev/index

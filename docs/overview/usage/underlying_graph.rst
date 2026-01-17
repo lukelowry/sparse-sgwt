@@ -1,4 +1,4 @@
-Underlying Graph
+Choosing a Graph
 ================
 
 The foundational element for all operations in this library is the **Graph Laplacian**. It is a matrix that mathematically represents the structure and connectivity of your graph.

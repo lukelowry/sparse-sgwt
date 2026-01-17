@@ -18,7 +18,8 @@ class TestLowpass:
     def test_high_frequency_approaches_zero(self):
         """Lowpass gain at large λ approaches 0."""
         result = lowpass(np.array([1e6]), scale=1.0)[0]
-        assert result < 1e-5
+        # At λ=1e6, lowpass should be essentially zero (< 1e-5)
+        assert result < 1e-5, f"Expected near-zero gain at high frequency, got {result}"
 
     @pytest.mark.parametrize("scale", [0.1, 1.0, 10.0])
     def test_cutoff_at_one_over_scale(self, scale):
@@ -43,7 +44,9 @@ class TestHighpass:
     def test_high_frequency_approaches_one(self):
         """Highpass gain at large λ approaches 1."""
         result = highpass(np.array([1e6]), scale=1.0)[0]
-        assert result > 0.99999
+        # At λ=1e6, highpass should be essentially 1.0 (within 1e-5)
+        min_gain = 0.99999
+        assert result > min_gain, f"Expected gain >{min_gain} at high frequency, got {result}"
 
     @pytest.mark.parametrize("scale", [0.1, 1.0, 10.0])
     def test_cutoff_at_one_over_scale(self, scale):
@@ -68,7 +71,8 @@ class TestBandpass:
     def test_high_frequency_approaches_zero(self):
         """Bandpass gain at large λ approaches 0."""
         result = bandpass(np.array([1e6]), scale=1.0)[0]
-        assert result < 1e-5
+        # At λ=1e6, bandpass should be essentially zero (< 1e-5)
+        assert result < 1e-5, f"Expected near-zero gain at high frequency, got {result}"
 
     def test_peak_at_center_frequency(self):
         """Bandpass has maximum near center frequency λ=1/scale."""
@@ -77,8 +81,12 @@ class TestBandpass:
         y = bandpass(x, scale=scale)
         peak_idx = np.argmax(y)
         peak_x = x[peak_idx]
-        # Peak should be near 1/scale
-        assert abs(peak_x - 1.0 / scale) < 0.2
+        # Peak should be near 1/scale, within 20% tolerance
+        tolerance_fraction = 0.2  # Allow 20% deviation from expected peak location
+        expected_peak = 1.0 / scale
+        deviation = abs(peak_x - expected_peak)
+        assert deviation < tolerance_fraction, \
+            f"Peak at λ={peak_x:.3f}, expected near λ={expected_peak:.3f} (tolerance={tolerance_fraction})"
 
     @pytest.mark.parametrize("order", [1, 2, 3])
     def test_order_sharpens_response(self, order):

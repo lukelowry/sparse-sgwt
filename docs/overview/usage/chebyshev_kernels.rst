@@ -42,3 +42,7 @@ Basic Usage
     # Apply convolution
     with conv:
         result = conv.convolve(signal, kernel)
+
+.. seealso::
+   :doc:`../theory/theory_kernel_fitting`
+      For a comparison between polynomial and rational approximations.

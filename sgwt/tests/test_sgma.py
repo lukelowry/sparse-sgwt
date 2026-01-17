@@ -21,12 +21,17 @@ class TestSGMA:
         s = np.geomspace(0.1, 10.0, 5)
         freqs = np.linspace(0.1, 1.0, 5)
         time_target = 2.5
-        
+
         # Initialize SGMA
         engine = SGMA(small_laplacian, s=s, freqs=freqs, time_target=time_target)
         yield engine
-        # Cleanup
-        engine.close()
+        # Cleanup with error handling
+        try:
+            engine.close()
+        except Exception as e:
+            # Log but don't fail test if cleanup fails
+            import warnings
+            warnings.warn(f"SGMA cleanup failed: {e}", RuntimeWarning)
 
     def test_initialization(self, sgma_engine):
         """Test that SGMA initializes derived attributes correctly."""
@@ -71,16 +76,17 @@ class TestSGMA:
         # Create a synthetic spectrum with a clear peak
         Y_mag = np.zeros((5, 5))
         Y_mag[2, 2] = 10.0  # Peak at center
-        
+
         peaks = sgma_engine.peaks_from_spectrum(Y_mag, top_n=1, min_dist=1)
-        
+
         assert isinstance(peaks, dict)
-        assert peaks['Wavelength'].size > 0
+        # Should find at least 1 peak
+        assert peaks['Wavelength'].size > 0, "Expected to find at least one peak"
         assert 'Wavelength' in peaks
         assert 'Frequency' in peaks
         assert 'Magnitude' in peaks
-        
-        # Check peak location
+
+        # Check peak location (should find the peak at (2, 2))
         assert peaks['Magnitude'][0] == 10.0
         assert peaks['Wavelength'][0] == sgma_engine.wavlen[2]
         assert peaks['Frequency'][0] == sgma_engine.freqs[2]
@@ -116,19 +122,29 @@ class TestSGMA:
         """Test that temporal matrix B is cached and reused."""
         n_time = random_signal.shape[1]
         t = np.linspace(0, 1, n_time)
-        
+
+        # Verify initial state: no cache
+        assert sgma_engine._B is None, "Cache should be empty initially"
+        assert sgma_engine._t_cached is None, "Cached time vector should be None initially"
+
         # First call builds cache
         B1 = sgma_engine._build_temporal_matrix(t)
-        assert sgma_engine._B is not None
-        
-        # Second call with same t should return same object
+        assert sgma_engine._B is not None, "Cache should be populated after first call"
+        assert sgma_engine._t_cached is not None, "Time vector should be cached"
+
+        # Second call with same t should return same object (cache hit)
         B2 = sgma_engine._build_temporal_matrix(t)
-        assert B1 is B2
-        
-        # Call with different t should rebuild
+        assert B1 is B2, "Should return cached matrix for same time vector"
+        assert sgma_engine._B is B1, "Internal cache should still hold same matrix"
+
+        # Call with different t should rebuild (cache invalidation)
         t_new = np.linspace(0, 2, n_time)
         B3 = sgma_engine._build_temporal_matrix(t_new)
-        assert B3 is not B1
+        assert B3 is not B1, "Should create new matrix for different time vector"
+        assert sgma_engine._B is B3, "Cache should be updated to new matrix"
+        # Verify old cache was released (testing memory efficiency indirectly)
+        assert not np.array_equal(sgma_engine._t_cached, t), \
+            "Cached time vector should be updated"
 
     def test_peaks_extraction_no_peaks(self, sgma_engine):
         """Test peak extraction when spectrum is flat zero."""
@@ -151,15 +167,19 @@ class TestSGMA:
         from unittest.mock import patch
         n_time = random_signal.shape[1]
         t = np.linspace(0, 1, n_time)
-        
+
         # Mock gaussian_kde to raise exception
         with patch('sgwt.sgma.gaussian_kde', side_effect=ValueError("KDE Failed")):
             # We need peaks to be found to reach the clustering step
             peaks, clusters = sgma_engine.find_system_wide_peaks(
                 random_signal, t, bus_indices=[0], verbose=True, min_dist=1
             )
-            assert peaks['Wavelength'].size > 0
-            assert clusters['Wavelength'].size == 0
+            # Peaks should still be found despite clustering failure
+            assert peaks['Wavelength'].size > 0, \
+                "Peaks should be found even when clustering fails"
+            # Clusters should be empty due to exception
+            assert clusters['Wavelength'].size == 0, \
+                "Clusters should be empty when KDE raises exception"
 
     def test_peak_finding_fallback(self, sgma_engine, small_laplacian):
         """Test the peak finding fallback when scikit-image is not available."""

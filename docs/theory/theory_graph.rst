@@ -28,8 +28,8 @@ When working with a physical distance metric, we might want to weigh the branche
 
 This weighting is not arbitrary. By defining the weights as :math:`\ell^{-2}`, the eigenvalues of the graph Laplacian (:math:`\lambda`) correspond directly to the **squared wavenumber** (:math:`k^2`) of traveling waves on the grid.
 
-* **Low Eigenvalues - ** Correspond to long-wavelength, inter-area oscillations that span the entire continent.
-* **High Eigenvalues - ** Correspond to short-wavelength, local disturbances.
+* **Low Eigenvalues:** Correspond to long-wavelength, inter-area oscillations that span the entire continent.
+* **High Eigenvalues:** Correspond to short-wavelength, local disturbances.
 
 When we apply the SGWT to this graph, each scale :math:`a\in\mathcal{A}` becomes physically meaningful, corresponding to a squared *pseudo-wavelength*, :math:`r\in \mathbb{R}`, where :math:`a=r^2` defines this mapping. This allows for filtering based on physical spread rather than just temporal frequency.
 
@@ -66,15 +66,16 @@ Using these parameters, we estimate the lossless propagation delay :math:`\tau_{
 
 .. math::
 
-    \omega_{base}\tau_{ij} = \text{Re}\left( \sqrt{Y_{ij}Z_{ij}} \right)
+    \beta_{ij} =\omega_\text{base}\tau_{ij}= \text{Re}\left( \sqrt{Y_{ij}Z_{ij}} \right)
 
-We define :math:`\mathbf{T}` as the diagonal matrix of these propagation delays. This forms the basis of the **Delay Graph Laplacian**:
+This forms the definition of the **Delay Graph Laplacian**:
 
 .. math::
 
-    \mathbf{L}_{\tau} = \mathbf{A}^\top \mathbf{T}^{-2} \mathbf{A}
+    \mathbf{L}_{\tau} = \mathbf{A}^\top \text{diag}(\tau^{-2}) \mathbf{A}
 
-In this formulation, the Laplacian operator :math:`\mathbf{L}` is mathematically equivalent to the continuous wave operator :math:`c^2\nabla^2`.
+Which has shown to be one of the most reliable branch weights in practice.
+
 
 Summary of Useful Weighting Schemes
 -----------------------------

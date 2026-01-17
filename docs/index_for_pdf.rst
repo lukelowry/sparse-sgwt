@@ -2,9 +2,13 @@
    :maxdepth: 2
    :caption: Getting Started
 
-   overview
-   intro/usage
-   intro/theory
+   overview/index
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Theoretical
+
+   theory/theory
 
 .. toctree::
    :maxdepth: 2

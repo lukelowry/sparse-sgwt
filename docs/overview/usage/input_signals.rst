@@ -1,4 +1,4 @@
-Input Signals
+Signals
 ==============
 
 The primary input for all filtering operations is a signal defined on the vertices of the graph. This signal should be provided as a NumPy array.
