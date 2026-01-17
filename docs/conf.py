@@ -74,3 +74,11 @@ html_theme_options = {
 }
 
 autodoc_mock_imports = ["ctypes"]
+
+# -- Options for LaTeX output ---------------------------------------------
+
+# The name of the tex file is based on your PDF's filename.
+latex_documents = [
+    ('index_for_pdf', 'sgwt-docs.tex', 'Sparse SGWT Documentation',
+     'Luke Lowery', 'manual'),
+]

@@ -1,18 +1,13 @@
-.. include:: overview.rst
-
 .. toctree::
-   :hidden:
    :maxdepth: 2
    :caption: Getting Started
 
-   self
+   overview
    intro/installation
    intro/usage
    intro/theory
 
-
 .. toctree::
-   :hidden:
    :maxdepth: 2
    :caption: Examples
 
@@ -21,7 +16,6 @@
    examples/cheby
 
 .. toctree::
-   :hidden:
    :maxdepth: 2
    :caption: Library
 
@@ -29,14 +23,12 @@
    library/json
 
 .. toctree::
-   :hidden:
    :maxdepth: 2
    :caption: API Reference
 
    api/api
 
 .. toctree::
-   :hidden:
    :maxdepth: 2
    :caption: Development
 

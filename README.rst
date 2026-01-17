@@ -75,8 +75,6 @@ Here is a quick example of applying a band-pass filter to an impulse signal on t
     print(f"Signal on vertex 600, shape: {signal.shape}")
     print(f"Filtered signal shape: {result.shape}")
 
-More Examples
--------------
 
 The `examples/ <https://github.com/lukelowry/sgwt/tree/main/examples>`_ directory contains a comprehensive suite of demonstrations, also rendered in the `Examples <https://sgwt.readthedocs.io/en/stable/examples/static.html>`_ section of the documentation. Key applications include:
 
@@ -96,8 +94,8 @@ The package includes a comprehensive test suite to verify its correctness. To ru
 
 For more detailed instructions, including how to run tests from a source checkout, see the `Validation Tests <https://sgwt.readthedocs.io/en/stable/dev/tests.html>`_ section in the documentation.
 
-Citation
---------
+Citation & Acknowledgements
+---------------------------
 
 If you use this library in your research, please cite it. The `GitHub repository <https://github.com/lukelowry/sgwt>`_ includes a ``CITATION.cff`` file that provides citation metadata. On GitHub, you can use the "Cite this repository" button on the sidebar to get the citation in your preferred format (including BibTeX).
 
@@ -111,14 +109,10 @@ For convenience, the BibTeX entry for the associated paper is:
       year={2026}
     }
 
-Author
-
 Luke Lowery developed this module during his PhD studies at Texas A&M University. You can learn more on his `research page <https://lukelowry.github.io/>`_ or view his publications on `Google Scholar <https://scholar.google.com/citations?user=CTynuRMAAAAJ&hl=en>`_.
 
 An alternative implementation in `Julia <https://github.com/lukelowry/SpectralGraphWavelet.jl>`_ is also available and leverages native SuiteSparse support.
 
 Acknowledgements
-----------------
-
 - The core performance of this library relies on the ``CHOLMOD`` library from `SuiteSparse <https://github.com/DrTimothyAldenDavis/SuiteSparse>`_, developed by Dr. Tim Davis at Texas A&M University.
 - The graph laplacians used in the examples are derived from the `synthetic grid repository <https://electricgrids.engr.tamu.edu/electric-grid-test-cases/>`_, made available by Dr. Adam Birchfield at Texas A&M University.
