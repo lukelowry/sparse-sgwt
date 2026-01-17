@@ -1,7 +1,10 @@
+import os
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+DIR = r"C:\Users\wyattluke.lowery\OneDrive - Texas A&M University\Research\Oscillations\Modal SGWT (Journal)\DETECTION_WECC_240"
 
+# DOC_START_CODE_EXCLUDE_IMPORTS
 import demo_plot as splt
 from sgwt import SGMA
 from sgwt import DELAY_WECC as L
@@ -15,7 +18,6 @@ def get_signal(fname, t_range):
     return signal, time
 
 
-DIR = r"C:\Users\wyattluke.lowery\OneDrive - Texas A&M University\Research\Oscillations\Modal SGWT (Journal)\DETECTION_WECC_240"
 FILEPATH = f"{DIR}\signal.parquet"
 
 BUS_TARGET = 40      # Target bus index for analysis
@@ -32,9 +34,18 @@ sgma = SGMA(L, s=spatial_scales, freqs=temporal_freqs, time_target=TIME_TARGET, 
 V, t = get_signal(FILEPATH, T_RANGE)
 Y_mag    = sgma.transform(V, t, bus_idx=BUS_TARGET)
 peaks = sgma.peaks_from_spectrum(Y_mag, top_n=TOP_N)
+# DOC_END_CODE_EXCLUDE_PLOT
 
 fig, ax = plt.subplots(figsize=(7, 5))
 fig.patch.set_facecolor('#2b2b2b') # Dark gray figure bg
 splt.plot_contour(ax, sgma.wavlen, sgma.freqs, Y_mag, cmap='Spectral', levels=15)
 splt.overlay_peaks(ax, peaks)
+
+# Save the figure for documentation
+script_dir = os.path.dirname(os.path.abspath(__file__))
+project_root = os.path.abspath(os.path.join(script_dir, '..'))
+static_images_dir = os.path.join(project_root, 'docs', '_static', 'images')
+os.makedirs(static_images_dir, exist_ok=True)
+save_path = os.path.join(static_images_dir, 'demo_sgma_1.png')
+plt.savefig(save_path, dpi=400, bbox_inches='tight')
 plt.show()

@@ -178,5 +178,3 @@ def plot_peak_heatmap(master_df, wavlen, freqs, cmap='inferno', output_dir=None,
     # --- 7. Optional Saving ---
     if output_dir:
         save_figure(fig, output_dir, filename, dpi=dpi)
-
-    plt.show()

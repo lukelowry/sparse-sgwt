@@ -8,4 +8,5 @@ The ``sgwt`` package includes a repository of examples:
 
    static
    dynamic
+   sgma
    cheby
