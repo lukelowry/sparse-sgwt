@@ -4,7 +4,7 @@ Laplacians
 The library includes Laplacians for various synthetic power grid networks. These are provided as ``scipy.sparse.csc_matrix`` objects. The naming convention is ``METRIC_REGION``.
 
 .. seealso::
-   :doc:`../intro/theory/theory_graph`
+   :doc:`../theory/theory_graph`
       For the mathematical derivation and physical interpretation of the **DELAY**, **LENGTH**, and **IMPEDANCE** weighting schemes.
 
 **Usage**

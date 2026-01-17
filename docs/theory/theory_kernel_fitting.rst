@@ -42,7 +42,7 @@ The ``cholmod_solve2`` and ``updown`` functions serve as the primary engine, alo
 
     For more on the high-level concepts of graph filtering:
 
-    * :doc:`../overview/usage/kernel_functions`
+    * :doc:`../usage/kernel_functions`
 
 The kernel fitting representation is more generally a vector fitted function, a simple pole expansion of the form:
 

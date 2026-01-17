@@ -54,5 +54,5 @@ Below is a truncated example from the built-in ``MODIFIED_MORLET.json`` file.
     }
 
 .. seealso::
-   :doc:`../intro/usage/kernel_functions`
+   :doc:`../usage/kernel_functions`
       For an example of how to load and use a custom kernel in a convolution.

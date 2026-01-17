@@ -2,7 +2,7 @@
    :maxdepth: 2
    :caption: Getting Started
 
-   overview/index
+   Overview <index>
 
 .. toctree::
    :maxdepth: 2

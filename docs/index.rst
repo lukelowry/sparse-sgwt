@@ -1,10 +1,16 @@
+Overview
+========
+
 .. include:: ../README.rst
+   :start-after: ====================================
+
+.. include:: usage/index.rst
 
 .. toctree::
    :hidden:
-   :maxdepth: 2 
+   :maxdepth: 2
    
-   overview/index
+   Overview <self>
    theory/index
    library/index
    examples/index
