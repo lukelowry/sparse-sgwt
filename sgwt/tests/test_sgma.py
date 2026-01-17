@@ -160,3 +160,41 @@ class TestSGMA:
             )
             assert peaks['Wavelength'].size > 0
             assert clusters['Wavelength'].size == 0
+
+    def test_peak_finding_fallback(self, sgma_engine, small_laplacian):
+        """Test the peak finding fallback when scikit-image is not available."""
+        from unittest.mock import patch
+        import sys
+        import importlib
+        import sgwt.sgma
+
+        # Create a synthetic spectrum with multiple peaks
+        Y_mag = np.zeros((10, 10))
+        Y_mag[2, 2] = 10.0  # Main peak
+        Y_mag[8, 8] = 8.0   # Secondary peak
+        Y_mag[2, 3] = 9.0   # A nearby point to test min_dist suppression
+
+        # Force the fallback by making skimage unimportable in sys.modules
+        with patch.dict('sys.modules', {'skimage': None, 'skimage.feature': None}):
+            # Reload the sgma module to execute the 'except' block
+            importlib.reload(sgwt.sgma)
+
+        # We need a new engine instance that uses the reloaded module
+        # and has scales/freqs matching the synthetic Y_mag shape.
+        s_test = np.geomspace(0.1, 100.0, 10)
+        freqs_test = np.linspace(0.1, 2.0, 10)
+        reloaded_engine = sgwt.sgma.SGMA(
+            L=small_laplacian,
+            s=s_test,
+            freqs=freqs_test,
+            time_target=sgma_engine.time_target
+        )
+
+        try:
+            # With min_dist=2, the peak at (2,3) should be suppressed by (2,2)
+            peaks = reloaded_engine.peaks_from_spectrum(Y_mag, top_n=2, min_dist=2)
+            assert len(peaks['Magnitude']) == 2
+            np.testing.assert_allclose(peaks['Magnitude'], [10.0, 8.0])
+        finally:
+            importlib.reload(sgwt.sgma)
+            reloaded_engine.close()

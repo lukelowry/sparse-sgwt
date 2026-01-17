@@ -5,7 +5,7 @@ The ``sgwt`` package includes a repository of examples:
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
+   :caption: Contents
 
    static
    dynamic

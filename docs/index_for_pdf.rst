@@ -10,9 +10,7 @@
    :maxdepth: 2
    :caption: Examples
 
-   examples/static
-   examples/dynamic
-   examples/cheby
+   examples/index
 
 .. toctree::
    :maxdepth: 2

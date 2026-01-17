@@ -17,11 +17,58 @@ import numpy as np
 from typing import Optional, List, Tuple, Dict
 from scipy.stats import gaussian_kde
 
-# Optional dependency for peak finding
+# Optional dependency for peak finding, with a NumPy/SciPy fallback
 try:
     from skimage.feature import peak_local_max
 except ImportError:
-    peak_local_max = None
+    from scipy.ndimage import maximum_filter
+
+    def _peak_local_max_fallback(
+        image: np.ndarray, min_distance: int = 1, num_peaks: int = np.inf, exclude_border: bool = False
+    ) -> np.ndarray:
+        """
+        Fallback for scikit-image's peak_local_max using SciPy.
+
+        Finds peaks in an image and returns them as coordinates.
+        Peaks are the local maxima in a region of `2 * min_distance + 1`.
+        This is a simplified implementation that uses a square neighborhood
+        for non-maximum suppression.
+        """
+        if min_distance < 1:
+            min_distance = 1
+
+        # Find all pixels that are local maxima in a (2*min_dist + 1) neighborhood
+        size = 2 * min_distance + 1
+        local_max = image == maximum_filter(image, size=size, mode="constant")
+
+        # Exclude peaks with zero magnitude
+        local_max[image == 0] = False
+
+        # Get coordinates of candidate peaks
+        coords = np.argwhere(local_max)
+        if coords.shape[0] == 0:
+            return np.empty((0, image.ndim), dtype=np.intp)
+
+        # Sort candidates by magnitude in descending order
+        magnitudes = image[coords[:, 0], coords[:, 1]]
+        sort_idx = np.argsort(magnitudes)[::-1]
+        coords = coords[sort_idx]
+
+        # Iteratively select peaks and suppress neighbors (non-maximum suppression)
+        final_coords = []
+        is_suppressed = np.zeros(image.shape, dtype=bool)
+        for r, c in coords:
+            if not is_suppressed[r, c]:
+                final_coords.append([r, c])
+                if len(final_coords) == num_peaks:
+                    break
+                r_min, r_max = max(0, r - min_distance), min(image.shape[0], r + min_distance + 1)
+                c_min, c_max = max(0, c - min_distance), min(image.shape[1], c + min_distance + 1)
+                is_suppressed[r_min:r_max, c_min:c_max] = True
+
+        return np.array(final_coords, dtype=np.intp)
+
+    peak_local_max = _peak_local_max_fallback
 
 from .cholconv import DyConvolve
 from .functions import gaussian_wavelet
@@ -247,33 +294,24 @@ class SGMA:
             - ``Frequency``: ndarray of temporal frequencies in Hz
             - ``Magnitude``: ndarray of transform magnitudes at peaks
 
-        Raises
-        ------
-        ImportError
-            If scikit-image is not installed.
-
         Notes
         -----
         Larger wavelengths correspond to inter-area oscillation modes,
         while smaller wavelengths indicate local oscillations [1].
         """
-        if peak_local_max is None: # pragma: nocover
-            raise ImportError(
-                "scikit-image is required for peak finding. "
-                "Install with: pip install scikit-image"
-            )
-
         # Ensure the input is real-valued magnitude for peak detection
         Y_mag = np.abs(Y)
 
-        coords = peak_local_max(Y_mag, min_distance=min_dist)
+        # We use exclude_border=False to ensure peaks near the edges of the 
+        # spectrum (e.g. high frequency or large scale) are not lost.
+        coords = peak_local_max(Y_mag, min_distance=min_dist, num_peaks=top_n, exclude_border=False)
 
         if coords.size == 0:
             return {k: np.array([]) for k in ['Wavelength', 'Frequency', 'Magnitude']}
 
-        # Extract magnitudes and sort
+        # Extract magnitudes and sort to handle case where peak_local_max doesn't sort
         magnitudes = Y_mag[coords[:, 0], coords[:, 1]]
-        sort_idx = np.argsort(magnitudes)[::-1][:top_n]
+        sort_idx = np.argsort(magnitudes)[::-1]
 
         return {
             'Wavelength': self.wavlen[coords[sort_idx, 0]],

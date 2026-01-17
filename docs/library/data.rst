@@ -1,8 +1,3 @@
-Data Library
-============
-
-The ``sgwt`` library includes a repository of built-in graph Laplacians, signals, and spectral kernels for testing and demonstration. These resources can be imported directly from the top-level package.
-
 Laplacians
 ----------
 

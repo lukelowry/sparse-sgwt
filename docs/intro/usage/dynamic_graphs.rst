@@ -5,9 +5,6 @@ In many real-world applications, such as power systems or communication networks
 
 The :class:`~sgwt.DyConvolve` context is specifically designed for this scenario. It provides high-performance filtering on evolving graphs by leveraging efficient rank-1 updates to the factorization.
 
-The Key Trade-off
------------------
-
 To achieve this performance, ``DyConvolve`` requires that the filter poles (or scales) are defined upfront and remain constant. The context pre-factors the graph for each pole, allowing subsequent topology updates and convolutions to be extremely fast.
 
 Usage Example
