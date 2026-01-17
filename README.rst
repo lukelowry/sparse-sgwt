@@ -81,18 +81,6 @@ The `examples/ <https://github.com/lukelowry/sgwt/tree/main/examples>`_ director
 - **Dynamic Graphs**: Real-time topology updates, performance comparisons, and online stream processing.
 
 
-Testing
--------
-
-The package includes a comprehensive test suite to verify its correctness. To run the tests on an installed version of ``sgwt``, first install the test dependencies and then run pytest:
-
-.. code-block:: bash
-
-    pip install sgwt[test]
-    pytest --pyargs sgwt.tests
-
-For more detailed instructions, including how to run tests from a source checkout, see the `Validation Tests <https://sgwt.readthedocs.io/en/stable/dev/tests.html>`_ section in the documentation.
-
 Citation & Acknowledgements
 ---------------------------
 
