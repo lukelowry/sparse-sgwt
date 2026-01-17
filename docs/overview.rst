@@ -4,11 +4,7 @@ Overview
 .. include:: ../README.rst
    :start-after: ====================================
 
-.. -----------------------------------------------------------------------------
-.. Structure: These pages are children of Overview (HTML & PDF)
-.. -----------------------------------------------------------------------------
 .. toctree::
-   :hidden:
    :caption: Usage
 
    usage/quickstart
