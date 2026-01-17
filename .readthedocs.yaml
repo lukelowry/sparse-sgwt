@@ -13,11 +13,6 @@ build:
   os: ubuntu-22.04
   tools:
     python: "3.11"
-  apt_packages:
-      - latexmk
-      - texlive-latex-recommended
-      - texlive-latex-extra
-      - texlive-fonts-recommended
 
 # Build documentation in the "docs/" directory with Sphinx
 sphinx:

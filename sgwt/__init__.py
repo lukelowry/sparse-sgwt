@@ -13,6 +13,9 @@ from .cholconv import Convolve, DyConvolve
 # Chebyshev Approximation
 from .chebyconv import ChebyConvolve
 
+# Spectral Graph Modal Analysis
+from .sgma import SGMA
+
 # Analytical function generators
 from . import functions
 
@@ -41,6 +44,6 @@ def __dir__():  # pragma: no cover
     return list(globals().keys()) + _LAZY_RESOURCES
 
 __all__ = [
-    "Convolve", "ChebyConvolve", "DyConvolve", "functions",
+    "Convolve", "ChebyConvolve", "DyConvolve", "SGMA", "functions",
     "VFKernel", "ChebyKernel", "impulse", "get_klu_dll", "get_cholmod_dll", "estimate_spectral_bound"
 ] + _LAZY_RESOURCES

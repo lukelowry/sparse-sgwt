@@ -20,6 +20,49 @@ from scipy.sparse import csc_matrix # type: ignore
 from ctypes import byref, POINTER
 from typing import Union, Optional, Type, List
 from types import TracebackType
+
+def _process_signal(func, B: np.ndarray, *args, **kwargs) -> Union[List[np.ndarray], np.ndarray]:
+    """
+    Private helper to handle complex and non-contiguous inputs.
+
+    This method serves as a wrapper for the core convolution logic. It detects
+    if the input signal `B` is complex. If so, it recursively calls the
+    wrapped function (`func`) on the real and imaginary parts and then
+    recombines the results. For real inputs, it ensures the data is in
+    Fortran-contiguous order before passing it to `func`.
+
+    Parameters
+    ----------
+    func : callable
+        The core implementation function (e.g., `_convolve_impl`) to call.
+    B : np.ndarray
+        The input signal array.
+    *args, **kwargs :
+        Additional arguments to pass to `func`.
+
+    Returns
+    -------
+    Union[List[np.ndarray], np.ndarray]
+        The processed signal, either as a complex result or the result for a
+        real-valued input.
+    """
+    if np.iscomplexobj(B):
+        # Recurse for real and imaginary parts
+        real_part = func(np.asfortranarray(B.real), *args, **kwargs)
+        imag_part = func(np.asfortranarray(B.imag), *args, **kwargs)
+        
+        # Recombine results based on return type
+        if isinstance(real_part, list):
+            return [r + 1j * i for r, i in zip(real_part, imag_part)]
+        else:  # Assumes np.ndarray for convolve
+            return real_part + 1j * imag_part
+
+    # Ensure Fortran contiguous array for non-complex inputs
+    if not B.flags['F_CONTIGUOUS']:
+        B = np.asfortranarray(B)
+    
+    return func(B, *args, **kwargs)
+
 class Convolve:
 
     def __init__(self, L:csc_matrix) -> None:
@@ -82,7 +125,7 @@ class Convolve:
         return self.convolve(B, K) 
     
     def convolve(self, B: np.ndarray, K: Union[VFKernel, dict]) -> np.ndarray:
-        """
+        """ 
         Performs graph convolution using a specified kernel.
 
         Parameters
@@ -97,6 +140,10 @@ class Convolve:
         np.ndarray
             Convolved signal (n_vertices, n_timesteps, nDim).
         """
+        return _process_signal(self._convolve_impl, B, K)
+
+    def _convolve_impl(self, B: np.ndarray, K: Union[VFKernel, dict]) -> np.ndarray:
+
         # 1. Input validation and conversion before heavy lifting
         if isinstance(K, dict):
             K = VFKernel.from_dict(K)
@@ -107,9 +154,6 @@ class Convolve:
         if K.R is None or K.Q is None:
             raise ValueError("Kernel K must contain residues (R) and poles (Q).")
 
-        # Validate B and convert to cholmod format early
-        if not B.flags['F_CONTIGUOUS']:  # pragma: no cover
-            B = np.asfortranarray(B)
         B_chol_struct = self.chol.numpy_to_chol_dense(B)
         B_chol = byref(B_chol_struct)
 
@@ -166,11 +210,9 @@ class Convolve:
         list[np.ndarray]
             Filtered signals for each scale.
         """
+        return _process_signal(self._lowpass_impl, B, scales, Bset, refactor, order)
 
-        # Pointer to b (The function being convolved)
-        if not B.flags['F_CONTIGUOUS']:  # pragma: no cover
-            B = np.asfortranarray(B)
-
+    def _lowpass_impl(self, B: np.ndarray, scales: List[float] = [1], Bset: Optional[csc_matrix] = None, refactor: bool = True, order = 1) -> List[np.ndarray]:
 
         # Using this requires the number of columns in f to be 1
         if Bset is not None:  # pragma: no cover
@@ -235,11 +277,9 @@ class Convolve:
         list[np.ndarray]
             Filtered signals for each scale.
         """
+        return _process_signal(self._bandpass_impl, B, scales, order)
 
-        
-        if not B.flags['F_CONTIGUOUS']:  # pragma: no cover
-            B = np.asfortranarray(B)
-
+    def _bandpass_impl(self, B: np.ndarray, scales: List[float] = [1], order: int = 1) -> List[np.ndarray]:
         
         # Pointer to bB (The function being convolved)
         B_chol_struct = self.chol.numpy_to_chol_dense(B)
@@ -301,7 +341,9 @@ class Convolve:
         list[np.ndarray]
             Filtered signals for each scale.
         """
+        return _process_signal(self._highpass_impl, B, scales)
       
+    def _highpass_impl(self, B: np.ndarray, scales: List[float] = [1]) -> List[np.ndarray]:
         # List, malloc, numpy, etc.
         W = []
         X1, X2 = self.X1, self.X2 
@@ -309,8 +351,6 @@ class Convolve:
         Y, E   = self.Y, self.E
 
         # Pointer to b (The function being convolved)
-        if not B.flags['F_CONTIGUOUS']:  # pragma: no cover
-            B = np.asfortranarray(B)
         B    = byref(self.chol.numpy_to_chol_dense(B))
 
         A_ptr = byref(self.chol.A)
@@ -450,6 +490,9 @@ class DyConvolve:
         np.ndarray
             Convolved signal (n_vertices, n_timesteps, nDim).
         """
+        return _process_signal(self._convolve_impl, B)
+
+    def _convolve_impl(self, B: np.ndarray) -> np.ndarray:
 
         if self.R is None:  # pragma: no cover
             raise Exception("Cannot call without VFKernel Object")
@@ -494,6 +537,9 @@ class DyConvolve:
         list[np.ndarray]
             Filtered signals for each pre-defined pole.
         """
+        return _process_signal(self._lowpass_impl, B, Bset, order)
+
+    def _lowpass_impl(self, B: np.ndarray, Bset: Optional[csc_matrix] = None, order = 1) -> List[np.ndarray]:
 
         # List, malloc, numpy, etc.
         W = []
@@ -551,6 +597,9 @@ class DyConvolve:
         list[np.ndarray]
             Filtered signals for each pre-defined pole.
         """
+        return _process_signal(self._bandpass_impl, B, order)
+
+    def _bandpass_impl(self, B: np.ndarray, order: int = 1) -> List[np.ndarray]:
 
         # List, malloc, numpy, etc.
         W = []
@@ -604,6 +653,9 @@ class DyConvolve:
         list[np.ndarray]
             Filtered signals for each pre-defined pole.
         """
+        return _process_signal(self._highpass_impl, B)
+      
+    def _highpass_impl(self, B: np.ndarray) -> List[np.ndarray]:
       
         # List, malloc, numpy, etc.
         W = []

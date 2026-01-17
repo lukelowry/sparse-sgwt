@@ -83,6 +83,12 @@ class ChebyConvolve:
             (n_vertices, n_dims) for a 1D input `B`. `n_dims` is the
             number of filter dimensions in the kernel.
         """
+        # Handle complex inputs by processing real and imaginary parts separately
+        if np.iscomplexobj(B):
+            real_part = self.convolve(B.real, C)
+            imag_part = self.convolve(B.imag, C)
+            return real_part + 1j * imag_part
+
         input_was_1d = False
         if B.ndim == 1:
             B = B[:, np.newaxis]

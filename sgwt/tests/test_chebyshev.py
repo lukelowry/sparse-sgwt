@@ -100,3 +100,36 @@ class TestChebyConvolve:
             # Result should be 2D (n_vertices, n_dims) not 3D
             assert result.ndim == 2
             assert result.shape[0] == signal_1d.shape[0]
+
+    def test_complex_input_handling(self, small_laplacian, identity_signal):
+        """Complex signals are processed by splitting real/imag parts."""
+        # Create a complex signal: x + i*x
+        complex_signal = identity_signal + 1j * identity_signal
+        
+        # Simple kernel f(x) = x
+        f = lambda x: x
+        kern = sgwt.ChebyKernel.from_function_on_graph(small_laplacian, f, order=5)
+        
+        with sgwt.ChebyConvolve(small_laplacian) as conv:
+            result = conv.convolve(complex_signal, kern)
+            
+            # Expected: L(x) + i*L(x)
+            expected_real = small_laplacian @ identity_signal
+            expected = expected_real + 1j * expected_real
+            
+            np.testing.assert_allclose(result.squeeze(), expected, atol=1e-2)
+            assert np.iscomplexobj(result)
+
+    def test_c_contiguous_input(self, small_laplacian, random_signal):
+        """C-contiguous inputs are converted to F-contiguous automatically."""
+        c_contig_signal = np.ascontiguousarray(random_signal)
+        assert not c_contig_signal.flags['F_CONTIGUOUS']
+        
+        # Simple kernel
+        f = lambda x: np.exp(-x)
+        kern = sgwt.ChebyKernel.from_function_on_graph(small_laplacian, f, order=5)
+        
+        with sgwt.ChebyConvolve(small_laplacian) as conv:
+            # Should not raise error
+            result = conv.convolve(c_contig_signal, kern)
+            assert result.shape[0] == random_signal.shape[0]

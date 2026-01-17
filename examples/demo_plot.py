@@ -55,76 +55,6 @@ def plot_spectral(ax, kernel, target_func, lbnd=1e-5, dim=None):
     ax.set_ylabel('Filter Gain', fontsize=10)
     ax.margins(x=0.01)
 
-def save_figure(fig, folder_path, filename):
-    """Saves the figure to a specified folder with high DPI."""
-    if not os.path.exists(folder_path):
-        os.makedirs(folder_path)
-        
-    full_path = os.path.join(folder_path, filename)
-    
-    # Save with tight bounding box and matching facecolor
-    fig.savefig(full_path, dpi=300, bbox_inches='tight', facecolor=fig.get_facecolor())
-    print(f"Saved: {filename}")
-
-def overlay_peaks(ax, df):
-    """Plots numbered markers with high-contrast outlines."""
-    ax.scatter(df['Wavelength'], df['Frequency'], marker='x', s=120, lw=4, c='black', zorder=15)
-    ax.scatter(df['Wavelength'], df['Frequency'], marker='x', s=120, lw=2, c='white', zorder=16)
-    
-    for i, row in df.iterrows():
-        txt = ax.annotate(f"{i+1}", (row['Wavelength'], row['Frequency']),
-                          xytext=(8, 8), textcoords='offset points', 
-                          color='white', fontsize=13, weight='bold', zorder=20)
-        txt.set_path_effects([PathEffects.withStroke(linewidth=3, foreground='black')])
-
-def plot_contour(ax, x, y, Y_mag, cmap='magma', levels=20):
-    """Renders dark-mode contour plot with continuous colorbar."""
-    ax.set_facecolor('black')
-    text_c = 'white'
-    
-    X, Y = np.meshgrid(x, y)
-    CS = ax.contour(X, Y, Y_mag.T, levels=levels, cmap=cmap, linewidths=1.5)
-    
-    ax.set_xscale("log") 
-    ax.set_yscale("linear") 
-    ax.grid(False) 
-    
-    ax.set_xlabel("Wavelength [km]", color=text_c)
-    ax.set_ylabel("Frequency [Hz]", color=text_c)
-    ax.tick_params(colors=text_c, which='both')
-    for spine in ax.spines.values(): spine.set_color(text_c)
-
-    norm = plt.Normalize(vmin=Y_mag.min(), vmax=Y_mag.max())
-    cbar = plt.colorbar(cm.ScalarMappable(norm=norm, cmap=cmap), ax=ax, fraction=0.046, pad=0.04)
-    cbar.set_label('Magnitude', color=text_c, rotation=270, labelpad=15)
-    cbar.ax.yaxis.set_tick_params(color=text_c, labelcolor=text_c)
-    cbar.outline.set_visible(False)
-
-def master_plot(x, y, matrix, peaks, cmap='Spectral'):
-    """Orchestrates the plotting functions for a single view."""
-    fig, ax = plt.subplots(figsize=(7, 5))
-    fig.patch.set_facecolor('#2b2b2b') # Dark gray figure bg
-    
-    plot_contour(ax, x, y, matrix, cmap=cmap, levels=15)
-    overlay_peaks(ax, peaks)
-    
-    plt.show()
-import os
-import numpy as np
-import matplotlib.pyplot as plt
-import matplotlib.cm as cm
-import matplotlib.patheffects as PathEffects
-from scipy.stats import gaussian_kde
-
-# --- Global Style Configuration (Journal Quality) ---
-plt.rcParams['font.family'] = 'serif'
-plt.rcParams['font.serif'] = ['Times New Roman']
-plt.rcParams['font.size'] = 12
-plt.rcParams['axes.labelsize'] = 14
-plt.rcParams['axes.titlesize'] = 16
-plt.rcParams['xtick.labelsize'] = 12
-plt.rcParams['ytick.labelsize'] = 12
-
 def save_figure(fig, folder_path, filename, dpi=300):
     """
     Saves the figure to a specified folder with customizable DPI.
@@ -172,15 +102,7 @@ def plot_contour(ax, x, y, Y_mag, cmap='magma', levels=20):
     cbar.ax.yaxis.set_tick_params(color=text_c, labelcolor=text_c)
     cbar.outline.set_visible(False)
 
-def master_plot(x, y, matrix, peaks, cmap='Spectral'):
-    """Orchestrates the plotting functions for a single view."""
-    fig, ax = plt.subplots(figsize=(7, 5))
-    fig.patch.set_facecolor('#2b2b2b') # Dark gray figure bg
-    
-    plot_contour(ax, x, y, matrix, cmap=cmap, levels=15)
-    overlay_peaks(ax, peaks)
-    
-    plt.show()
+
 
 def plot_peak_heatmap(master_df, wavlen, freqs, cmap='inferno', output_dir=None, filename="mode_clusters.png", dpi=300):
     """

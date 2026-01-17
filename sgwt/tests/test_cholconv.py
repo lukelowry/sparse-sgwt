@@ -79,6 +79,50 @@ class TestConvolve:
             # Results should be identical when using the same scale
             np.testing.assert_allclose(result_with, result_without, atol=1e-10)
 
+    def test_complex_signal_handling(self, texas_laplacian, texas_signal):
+        """Complex signals are processed by splitting real/imag parts."""
+        # Create a complex signal: x + i*x
+        complex_signal = texas_signal + 1j * texas_signal
+        scale = SCALES[0]
+        
+        with sgwt.Convolve(texas_laplacian) as conv:
+            # Process complex signal
+            results_complex = conv.lowpass(complex_signal, [scale])[0]
+            
+            # Process real part manually for verification
+            results_real = conv.lowpass(texas_signal, [scale])[0]
+            
+            # Check linearity: L(x + iy) = L(x) + iL(y)
+            expected = results_real + 1j * results_real
+            np.testing.assert_allclose(results_complex, expected, atol=1e-10)
+            assert np.iscomplexobj(results_complex)
+
+    def test_convolve_complex_returns_array(self, texas_laplacian, texas_signal, library_kernel):
+        """Convolve with complex signal returns ndarray (covers else branch in _process_signal)."""
+        complex_signal = texas_signal + 1j * texas_signal
+        
+        with sgwt.Convolve(texas_laplacian) as conv:
+            # convolve returns np.ndarray, not list, triggering the 'else' block
+            result = conv.convolve(complex_signal, library_kernel)
+            assert isinstance(result, np.ndarray)
+            assert np.iscomplexobj(result)
+            
+            # Verify linearity
+            real_res = conv.convolve(texas_signal, library_kernel)
+            expected = real_res + 1j * real_res
+            np.testing.assert_allclose(result, expected, atol=1e-10)
+
+    def test_c_contiguous_input_conversion(self, texas_laplacian, texas_signal):
+        """C-contiguous input is converted to Fortran (covers B conversion in _process_signal)."""
+        # Tile signal to ensure >1 columns so C and F layouts are distinct
+        c_signal = np.tile(texas_signal, (1, 2)).copy(order='C')
+        assert not c_signal.flags['F_CONTIGUOUS']
+        
+        with sgwt.Convolve(texas_laplacian) as conv:
+            # This calls _process_signal -> lowpass_impl
+            res = conv.lowpass(c_signal, [1.0])
+            assert len(res) == 1
+
 
 class TestConvolveVFKernel:
     """Tests for VFKernel convolution in Convolve context."""
