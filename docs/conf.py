@@ -78,6 +78,6 @@ autodoc_mock_imports = ["ctypes"]
 # -- Options for LaTeX output ---------------------------------------------
 
 latex_documents = [
-    ('index_for_pdf', 'sgwt-docs.tex', 'Sparse Graph Convolution: Theory & Implementation',
+    ('index_for_pdf', 'sgwt-docs.tex', 'Sparse Graph Convolution',
      'Luke Lowery', 'manual'),
 ]

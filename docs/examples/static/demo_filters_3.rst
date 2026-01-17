@@ -13,3 +13,4 @@ Scales up to the synthetic USA grid (~82k nodes) to demonstrate performance on l
 
 .. image:: /_static/images/demo_filters_3_bandpass.png
    :alt: Band-pass filtered signal on USA Grid Example
+   :align: center

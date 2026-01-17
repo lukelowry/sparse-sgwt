@@ -20,17 +20,16 @@ Sparse SGWT
 
 A high-performance Python library for sparse Graph Signal Processing (GSP) and Spectral Graph Wavelet Transforms (SGWT). This package leverages the ``CHOLMOD`` library for efficient sparse direct solvers, providing significant speedups over traditional dense or iterative methods for large-scale graph convolution.
 
+Some of the key features include:
 
-For detailed usage, API reference, and theoretical background, please visit the `documentation website <https://sgwt.readthedocs.io/>`_.
-
-Key Features
-------------
 
 - **High-Performance Sparse Solvers**: Direct integration with the ``CHOLMOD`` library for optimized sparse Cholesky factorizations and linear system solves.
 - **Generalized Graph Convolution**: Support for arbitrary spectral kernels via rational approximation (Kernel Fitting), polynomial approximation (Chebyshev), and standard analytical filters (low-pass, band-pass, high-pass).
 - **Dynamic Topology Support**: Specialized routines for graphs with evolving structures, utilizing efficient rank-1 updates for real-time topology changes.
 - **Resource-Aware Execution**: Context-managed memory allocation and workspace reuse to minimize overhead in high-throughput applications.
 - **Integrated Graph Repository**: Built-in access to standardized graph Laplacians and signals from power systems and infrastructure networks.
+
+For detailed usage, API reference, and theoretical background, please visit the `documentation website <https://sgwt.readthedocs.io/>`_.
 
 Installation
 ------------

@@ -13,3 +13,4 @@ Demonstrates low-pass, band-pass, and high-pass filtering on the synthetic Texas
 
 .. image:: /_static/images/demo_filters_1_bandpass.png
    :alt: Band-pass filtered signal on Texas Grid Example
+   :align: center

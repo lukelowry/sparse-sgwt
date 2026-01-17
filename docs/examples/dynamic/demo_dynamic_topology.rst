@@ -13,3 +13,4 @@ Illustrates updating the graph topology (adding branches) on-the-fly without rec
 
 .. image:: /_static/images/demo_dynamic_topology.png
    :alt: Dynamic Topology Update Example
+   :align: center
