@@ -1,13 +1,14 @@
 Welcome to Project Documentation
 ================================
 
-
 .. only:: html
 
    .. toctree::
       :hidden:
+      :caption: Contents
 
       overview
+      usage/index
       theory/index
       examples/index
       library/index
@@ -20,6 +21,7 @@ Welcome to Project Documentation
       :maxdepth: 2
 
       overview
+      usage/index
       theory/index
       examples/index
       library/index
