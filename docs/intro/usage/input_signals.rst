@@ -28,6 +28,10 @@ For optimal performance, it is highly recommended to create the signal array wit
     # Verify the memory order
     assert X.flags['F_CONTIGUOUS']
 
+.. seealso::
+   :doc:`../theory/theory_graph`
+      For the definition of vertex-domain functions.
+
 Creating Test Signals with ``impulse``
 --------------------------------------
 

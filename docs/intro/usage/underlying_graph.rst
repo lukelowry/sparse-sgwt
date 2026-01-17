@@ -10,10 +10,11 @@ Built-in Graph Repository
 
 For convenience and reproducibility, ``sgwt`` includes a repository of pre-built graph Laplacians from common power system test cases. These can be imported directly.
 
-The naming convention is ``METRIC_REGION``:
+The naming convention is ``METRIC_REGION``. For a full list of available graphs and metrics, see the :doc:`../../library/data` section.
 
-- **METRIC**: The physical property used for edge weights (e.g., ``DELAY``, ``IMPEDANCE``, ``LENGTH``).
-- **REGION**: The geographical or network name (e.g., ``TEXAS``, ``USA``, ``WECC``).
+.. seealso::
+   * :doc:`../../library/data` for the complete list of built-in Laplacians.
+   * :doc:`../theory/theory_graph` for the mathematical derivation and physical meaning of the weighting schemes.
 
 .. code-block:: python
 

@@ -20,17 +20,16 @@ The Physics of the Weights
 
 While any symmetric matrix can serve as a Laplacian, ``sgwt`` utilizes specific weighting schemes to ensure the graph spectral domain aligns with the physical behavior of power grids. 
 
-When working with a physical distance metric, the library utilizes **Inverse Squared Length Weighting**. For each branch of length :math:`\ell_{ij}`, the corresponding branch weight is assigned as:
+When working with a physical distance metric, we might want to weigh the branches by the **Inverse Squared Length**. For each branch of length :math:`\ell_{ij}`, the corresponding branch weight is assigned as:
 
 .. math::
 
     w_{ij} = \frac{1}{\ell_{ij}^2}
 
-**Why this matters:**
 This weighting is not arbitrary. By defining the weights as :math:`\ell^{-2}`, the eigenvalues of the graph Laplacian (:math:`\lambda`) correspond directly to the **squared wavenumber** (:math:`k^2`) of traveling waves on the grid.
 
-* **Low Eigenvalues (:math:`\lambda \approx 0`):** Correspond to long-wavelength, inter-area oscillations that span the entire continent.
-* **High Eigenvalues:** Correspond to short-wavelength, local disturbances.
+* **Low Eigenvalues - ** Correspond to long-wavelength, inter-area oscillations that span the entire continent.
+* **High Eigenvalues - ** Correspond to short-wavelength, local disturbances.
 
 When we apply the SGWT to this graph, each scale :math:`a\in\mathcal{A}` becomes physically meaningful, corresponding to a squared *pseudo-wavelength*, :math:`r\in \mathbb{R}`, where :math:`a=r^2` defines this mapping. This allows for filtering based on physical spread rather than just temporal frequency.
 
@@ -77,28 +76,28 @@ We define :math:`\mathbf{T}` as the diagonal matrix of these propagation delays.
 
 In this formulation, the Laplacian operator :math:`\mathbf{L}` is mathematically equivalent to the continuous wave operator :math:`c^2\nabla^2`.
 
-Alternative Weighting Schemes
+Summary of Useful Weighting Schemes
 -----------------------------
 
 Depending on the physical phenomenon being analyzed, different weighting schemes may be appropriate.
 
-* **Reciprocal Squared Delay (Preferred):**
+**Reciprocal Squared Delay (Preferred):**
     
     .. math::
        w_{ij} = \frac{1}{\tau_{ij}^2}
        
-    Used for **wave propagation** analysis. Aligns the graph spectrum with the squared wavenumber (:math:`k^2`).
+    Used for **wave propagation** analysis or dynamics. The determineation for the value of $\tau$ in the previous section has proven practical for very large synthetic cases and results in a well-behaved network that outperformed other branch metric in SGWT applications like modal analysis and FOSL.
 
-* **Reciprocal Squared Distance:**
+**Reciprocal Squared Distance:**
     
     .. math::
        w_{ij} = \frac{1}{d_{ij}^2}
        
-    Used for **geographic analysis** when electrical parameters are unavailable but GPS coordinates are known.
+    Used for **geographic analysis** when electrical parameters are unavailable but GPS coordinates are known. Aligns the graph spectrum with the squared wavenumber (:math:`k^2`).
 
-* **Admittance Magnitude:**
+**Admittance Magnitude:**
     
     .. math::
-       w_{ij} = \left| \frac{1}{Z_{ij}} \right|
+       w_{ij} = \left| \frac{1}{Z_{ij}} \right| = |Y_{ij}|
        
-    Used for **electrical coupling** analysis. This is standard for spectral clustering, as it groups tightly coupled buses regardless of the line length.
+    Used where circuit analysis is directly concerned.

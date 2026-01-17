@@ -28,6 +28,10 @@ The ``scales`` parameter is a list of floating-point values that control the cut
         Y_bp = conv.bandpass(X, scales)
         Y_hp = conv.highpass(X, scales)
 
+.. seealso::
+   :doc:`../theory/theory_analytical`
+      For the mathematical definitions of these filters.
+
 Custom Kernels via Vector Fitting
 ---------------------------------
 
@@ -50,3 +54,7 @@ The library includes several pre-computed kernels. You can use them by passing t
         Y = conv.convolve(X, K)
 
 This powerful feature allows you to implement specialized filters, such as the Modified Morlet wavelet used in the :doc:`/static/demo_vf` example.
+
+.. seealso::
+   :doc:`../theory/theory_kernel_fitting`
+      For the theory behind rational approximation and Vector Fitting.

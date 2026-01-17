@@ -42,3 +42,9 @@ What's Happening in This Example?
 
 4.  **Inspect the Output**
     - The result, ``filtered_signals``, is a Python list where each element is a NumPy array corresponding to the filtered signal at one of the input scales. All arrays have the same shape as the input ``signal``.
+
+.. seealso::
+   * :doc:`underlying_graph` for more on graph Laplacians.
+   * :doc:`input_signals` for signal formatting requirements.
+   * :doc:`kernel_functions` for details on filter types.
+   * :doc:`../theory` for the mathematical background.
