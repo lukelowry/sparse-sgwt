@@ -3,7 +3,6 @@
    :caption: Getting Started
 
    overview
-   intro/installation
    intro/usage
    intro/theory
 
@@ -19,8 +18,7 @@
    :maxdepth: 2
    :caption: Library
 
-   library/data
-   library/json
+   library/index
 
 .. toctree::
    :maxdepth: 2
@@ -32,5 +30,4 @@
    :maxdepth: 2
    :caption: Development
 
-   dev/tests
-   dev/changelog
+   dev/index

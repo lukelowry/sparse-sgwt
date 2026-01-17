@@ -20,6 +20,9 @@ Sparse SGWT
 
 A high-performance Python library for sparse Graph Signal Processing (GSP) and Spectral Graph Wavelet Transforms (SGWT). This package leverages the ``CHOLMOD`` library for efficient sparse direct solvers, providing significant speedups over traditional dense or iterative methods for large-scale graph convolution.
 
+
+For detailed usage, API reference, and theoretical background, please visit the `documentation website <https://sgwt.readthedocs.io/>`_.
+
 Key Features
 ------------
 
@@ -32,18 +35,15 @@ Key Features
 Installation
 ------------
 
-You can install ``sgwt`` from the `Python Package Index (PyPI) <https://pypi.org/project/sgwt/>`_:
+The ``sgwt`` package requires Python 3.7+ and is currently only compatible with **Windows** operating systems due to its reliance on a pre-compiled ``CHOLMOD`` library.
+
+Install the latest stable release from `PyPI <https://pypi.org/project/sgwt/>`_:
 
 .. code-block:: bash
 
     pip install sgwt
 
-
-
-Documentation
--------------
-
-For detailed usage, API reference, and theoretical background, please visit the `documentation website <https://sgwt.readthedocs.io/>`_.
+This command will also install the necessary dependencies (e.g., NumPy, SciPy).
 
 Usage Example
 -------------
@@ -113,6 +113,5 @@ Luke Lowery developed this module during his PhD studies at Texas A&M University
 
 An alternative implementation in `Julia <https://github.com/lukelowry/SpectralGraphWavelet.jl>`_ is also available and leverages native SuiteSparse support.
 
-Acknowledgements
 - The core performance of this library relies on the ``CHOLMOD`` library from `SuiteSparse <https://github.com/DrTimothyAldenDavis/SuiteSparse>`_, developed by Dr. Tim Davis at Texas A&M University.
 - The graph laplacians used in the examples are derived from the `synthetic grid repository <https://electricgrids.engr.tamu.edu/electric-grid-test-cases/>`_, made available by Dr. Adam Birchfield at Texas A&M University.

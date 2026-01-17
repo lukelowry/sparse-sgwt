@@ -6,9 +6,9 @@
    :caption: Getting Started
 
    self
-   intro/installation
    intro/usage
    intro/theory
+   library/index
 
 
 .. toctree::
@@ -16,17 +16,7 @@
    :maxdepth: 2
    :caption: Examples
 
-   examples/static
-   examples/dynamic
-   examples/cheby
-
-.. toctree::
-   :hidden:
-   :maxdepth: 2
-   :caption: Library
-
-   library/data
-   library/json
+   examples/index
 
 .. toctree::
    :hidden:
@@ -40,5 +30,4 @@
    :maxdepth: 2
    :caption: Development
 
-   dev/tests
-   dev/changelog
+   dev/index
