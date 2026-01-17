@@ -42,7 +42,7 @@ The ``cholmod_solve2`` and ``updown`` functions serve as the primary engine, alo
 
     For more on the high-level concepts of graph filtering:
 
-    * :doc:`../usage/kernel_functions`
+    * :doc:`../overview/usage/kernel_functions`
 
 The kernel fitting representation is more generally a vector fitted function, a simple pole expansion of the form:
 
@@ -53,5 +53,5 @@ The kernel fitting representation is more generally a vector fitted function, a 
 An iterative pole reallocation procedure is used to converge to a reduced order model. The convolution of some function :math:`\mathbf{f}*g_a` is computed using the Cholesky decomposition and memory efficient re-factors.
 
 .. seealso::
-   :doc:`../../library/json`
+   :doc:`../library/json`
       For details on the file format used to store these kernels.
