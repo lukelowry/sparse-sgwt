@@ -9,7 +9,6 @@ This section details the available data and the file formats used.
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents
 
    data
    json

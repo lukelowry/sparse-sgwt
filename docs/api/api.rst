@@ -10,7 +10,6 @@ The core of the library consists of three specialized convolution engines design
 
 .. toctree::
    :maxdepth: 2
-   :caption:
 
    api_static
    api_dynamic
@@ -23,7 +22,6 @@ High-level application modules that leverage the underlying convolution engines 
 
 .. toctree::
    :maxdepth: 2
-   :caption:
 
    api_sgma
 
@@ -34,7 +32,6 @@ Helper functions for signal generation, spectral estimation, and the definition 
 
 .. toctree::
    :maxdepth: 2
-   :caption: 
 
    api_util
    api_functions
