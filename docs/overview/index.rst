@@ -7,4 +7,4 @@ Overview
    :maxdepth: 2
    :caption: Basic Usage
 
-   usage/index
+   ../usage/index

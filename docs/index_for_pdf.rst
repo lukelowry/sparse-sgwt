@@ -8,7 +8,7 @@
    :maxdepth: 2
    :caption: Theoretical
 
-   theory/theory
+   theory/index
 
 .. toctree::
    :maxdepth: 2
@@ -26,7 +26,7 @@
    :maxdepth: 2
    :caption: API Reference
 
-   api/api
+   api/index
 
 .. toctree::
    :maxdepth: 2

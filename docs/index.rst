@@ -5,7 +5,7 @@
    :maxdepth: 2 
    
    overview/index
-   theory/theory
+   theory/index
    library/index
    examples/index
    api/index
