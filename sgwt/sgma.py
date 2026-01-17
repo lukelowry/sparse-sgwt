@@ -12,14 +12,9 @@ wavenumber-frequency domain, enabling scale-dependent mode identification [1].
 
 Author: Luke Lowery (lukel@tamu.edu)
 
-References
-----------
-.. [1] L. Lowery, J. Baek, and A. Birchfield, "Using Spectral Graph Wavelets
-       to Analyze Large Power System Oscillation Modes," HICSS 2026.
 """
 import numpy as np
-import pandas as pd
-from typing import Optional, List, Tuple
+from typing import Optional, List, Tuple, Dict
 from scipy.stats import gaussian_kde
 
 # Optional dependency for peak finding
@@ -81,14 +76,6 @@ class SGMA:
     --------
     DyConvolve : Dynamic convolution context with pre-factored poles.
     gaussian_wavelet : Temporal wavelet generating kernel.
-
-    References
-    ----------
-    .. [1] L. Lowery et al., "Cholesky Compatible GSP Filters," IEEE TPEC 2025.
-    .. [2] L. Lowery and A. B. Birchfield, "Modal Analysis with Spectral 
-           Graph Wavelets," IEEE Trans. Power Systems (submitted).
-    .. [3] L. Lowery, J. Baek, and A. Birchfield, "Using Spectral Graph
-           Wavelets to Analyze Large Power System Oscillation Modes," HICSS 2026.
 
     Examples
     --------
@@ -235,7 +222,7 @@ class SGMA:
         Y: np.ndarray,
         top_n: int = 5,
         min_dist: int = 5
-    ) -> pd.DataFrame:
+    ) -> Dict[str, np.ndarray]:
         """
         Identify local maxima in the transform magnitude.
 
@@ -253,12 +240,12 @@ class SGMA:
 
         Returns
         -------
-        DataFrame
-            Peak information with columns:
+        dict
+            Peak information with keys:
 
-            - ``Wavelength``: Spatial wavelength (sqrt of scale)
-            - ``Frequency``: Temporal frequency in Hz
-            - ``Magnitude``: Transform magnitude at peak
+            - ``Wavelength``: ndarray of spatial wavelengths (sqrt of scale)
+            - ``Frequency``: ndarray of temporal frequencies in Hz
+            - ``Magnitude``: ndarray of transform magnitudes at peaks
 
         Raises
         ------
@@ -282,19 +269,17 @@ class SGMA:
         coords = peak_local_max(Y_mag, min_distance=min_dist)
 
         if coords.size == 0:
-            return pd.DataFrame(columns=['Wavelength', 'Frequency', 'Magnitude'])
+            return {k: np.array([]) for k in ['Wavelength', 'Frequency', 'Magnitude']}
 
-        mags = Y_mag[coords[:, 0], coords[:, 1]]
+        # Extract magnitudes and sort
+        magnitudes = Y_mag[coords[:, 0], coords[:, 1]]
+        sort_idx = np.argsort(magnitudes)[::-1][:top_n]
 
-        df = pd.DataFrame({
-            'Wavelength': self.wavlen[coords[:, 0]],
-            'Frequency': self.freqs[coords[:, 1]],
-            'Magnitude': mags
-        })
-
-        return df.sort_values(
-            'Magnitude', ascending=False
-        ).head(top_n).reset_index(drop=True)
+        return {
+            'Wavelength': self.wavlen[coords[sort_idx, 0]],
+            'Frequency': self.freqs[coords[sort_idx, 1]],
+            'Magnitude': magnitudes[sort_idx]
+        }
     
     def find_system_wide_peaks(
         self,
@@ -304,12 +289,19 @@ class SGMA:
         top_n: int = 5,
         min_dist: int = 5,
         verbose: bool = True
-    ) -> Tuple[pd.DataFrame, pd.DataFrame]:
+    ) -> Tuple[Dict[str, np.ndarray], Dict[str, np.ndarray]]:
         """
         Extract peaks from SGMA transforms across specified buses.
         
         Pre-computes ``V @ B`` once and reuses it for all buses,
         significantly reducing computation time [1].
+
+        Returns
+        -------
+        tuple of (dict, dict)
+            A tuple containing:
+            - Master peaks: dict with 'Wavelength', 'Frequency', 'Magnitude', 'Bus_ID' (all ndarrays).
+            - Clustered peaks: dict with 'Wavelength', 'Frequency', 'Density' (all ndarrays).
         """
         if bus_indices is None:
             bus_indices = list(range(V.shape[0]))
@@ -320,44 +312,58 @@ class SGMA:
         B = self._build_temporal_matrix(t)
         VB = V @ B  # Computed ONCE, not n_buses times
         
-        all_peaks = []
+        all_w, all_f, all_m, all_b = [], [], [], []
+
         for i, bus_idx in enumerate(bus_indices):
             # Pass pre-computed VB to avoid redundant multiplication
             Y = self.transform(V, t, bus_idx=bus_idx, VB=VB)
             
-            df = self.peaks_from_spectrum(Y, top_n=top_n, min_dist=min_dist)
-            df['Bus_ID'] = bus_idx
-            all_peaks.append(df)
+            p = self.peaks_from_spectrum(Y, top_n=top_n, min_dist=min_dist)
+            if p['Wavelength'].size > 0:
+                all_w.append(p['Wavelength'])
+                all_f.append(p['Frequency'])
+                all_m.append(p['Magnitude'])
+                all_b.append(np.full(p['Wavelength'].shape, bus_idx, dtype=int))
             
             if verbose and (i + 1) % 50 == 0:
                 print(f"  Processed {i + 1}/{n_buses} buses...")
         
-        if not all_peaks:
-            return pd.DataFrame(), pd.DataFrame()
+        if not all_w:
+            return {k: np.array([]) for k in ['Wavelength', 'Frequency', 'Magnitude', 'Bus_ID']}, \
+                   {k: np.array([]) for k in ['Wavelength', 'Frequency', 'Density']}
         
-        master_df = pd.concat(all_peaks, ignore_index=True)
+        master_peaks = {
+            'Wavelength': np.concatenate(all_w),
+            'Frequency': np.concatenate(all_f),
+            'Magnitude': np.concatenate(all_m),
+            'Bus_ID': np.concatenate(all_b)
+        }
         
         # --- Density Clustering ---
-        cluster_df = self._compute_density_clusters(master_df, top_n, min_dist)
+        cluster_peaks = self._compute_density_clusters(master_peaks, top_n, min_dist)
 
-        return master_df, cluster_df
+        return master_peaks, cluster_peaks
 
-    def _compute_density_clusters(self, df: pd.DataFrame, top_n: int, min_dist: int) -> pd.DataFrame:
-        """Helper to compute density-based clusters from peak dataframe."""
-        if df.empty or len(df) < 2:
-            return pd.DataFrame()
+    def _compute_density_clusters(self, peaks_dict: Dict[str, np.ndarray], top_n: int, min_dist: int) -> Dict[str, np.ndarray]:
+        """Helper to compute density-based clusters from peak data."""
+        if peaks_dict['Wavelength'].size < 2:
+            return {k: np.array([]) for k in ['Wavelength', 'Frequency', 'Density']}
 
         try:
-            x, y = np.log10(df['Wavelength']), df['Frequency']
+            x, y = np.log10(peaks_dict['Wavelength']), peaks_dict['Frequency']
             kernel = gaussian_kde(np.vstack([x, y]))
             
             X_grid, Y_grid = np.meshgrid(np.log10(self.wavlen), self.freqs, indexing='ij')
             Z = kernel(np.vstack([X_grid.ravel(), Y_grid.ravel()])).reshape(X_grid.shape)
             
-            cluster_df = self.peaks_from_spectrum(Z, top_n=top_n, min_dist=min_dist)
-            return cluster_df.rename(columns={'Magnitude': 'Density'})
+            cluster_peaks = self.peaks_from_spectrum(Z, top_n=top_n, min_dist=min_dist)
+            
+            # Rename 'Magnitude' to 'Density' for these cluster peaks
+            cluster_peaks['Density'] = cluster_peaks.pop('Magnitude')
+            
+            return cluster_peaks
         except Exception:
-            return pd.DataFrame()
+            return {k: np.array([]) for k in ['Wavelength', 'Frequency', 'Density']}
 
     def close(self):
         """

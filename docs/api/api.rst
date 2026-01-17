@@ -11,7 +11,13 @@ API Reference
 
 .. toctree::
    :maxdepth: 2
-   :caption: Kernels & Functions
+   :caption: Applications
+
+   api_sgma
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Utility
 
    api_util
    api_functions

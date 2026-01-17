@@ -31,10 +31,10 @@ sgma = SGMA(L, s=spatial_scales, freqs=temporal_freqs, time_target=TIME_TARGET, 
 
 V, t = get_signal(FILEPATH, T_RANGE)
 Y_mag    = sgma.transform(V, t, bus_idx=BUS_TARGET)
-peaks_df = sgma.peaks_from_spectrum(Y_mag, top_n=TOP_N)
+peaks = sgma.peaks_from_spectrum(Y_mag, top_n=TOP_N)
 
 fig, ax = plt.subplots(figsize=(7, 5))
 fig.patch.set_facecolor('#2b2b2b') # Dark gray figure bg
 splt.plot_contour(ax, sgma.wavlen, sgma.freqs, Y_mag, cmap='Spectral', levels=15)
-splt.overlay_peaks(ax, peaks_df)
+splt.overlay_peaks(ax, peaks)
 plt.show()

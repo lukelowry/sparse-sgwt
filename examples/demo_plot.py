@@ -68,13 +68,15 @@ def save_figure(fig, folder_path, filename, dpi=300):
     fig.savefig(full_path, dpi=dpi, bbox_inches='tight', facecolor=fig.get_facecolor())
     print(f"Saved: {full_path} (DPI={dpi})")
 
-def overlay_peaks(ax, df):
+def overlay_peaks(ax, peaks):
     """Plots numbered markers with high-contrast outlines."""
-    ax.scatter(df['Wavelength'], df['Frequency'], marker='x', s=120, lw=4, c='black', zorder=15)
-    ax.scatter(df['Wavelength'], df['Frequency'], marker='x', s=120, lw=2, c='white', zorder=16)
+    ax.scatter(peaks['Wavelength'], peaks['Frequency'], marker='x', s=120, lw=4, c='black', zorder=15)
+    ax.scatter(peaks['Wavelength'], peaks['Frequency'], marker='x', s=120, lw=2, c='white', zorder=16)
     
-    for i, row in df.iterrows():
-        txt = ax.annotate(f"{i+1}", (row['Wavelength'], row['Frequency']),
+    n_peaks = peaks['Wavelength'].size
+    for i in range(n_peaks):
+        w, f = peaks['Wavelength'][i], peaks['Frequency'][i]
+        txt = ax.annotate(f"{i+1}", (w, f),
                           xytext=(8, 8), textcoords='offset points', 
                           color='white', fontsize=13, weight='bold', zorder=20)
         txt.set_path_effects([PathEffects.withStroke(linewidth=3, foreground='black')])

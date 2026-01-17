@@ -35,12 +35,8 @@ V, t = get_signal(FILEPATH, T_RANGE)
 
 print(f"\n--- Finding peaks for {N_RANDOM_BUSES} random buses ---")
 subset_bus_indices = np.random.choice(L.shape[0], N_RANDOM_BUSES, replace=False)
-
 subset_peaks, cluster_peaks = sgma.find_system_wide_peaks(V, t, subset_bus_indices, top_n=TOP_N)
 
-if not subset_peaks.empty:
-    print(f"Found {len(subset_peaks)} peaks.")
-    if not cluster_peaks.empty:
-        print("Cluster Peaks:")
-        print(cluster_peaks)
-    splt.plot_peak_heatmap(subset_peaks, sgma.wavlen, sgma.freqs, dpi=600)
+print("Cluster Peaks:")
+print(cluster_peaks)
+splt.plot_peak_heatmap(subset_peaks, sgma.wavlen, sgma.freqs, dpi=600)

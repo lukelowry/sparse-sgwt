@@ -3,7 +3,6 @@
 Tests for Spectral Graph Modal Analysis (SGMA) engine.
 """
 import numpy as np
-import pandas as pd
 import pytest
 
 from sgwt import SGMA
@@ -68,26 +67,26 @@ class TestSGMA:
         np.testing.assert_allclose(Y1, Y2)
 
     def test_peaks_from_spectrum(self, sgma_engine):
-        """Test peak extraction returns DataFrame with correct columns."""
+        """Test peak extraction returns dict with correct keys."""
         # Create a synthetic spectrum with a clear peak
         Y_mag = np.zeros((5, 5))
         Y_mag[2, 2] = 10.0  # Peak at center
         
-        df = sgma_engine.peaks_from_spectrum(Y_mag, top_n=1, min_dist=1)
+        peaks = sgma_engine.peaks_from_spectrum(Y_mag, top_n=1, min_dist=1)
         
-        assert isinstance(df, pd.DataFrame)
-        assert not df.empty
-        assert 'Wavelength' in df.columns
-        assert 'Frequency' in df.columns
-        assert 'Magnitude' in df.columns
+        assert isinstance(peaks, dict)
+        assert peaks['Wavelength'].size > 0
+        assert 'Wavelength' in peaks
+        assert 'Frequency' in peaks
+        assert 'Magnitude' in peaks
         
         # Check peak location
-        assert df.iloc[0]['Magnitude'] == 10.0
-        assert df.iloc[0]['Wavelength'] == sgma_engine.wavlen[2]
-        assert df.iloc[0]['Frequency'] == sgma_engine.freqs[2]
+        assert peaks['Magnitude'][0] == 10.0
+        assert peaks['Wavelength'][0] == sgma_engine.wavlen[2]
+        assert peaks['Frequency'][0] == sgma_engine.freqs[2]
 
     def test_find_system_wide_peaks(self, sgma_engine, random_signal):
-        """Test system-wide peak finding returns two DataFrames."""
+        """Test system-wide peak finding returns two dicts."""
         n_time = random_signal.shape[1]
         t = np.linspace(0, 5, n_time)
         
@@ -98,11 +97,11 @@ class TestSGMA:
             random_signal, t, bus_indices=bus_indices, verbose=False
         )
         
-        assert isinstance(peaks, pd.DataFrame)
-        assert isinstance(clusters, pd.DataFrame)
+        assert isinstance(peaks, dict)
+        assert isinstance(clusters, dict)
         
-        if not peaks.empty:
-            assert 'Bus_ID' in peaks.columns
+        if peaks['Wavelength'].size > 0:
+            assert 'Bus_ID' in peaks
 
     def test_invalid_bus_index_raises(self, sgma_engine, random_signal):
         """Test out of bounds bus index raises ValueError."""
@@ -134,19 +133,18 @@ class TestSGMA:
     def test_peaks_extraction_no_peaks(self, sgma_engine):
         """Test peak extraction when spectrum is flat zero."""
         Y_flat = np.zeros((5, 5))
-        df = sgma_engine.peaks_from_spectrum(Y_flat)
-        assert df.empty
-        assert list(df.columns) == ['Wavelength', 'Frequency', 'Magnitude']
+        peaks = sgma_engine.peaks_from_spectrum(Y_flat)
+        assert peaks['Wavelength'].size == 0
 
     def test_system_wide_peaks_no_signal(self, sgma_engine, random_signal):
-        """Test system wide peaks with zero signal returns empty DFs."""
+        """Test system wide peaks with zero signal returns empty lists."""
         n_time = random_signal.shape[1]
         t = np.linspace(0, 1, n_time)
         V_zero = np.zeros_like(random_signal)
         
         peaks, clusters = sgma_engine.find_system_wide_peaks(V_zero, t, verbose=False)
-        assert peaks.empty
-        assert clusters.empty
+        assert peaks['Wavelength'].size == 0
+        assert clusters['Wavelength'].size == 0
 
     def test_density_clustering_exception_handling(self, sgma_engine, random_signal):
         """Test that exceptions in density clustering are caught and logged."""
@@ -160,5 +158,5 @@ class TestSGMA:
             peaks, clusters = sgma_engine.find_system_wide_peaks(
                 random_signal, t, bus_indices=[0], verbose=True, min_dist=1
             )
-            assert not peaks.empty
-            assert clusters.empty
+            assert peaks['Wavelength'].size > 0
+            assert clusters['Wavelength'].size == 0
