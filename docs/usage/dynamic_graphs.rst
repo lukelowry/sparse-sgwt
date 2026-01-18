@@ -37,8 +37,8 @@ Here is a simple example demonstrating how to initialize the context, update the
 
 In this example, ``Y_after`` will show the impulse signal having propagated from vertex 1200 to vertex 600, which would not have occurred in ``Y_before``.
 
-For a more advanced simulation of a real-time data stream with topology events, see the :doc:`/dynamic/demo_dynamic_stream` example.
+For a more advanced simulation of a real-time data stream with topology events, see the :doc:`/examples/dynamic/demo_dynamic_stream` example.
 
 .. seealso::
-   :doc:`../theory/theory_cholesky`
-      For details on the underlying rank-1 update algorithms.
+   :doc:`../theory/theory_kernel_fitting`
+      For details on the underlying Cholesky-based solver algorithms.

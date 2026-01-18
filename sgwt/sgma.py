@@ -14,7 +14,7 @@ Author: Luke Lowery (lukel@tamu.edu)
 
 """
 import numpy as np
-from typing import Optional, List, Tuple, Dict
+from typing import Optional, List, Tuple, Dict, NamedTuple
 from scipy.stats import gaussian_kde
 
 # Optional dependency for peak finding, with a NumPy/SciPy fallback
@@ -75,6 +75,9 @@ from .functions import gaussian_wavelet
 from .util import impulse
 
 
+NetworkAnalysisResult = NamedTuple('NetworkAnalysisResult', [('peaks', Dict), ('clusters', Dict)])
+
+
 class SGMA:
     """
     Spectral Graph Modal Analysis (SGMA) engine.
@@ -98,15 +101,12 @@ class SGMA:
     ----------
     L : csc_matrix
         The graph Laplacian matrix of shape ``(n_buses, n_buses)``.
-        Must be symmetric positive semi-definite. Branch weights should
-        be squared inverse distances for wavelength interpretation [1].
-    s : array_like
+        Must be symmetric positive semi-definite.
+    scales : array_like
         Spatial scales for the SGWT. Logarithmically spaced values are
         recommended (e.g., ``np.geomspace(1e-3, 1e1, 150)``).
     freqs : array_like
         Temporal frequencies (in Hz) to analyze.
-    time_target : float
-        The time instant (in seconds) to center the temporal wavelet.
     order : int, optional
         Order of the bandpass filter. Default is 10.
 
@@ -117,7 +117,7 @@ class SGMA:
     wavlen : ndarray
         Approximate wavelengths (``sqrt(s)``) for each spatial scale.
     poles : list
-        Poles for DyConvolve, computed as ``1/scale`` [1].
+        Poles for DyConvolve, computed as ``1/scale``.
 
     See Also
     --------
@@ -128,36 +128,35 @@ class SGMA:
     --------
     >>> import numpy as np
     >>> from sgwt import SGMA
+    >>> # L is a sparse graph Laplacian matrix
     >>> scales = np.geomspace(1e-2, 1e1, 50)
     >>> freqs = np.linspace(0.1, 2.0, 60)
-    >>> sgma = SGMA(L, s=scales, freqs=freqs, time_target=5.0)
-    >>> Y_mag = sgma.transform(V, t, bus_idx=0)
-    >>> peaks = sgma.peaks_from_spectrum(Y_mag, top_n=5)
+    >>> sgma = SGMA(L, scales=scales, freqs=freqs)
+    >>> # V is a signal matrix (buses x time), t is a time vector
+    >>> peaks = sgma.analyze(V, t, bus=0, time=5.0, top_n=5)
     >>> sgma.close()  # Release resources when done
     """
 
     def __init__(
         self,
         L,
-        s: np.ndarray,
+        scales: np.ndarray,
         freqs: np.ndarray,
-        time_target: float,
         order: int = 10,
         w0: float = 2 * np.pi
     ):
         self.L = L
-        self.s = np.atleast_1d(s)
+        self.scales = np.atleast_1d(scales)
         self.freqs = np.atleast_1d(freqs)
-        self.time_target = time_target
         self.order = order
         self.w0 = w0
 
         # Derived parameters
         self.Ts = self.w0 / (2 * np.pi * self.freqs)
-        self.wavlen = np.sqrt(self.s)          # Wavelength approximation
+        self.wavlen = np.sqrt(self.scales)     # Wavelength approximation
 
-        # Convert scales to poles for DyConvolve: pole = 1/scale [1]
-        self.poles = [1.0 / scale for scale in self.s]
+        # Convert scales to poles for DyConvolve: pole = 1/scale
+        self.poles = [1.0 / scale for scale in self.scales]
 
         # Cached convolution context (lazy initialization)
         self._conv: Optional[DyConvolve] = None
@@ -165,6 +164,7 @@ class SGMA:
         # Cached temporal matrix
         self._B: Optional[np.ndarray] = None
         self._t_cached: Optional[np.ndarray] = None
+        self._time_target_cached: Optional[float] = None
 
     def _get_conv(self) -> DyConvolve:
         """
@@ -183,7 +183,7 @@ class SGMA:
             self._conv.__enter__()
         return self._conv
 
-    def _build_temporal_matrix(self, t: np.ndarray) -> np.ndarray:
+    def _build_temporal_matrix(self, t: np.ndarray, time_target: float) -> np.ndarray:
         """
         Construct the temporal wavelet matrix R_τ.
 
@@ -195,6 +195,8 @@ class SGMA:
         ----------
         t : ndarray
             Time vector of shape ``(n_time,)``.
+        time_target : float
+            The time instant (in seconds) to center the temporal wavelet.
 
         Returns
         -------
@@ -202,27 +204,31 @@ class SGMA:
             Temporal wavelet matrix of shape ``(n_time, n_freqs)``.
         """
         # Check if we can use cached matrix
-        if self._B is not None and self._t_cached is not None:
-            if len(t) == len(self._t_cached) and np.allclose(t, self._t_cached):
+        if (self._B is not None and self._t_cached is not None and
+                self._time_target_cached is not None):
+            if (len(t) == len(self._t_cached) and np.allclose(t, self._t_cached) and
+                    self._time_target_cached == time_target):
                 return self._B
         
         # Build and cache
         self._B = np.stack([
-            gaussian_wavelet(t, a=sc, b=self.time_target, w0=self.w0)
+            gaussian_wavelet(t, a=sc, b=time_target, w0=self.w0)
             for sc in self.Ts
         ]).T
         self._t_cached = t.copy()
+        self._time_target_cached = time_target
         return self._B
 
-    def transform(
+    def spectrum(
         self,
         V: np.ndarray,
         t: np.ndarray,
-        bus_idx: int,
+        bus: int,
+        time: float,
         VB: Optional[np.ndarray] = None
     ) -> np.ndarray:
         """
-        Compute the SGMA transform magnitude at a specific bus.
+        Compute the SGMA spectrum magnitude at a specific bus and time.
         
         Parameters
         ----------
@@ -230,30 +236,33 @@ class SGMA:
             Voltage signal matrix of shape ``(n_buses, n_time)``.
         t : ndarray
             Time vector of shape ``(n_time,)``.
-        bus_idx : int
-            Bus index for localized analysis (required).
+        bus : int
+            Bus index for localized analysis.
+        time : float
+            The time instant (in seconds) to center the temporal wavelet.
         VB : ndarray, optional
             Pre-computed ``V @ B`` matrix. If provided, skips temporal
-            matrix multiplication for efficiency in batch operations.
+            matrix multiplication. Note: The provided VB must be computed
+            for the given `time`.
         
         Returns
         -------
         ndarray
-            Transform magnitude of shape ``(n_scales, n_freqs)``.
+            Spectrum magnitude of shape ``(n_scales, n_freqs)``.
         """
-        # Validate bus_idx to prevent out-of-bounds errors
+        # Validate bus to prevent out-of-bounds errors
         n_buses = self.L.shape[0]
-        if not (0 <= bus_idx < n_buses):
-            raise ValueError(f"bus_idx {bus_idx} is out of bounds for the graph with {n_buses} nodes.")
+        if not (0 <= bus < n_buses):
+            raise ValueError(f"bus {bus} is out of bounds for the graph with {n_buses} nodes.")
 
         # 1. Temporal Transform - use pre-computed VB if available
         if VB is None:
-            B = self._build_temporal_matrix(t)
+            B = self._build_temporal_matrix(t, time_target=time)
             VB = V @ B
         
         # 2. Spatial Transform using DyConvolve singleton method
         conv = self._get_conv()
-        X_imp = impulse(self.L, n=bus_idx)
+        X_imp = impulse(self.L, n=bus)
         spatial_responses = conv.bandpass(X_imp, order=self.order)
         
         # Build spatial transform matrix A (L_n in formulation)
@@ -264,9 +273,47 @@ class SGMA:
         
         return np.sqrt(np.abs(Y))
 
-    def peaks_from_spectrum(
+    def analyze(
         self,
-        Y: np.ndarray,
+        V: np.ndarray,
+        t: np.ndarray,
+        bus: int,
+        time: float,
+        top_n: int = 5,
+        min_dist: int = 5
+    ) -> Dict[str, np.ndarray]:
+        """
+        Perform a full SGMA analysis for a single bus.
+
+        This is a convenience method that combines computing the spectrum
+        and finding peaks.
+
+        Parameters
+        ----------
+        V : ndarray
+            Signal matrix of shape ``(n_buses, n_time)``.
+        t : ndarray
+            Time vector of shape ``(n_time,)``.
+        bus : int
+            Bus index for localized analysis.
+        time : float
+            The time instant (in seconds) to center the temporal wavelet.
+        top_n : int, optional
+            Maximum peaks to return. Default is 5.
+        min_dist : int, optional
+            Minimum index distance between peaks. Default is 5.
+
+        Returns
+        -------
+        dict
+            Peak information with keys: 'Wavelength', 'Frequency', 'Magnitude'.
+        """
+        Y_mag = self.spectrum(V, t, bus=bus, time=time)
+        return self.find_peaks(Y_mag, top_n=top_n, min_dist=min_dist)
+
+    def find_peaks(
+        self,
+        spectrum: np.ndarray,
         top_n: int = 5,
         min_dist: int = 5
     ) -> Dict[str, np.ndarray]:
@@ -278,8 +325,8 @@ class SGMA:
 
         Parameters
         ----------
-        Y: ndarray
-            Transform magnitude of shape ``(n_scales, n_freqs)``.
+        spectrum: ndarray
+            Spectrum magnitude of shape ``(n_scales, n_freqs)``.
         top_n : int, optional
             Maximum peaks to return. Default is 5.
         min_dist : int, optional
@@ -300,7 +347,7 @@ class SGMA:
         while smaller wavelengths indicate local oscillations [1].
         """
         # Ensure the input is real-valued magnitude for peak detection
-        Y_mag = np.abs(Y)
+        Y_mag = np.abs(spectrum)
 
         # We use exclude_border=False to ensure peaks near the edges of the 
         # spectrum (e.g. high frequency or large scale) are not lost.
@@ -319,44 +366,62 @@ class SGMA:
             'Magnitude': magnitudes[sort_idx]
         }
     
-    def find_system_wide_peaks(
+    def analyze_many(
         self,
         V: np.ndarray,
         t: np.ndarray,
-        bus_indices: Optional[List[int]] = None,
+        time: float,
+        buses: Optional[List[int]] = None,
         top_n: int = 5,
         min_dist: int = 5,
         verbose: bool = True
-    ) -> Tuple[Dict[str, np.ndarray], Dict[str, np.ndarray]]:
+    ) -> NetworkAnalysisResult:
         """
-        Extract peaks from SGMA transforms across specified buses.
+        Extract peaks from SGMA transforms across many specified buses.
         
         Pre-computes ``V @ B`` once and reuses it for all buses,
         significantly reducing computation time [1].
 
+        Parameters
+        ----------
+        V : ndarray
+            Signal matrix of shape ``(n_buses, n_time)``.
+        t : ndarray
+            Time vector of shape ``(n_time,)``.
+        time : float
+            The time instant (in seconds) to center the temporal wavelet.
+        buses : list of int, optional
+            List of bus indices to analyze. If None, all buses are used.
+        top_n : int, optional
+            Maximum peaks to return per bus. Default is 5.
+        min_dist : int, optional
+            Minimum index distance between peaks. Default is 5.
+        verbose : bool, optional
+            If True, prints progress updates. Default is True.
+
         Returns
         -------
-        tuple of (dict, dict)
-            A tuple containing:
-            - Master peaks: dict with 'Wavelength', 'Frequency', 'Magnitude', 'Bus_ID' (all ndarrays).
-            - Clustered peaks: dict with 'Wavelength', 'Frequency', 'Density' (all ndarrays).
+        NetworkAnalysisResult
+            A named tuple containing:
+            - ``peaks``: dict with 'Wavelength', 'Frequency', 'Magnitude', 'Bus_ID'.
+            - ``clusters``: dict with 'Wavelength', 'Frequency', 'Density'.
         """
-        if bus_indices is None:
-            bus_indices = list(range(V.shape[0]))
+        if buses is None:
+            buses = list(range(V.shape[0]))
         
-        n_buses = len(bus_indices)
+        n_buses = len(buses)
         
         # Pre-compute temporal matrix and V @ B (constant across all buses)
-        B = self._build_temporal_matrix(t)
+        B = self._build_temporal_matrix(t, time_target=time)
         VB = V @ B  # Computed ONCE, not n_buses times
         
         all_w, all_f, all_m, all_b = [], [], [], []
 
-        for i, bus_idx in enumerate(bus_indices):
+        for i, bus_idx in enumerate(buses):
             # Pass pre-computed VB to avoid redundant multiplication
-            Y = self.transform(V, t, bus_idx=bus_idx, VB=VB)
+            Y = self.spectrum(V, t, bus=bus_idx, time=time, VB=VB)
             
-            p = self.peaks_from_spectrum(Y, top_n=top_n, min_dist=min_dist)
+            p = self.find_peaks(Y, top_n=top_n, min_dist=min_dist)
             if p['Wavelength'].size > 0:
                 all_w.append(p['Wavelength'])
                 all_f.append(p['Frequency'])
@@ -366,9 +431,11 @@ class SGMA:
             if verbose and (i + 1) % 50 == 0: # pragma: no cover
                 print(f"  Processed {i + 1}/{n_buses} buses...")
         
+        empty_peaks = {k: np.array([]) for k in ['Wavelength', 'Frequency', 'Magnitude', 'Bus_ID']}
+        empty_clusters = {k: np.array([]) for k in ['Wavelength', 'Frequency', 'Density']}
+
         if not all_w:
-            return {k: np.array([]) for k in ['Wavelength', 'Frequency', 'Magnitude', 'Bus_ID']}, \
-                   {k: np.array([]) for k in ['Wavelength', 'Frequency', 'Density']}
+            return NetworkAnalysisResult(peaks=empty_peaks, clusters=empty_clusters)
         
         master_peaks = {
             'Wavelength': np.concatenate(all_w),
@@ -380,7 +447,7 @@ class SGMA:
         # --- Density Clustering ---
         cluster_peaks = self._compute_density_clusters(master_peaks, top_n, min_dist)
 
-        return master_peaks, cluster_peaks
+        return NetworkAnalysisResult(peaks=master_peaks, clusters=cluster_peaks)
 
     def _compute_density_clusters(self, peaks_dict: Dict[str, np.ndarray], top_n: int, min_dist: int) -> Dict[str, np.ndarray]:
         """Helper to compute density-based clusters from peak data."""
@@ -394,7 +461,7 @@ class SGMA:
             X_grid, Y_grid = np.meshgrid(np.log10(self.wavlen), self.freqs, indexing='ij')
             Z = kernel(np.vstack([X_grid.ravel(), Y_grid.ravel()])).reshape(X_grid.shape)
             
-            cluster_peaks = self.peaks_from_spectrum(Z, top_n=top_n, min_dist=min_dist)
+            cluster_peaks = self.find_peaks(Z, top_n=top_n, min_dist=min_dist)
             
             # Rename 'Magnitude' to 'Density' for these cluster peaks
             cluster_peaks['Density'] = cluster_peaks.pop('Magnitude')
@@ -417,6 +484,7 @@ class SGMA:
         # Clear cached matrices
         self._B = None
         self._t_cached = None
+        self._time_target_cached = None
 
     def __del__(self):
         """Cleanup on garbage collection."""

@@ -18,12 +18,11 @@ class TestSGMA:
     def sgma_engine(self, small_laplacian):
         """Fixture to create an SGMA instance with small graph."""
         # Define scales and frequencies
-        s = np.geomspace(0.1, 10.0, 5)
+        scales = np.geomspace(0.1, 10.0, 5)
         freqs = np.linspace(0.1, 1.0, 5)
-        time_target = 2.5
 
         # Initialize SGMA
-        engine = SGMA(small_laplacian, s=s, freqs=freqs, time_target=time_target)
+        engine = SGMA(small_laplacian, scales=scales, freqs=freqs)
         yield engine
         # Cleanup with error handling
         try:
@@ -35,49 +34,51 @@ class TestSGMA:
 
     def test_initialization(self, sgma_engine):
         """Test that SGMA initializes derived attributes correctly."""
-        assert len(sgma_engine.s) == 5
+        assert len(sgma_engine.scales) == 5
         assert len(sgma_engine.freqs) == 5
         assert len(sgma_engine.Ts) == 5
         assert len(sgma_engine.wavlen) == 5
         assert len(sgma_engine.poles) == 5
         assert sgma_engine._conv is None  # Lazy loading
 
-    def test_transform_output_shape(self, sgma_engine, random_signal):
-        """Test transform returns correct shape (n_scales, n_freqs)."""
+    def test_spectrum_output_shape(self, sgma_engine, random_signal):
+        """Test spectrum returns correct shape (n_scales, n_freqs)."""
         # random_signal is (n_nodes, 5) from conftest
         # We need a time vector matching the signal columns
         n_time = random_signal.shape[1]
         t = np.linspace(0, 5, n_time)
+        time_target = 2.5
         
-        # Transform at bus 0
-        Y_mag = sgma_engine.transform(random_signal, t, bus_idx=0)
+        # Spectrum at bus 0
+        Y_mag = sgma_engine.spectrum(random_signal, t, bus=0, time=time_target)
         
-        expected_shape = (len(sgma_engine.s), len(sgma_engine.freqs))
+        expected_shape = (len(sgma_engine.scales), len(sgma_engine.freqs))
         assert Y_mag.shape == expected_shape
         assert np.all(Y_mag >= 0)  # Magnitude should be non-negative
 
-    def test_transform_with_precomputed_vb(self, sgma_engine, random_signal):
-        """Test transform with pre-computed VB matches direct transform."""
+    def test_spectrum_with_precomputed_vb(self, sgma_engine, random_signal):
+        """Test spectrum with pre-computed VB matches direct spectrum."""
         n_time = random_signal.shape[1]
         t = np.linspace(0, 5, n_time)
+        time_target = 2.5
         
         # Direct
-        Y1 = sgma_engine.transform(random_signal, t, bus_idx=0)
+        Y1 = sgma_engine.spectrum(random_signal, t, bus=0, time=time_target)
         
         # Pre-computed
-        B = sgma_engine._build_temporal_matrix(t)
+        B = sgma_engine._build_temporal_matrix(t, time_target=time_target)
         VB = random_signal @ B
-        Y2 = sgma_engine.transform(random_signal, t, bus_idx=0, VB=VB)
+        Y2 = sgma_engine.spectrum(random_signal, t, bus=0, time=time_target, VB=VB)
         
         np.testing.assert_allclose(Y1, Y2)
 
-    def test_peaks_from_spectrum(self, sgma_engine):
+    def test_find_peaks(self, sgma_engine):
         """Test peak extraction returns dict with correct keys."""
         # Create a synthetic spectrum with a clear peak
         Y_mag = np.zeros((5, 5))
         Y_mag[2, 2] = 10.0  # Peak at center
 
-        peaks = sgma_engine.peaks_from_spectrum(Y_mag, top_n=1, min_dist=1)
+        peaks = sgma_engine.find_peaks(Y_mag, top_n=1, min_dist=1)
 
         assert isinstance(peaks, dict)
         # Should find at least 1 peak
@@ -91,96 +92,129 @@ class TestSGMA:
         assert peaks['Wavelength'][0] == sgma_engine.wavlen[2]
         assert peaks['Frequency'][0] == sgma_engine.freqs[2]
 
-    def test_find_system_wide_peaks(self, sgma_engine, random_signal):
+    def test_analyze_convenience_method(self, sgma_engine, random_signal):
+        """Test that analyze() is equivalent to spectrum() -> find_peaks()."""
+        n_time = random_signal.shape[1]
+        t = np.linspace(0, 5, n_time)
+        time_target = 2.5
+        bus_idx = 0
+        top_n = 3
+
+        # Manual two-step process
+        spectrum_manual = sgma_engine.spectrum(random_signal, t, bus=bus_idx, time=time_target)
+        peaks_manual = sgma_engine.find_peaks(spectrum_manual, top_n=top_n)
+
+        # Using the analyze() convenience method
+        peaks_analyze = sgma_engine.analyze(random_signal, t, bus=bus_idx, time=time_target, top_n=top_n)
+
+        # The results should be identical
+        assert isinstance(peaks_analyze, dict)
+        assert peaks_analyze.keys() == peaks_manual.keys()
+        for key in peaks_manual:
+            np.testing.assert_array_equal(peaks_analyze[key], peaks_manual[key])
+
+    def test_analyze_many(self, sgma_engine, random_signal):
         """Test system-wide peak finding returns two dicts with density clusters."""
         n_time = random_signal.shape[1]
         t = np.linspace(0, 5, n_time)
+        time_target = 2.5
 
         # Use all buses to ensure enough peaks for density clustering
         bus_indices = list(range(random_signal.shape[0]))
 
-        peaks, clusters = sgma_engine.find_system_wide_peaks(
-            random_signal, t, bus_indices=bus_indices, verbose=False, min_dist=1
+        result = sgma_engine.analyze_many(
+            random_signal, t, time=time_target, buses=bus_indices, verbose=False, min_dist=1
         )
 
-        assert isinstance(peaks, dict)
-        assert isinstance(clusters, dict)
-        assert 'Bus_ID' in peaks
+        assert hasattr(result, 'peaks')
+        assert hasattr(result, 'clusters')
+        assert isinstance(result.peaks, dict)
+        assert isinstance(result.clusters, dict)
+        assert 'Bus_ID' in result.peaks
 
         # Verify density clustering produced results (covers success path)
-        if peaks['Wavelength'].size >= 2:
-            assert 'Density' in clusters
+        if result.peaks['Wavelength'].size >= 2:
+            assert 'Density' in result.clusters
 
     def test_invalid_bus_index_raises(self, sgma_engine, random_signal):
         """Test out of bounds bus index raises ValueError."""
         n_time = random_signal.shape[1]
         t = np.linspace(0, 5, n_time)
         n_buses = random_signal.shape[0]
+        time_target = 2.5
         
         with pytest.raises(ValueError):
-            sgma_engine.transform(random_signal, t, bus_idx=n_buses + 1)
+            sgma_engine.spectrum(random_signal, t, bus=n_buses + 1, time=time_target)
 
     def test_caching_temporal_matrix(self, sgma_engine, random_signal):
         """Test that temporal matrix B is cached and reused."""
         n_time = random_signal.shape[1]
         t = np.linspace(0, 1, n_time)
+        time1 = 2.0
+        time2 = 3.0
 
         # Verify initial state: no cache
         assert sgma_engine._B is None, "Cache should be empty initially"
         assert sgma_engine._t_cached is None, "Cached time vector should be None initially"
+        assert sgma_engine._time_target_cached is None
 
         # First call builds cache
-        B1 = sgma_engine._build_temporal_matrix(t)
+        B1 = sgma_engine._build_temporal_matrix(t, time_target=time1)
         assert sgma_engine._B is not None, "Cache should be populated after first call"
         assert sgma_engine._t_cached is not None, "Time vector should be cached"
+        assert sgma_engine._time_target_cached is not None
 
-        # Second call with same t should return same object (cache hit)
-        B2 = sgma_engine._build_temporal_matrix(t)
+        # Second call with same t and time should return same object (cache hit)
+        B2 = sgma_engine._build_temporal_matrix(t, time_target=time1)
         assert B1 is B2, "Should return cached matrix for same time vector"
         assert sgma_engine._B is B1, "Internal cache should still hold same matrix"
 
         # Call with different t should rebuild (cache invalidation)
         t_new = np.linspace(0, 2, n_time)
-        B3 = sgma_engine._build_temporal_matrix(t_new)
+        B3 = sgma_engine._build_temporal_matrix(t_new, time_target=time1)
         assert B3 is not B1, "Should create new matrix for different time vector"
         assert sgma_engine._B is B3, "Cache should be updated to new matrix"
-        # Verify old cache was released (testing memory efficiency indirectly)
-        assert not np.array_equal(sgma_engine._t_cached, t), \
-            "Cached time vector should be updated"
 
-    def test_peaks_extraction_no_peaks(self, sgma_engine):
+        # Call with different time should rebuild
+        B4 = sgma_engine._build_temporal_matrix(t, time_target=time2)
+        assert B4 is not B1, "Should create new matrix for different time target"
+        assert sgma_engine._time_target_cached == time2
+
+    def test_find_peaks_no_peaks(self, sgma_engine):
         """Test peak extraction when spectrum is flat zero."""
         Y_flat = np.zeros((5, 5))
-        peaks = sgma_engine.peaks_from_spectrum(Y_flat)
+        peaks = sgma_engine.find_peaks(Y_flat)
         assert peaks['Wavelength'].size == 0
 
-    def test_system_wide_peaks_no_signal(self, sgma_engine, random_signal):
+    def test_analyze_many_no_signal(self, sgma_engine, random_signal):
         """Test system wide peaks with zero signal returns empty lists."""
         n_time = random_signal.shape[1]
         t = np.linspace(0, 1, n_time)
+        time_target = 2.5
         V_zero = np.zeros_like(random_signal)
         
-        peaks, clusters = sgma_engine.find_system_wide_peaks(V_zero, t, verbose=False)
-        assert peaks['Wavelength'].size == 0
-        assert clusters['Wavelength'].size == 0
+        result = sgma_engine.analyze_many(V_zero, t, time=time_target, verbose=False)
+        assert result.peaks['Wavelength'].size == 0
+        assert result.clusters['Wavelength'].size == 0
 
     def test_density_clustering_exception_handling(self, sgma_engine, random_signal):
         """Test that exceptions in density clustering are caught and logged."""
         from unittest.mock import patch
         n_time = random_signal.shape[1]
         t = np.linspace(0, 1, n_time)
+        time_target = 2.5
 
         # Mock gaussian_kde to raise exception
         with patch('sgwt.sgma.gaussian_kde', side_effect=ValueError("KDE Failed")):
             # We need peaks to be found to reach the clustering step
-            peaks, clusters = sgma_engine.find_system_wide_peaks(
-                random_signal, t, bus_indices=[0], verbose=True, min_dist=1
+            result = sgma_engine.analyze_many(
+                random_signal, t, time=time_target, buses=[0], verbose=True, min_dist=1
             )
             # Peaks should still be found despite clustering failure
-            assert peaks['Wavelength'].size > 0, \
+            assert result.peaks['Wavelength'].size > 0, \
                 "Peaks should be found even when clustering fails"
             # Clusters should be empty due to exception
-            assert clusters['Wavelength'].size == 0, \
+            assert result.clusters['Wavelength'].size == 0, \
                 "Clusters should be empty when KDE raises exception"
 
     def test_density_clustering_insufficient_peaks(self, sgma_engine):
@@ -221,14 +255,13 @@ class TestSGMA:
         freqs_test = np.linspace(0.1, 2.0, 10)
         reloaded_engine = sgwt.sgma.SGMA(
             L=small_laplacian,
-            s=s_test,
-            freqs=freqs_test,
-            time_target=sgma_engine.time_target
+            scales=s_test,
+            freqs=freqs_test
         )
 
         try:
             # With min_dist=2, the peak at (2,3) should be suppressed by (2,2)
-            peaks = reloaded_engine.peaks_from_spectrum(Y_mag, top_n=2, min_dist=2)
+            peaks = reloaded_engine.find_peaks(Y_mag, top_n=2, min_dist=2)
             assert len(peaks['Magnitude']) == 2
             np.testing.assert_allclose(peaks['Magnitude'], [10.0, 8.0])
         finally:

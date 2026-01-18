@@ -87,7 +87,7 @@ Depending on the physical phenomenon being analyzed, different weighting schemes
     .. math::
        w_{ij} = \frac{1}{\tau_{ij}^2}
        
-    Used for **wave propagation** analysis or dynamics. The determineation for the value of $\tau$ in the previous section has proven practical for very large synthetic cases and results in a well-behaved network that outperformed other branch metric in SGWT applications like modal analysis and FOSL.
+    Used for **wave propagation** analysis or dynamics. The determination for the value of :math:`\tau` in the previous section has proven practical for very large synthetic cases and results in a well-behaved network that outperformed other branch metrics in SGWT applications like modal analysis and FOSL.
 
 **Reciprocal Squared Distance:**
     

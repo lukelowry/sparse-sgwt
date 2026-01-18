@@ -53,7 +53,7 @@ The library includes several pre-computed kernels. You can use them by passing t
         # Apply the custom kernel
         Y = conv.convolve(X, K)
 
-This powerful feature allows you to implement specialized filters, such as the Modified Morlet wavelet used in the :doc:`/static/demo_vf` example.
+This powerful feature allows you to implement specialized filters, such as the Modified Morlet wavelet used in the :doc:`/examples/static/demo_vf` example.
 
 .. seealso::
    :doc:`../theory/theory_kernel_fitting`

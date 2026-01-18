@@ -63,7 +63,7 @@ source_suffix = ".rst"
 master_doc = "index"
 
 project = "Sparse SGWT"
-copyright = "2024, Luke Lowery"
+copyright = "2025, Luke Lowery"
 author = "Luke Lowery"
 version = importlib_metadata.version("sgwt")
 release = version
