@@ -1,12 +1,14 @@
-Welcome to Project Documentation
-================================
+Overview
+========
+
+.. include:: ../README.rst
+   :start-after: ====================================
 
 .. toctree::
    :hidden:
    :maxdepth: 2
    :caption: Contents
-   
-   overview
+
    usage/index
    theory/index
    examples/index

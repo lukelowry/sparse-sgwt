@@ -1,4 +1,4 @@
-SGMA Analysis
+Spectral Graph Modal Analysis
 =======================
 
 This section provides examples demonstrating the use of Spectral Graph Modal Analysis (SGMA) for joint spatial-temporal wavelet transforms.
