@@ -1,8 +1,8 @@
+.. include:: ../README.rst
+
 Overview
 ========
 
-.. include:: ../README.rst
-   :start-after: ====================================
 
 .. toctree::
    :maxdepth: 2
