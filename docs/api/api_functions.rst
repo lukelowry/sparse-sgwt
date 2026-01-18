@@ -31,3 +31,8 @@ Band-Pass
    \psi_s(\lambda) = \frac{4s\lambda}{(s\lambda+1)^2}
 
 .. autofunction:: sgwt.functions.bandpass
+
+Gaussian Wavelet
+---------
+
+.. autofunction:: sgwt.functions.gaussian_wavelet

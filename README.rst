@@ -47,32 +47,23 @@ This command will also install the necessary dependencies (e.g., NumPy, SciPy).
 Basic Example
 -------------
 
-Here is a quick example of applying a band-pass filter to an impulse signal on the built-in synthetic Texas grid Laplacian.
+Here is a quick example using a band-pass filter to an impulse signal on the synthetic Texas grid to get the wavelet function at three different scales.
+
 
 .. code-block:: python
 
     import sgwt
 
-    # 1. Load a built-in graph Laplacian, which defines the graph's topology.
+    # Graph Laplacian
     L = sgwt.DELAY_TEXAS
 
-    # 2. Create a vertex-domain signal. Here, a Dirac impulse on the 600th vertex.
-    #    The `impulse` helper function ensures the required column-major memory order.
-    signal = sgwt.impulse(L, n=600)
+    # Impulse at 600th Vertex
+    X = sgwt.impulse(L, n=600)
 
-    # 3. Use the static convolution context manager. This performs a one-time
-    #    symbolic factorization of the Laplacian for efficient repeated solves.
     with sgwt.Convolve(L) as conv:
-        # 4. Apply an analytical band-pass filter. The scale parameter controls
-        #    the filter's center frequency.
-        filtered_signals = conv.bandpass(signal, scales=[10.0])
-
-    # 5. The result is a list of filtered signals, one for each input scale.
-    result = filtered_signals[0]
-
-    print(f"Graph has {L.shape[0]} vertices.")
-    print(f"Signal on vertex 600, shape: {signal.shape}")
-    print(f"Filtered signal shape: {result.shape}")
+        
+        # Wavelet at 3 scales
+        Y = conv.bandpass(X, scales=[0.1, 1, 10])
 
 
 The `examples/ <https://github.com/lukelowry/sgwt/tree/main/examples>`_ directory contains a comprehensive suite of demonstrations, also rendered in the `Examples <https://sgwt.readthedocs.io/en/stable/examples/static.html>`_ section of the documentation. Key applications include:

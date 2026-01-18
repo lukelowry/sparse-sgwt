@@ -11,3 +11,4 @@ Sparse SGWT Documentation
    library/index
    api/index
    dev/index
+   glossary

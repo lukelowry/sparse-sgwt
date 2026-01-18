@@ -64,19 +64,33 @@ def _process_signal(func, B: np.ndarray, *args, **kwargs) -> Union[List[np.ndarr
     return func(B, *args, **kwargs)
 
 class Convolve:
+    """
+    Static graph convolution context using CHOLMOD.
+
+    Designed for high-performance GSP operations on graphs with constant
+    topology. Manages CHOLMOD symbolic and numeric factorizations internally.
+
+    Parameters
+    ----------
+    L : csc_matrix
+        Sparse Graph Laplacian of shape ``(n_vertices, n_vertices)``.
+
+    See Also
+    --------
+    DyConvolve : For graphs with evolving topologies.
+
+    Examples
+    --------
+    >>> from sgwt import Convolve, LAPLACIAN_TEXAS_DELAY
+    >>> import numpy as np
+    >>> L = LAPLACIAN_TEXAS_DELAY
+    >>> signal = np.random.randn(L.shape[0], 100)
+    >>> with Convolve(L) as conv:
+    ...     lp = conv.lowpass(signal, scales=[0.1, 1.0, 10.0])
+    ...     bp = conv.bandpass(signal, scales=[1.0])
+    """
 
     def __init__(self, L:csc_matrix) -> None:
-        """
-        Initializes a static convolution context.
-        
-        Designed for high-performance GSP operations on graphs with constant topology.
-        Manages CHOLMOD symbolic and numeric factorizations.
-
-        Parameters
-        ----------
-        L : csc_matrix
-            Sparse Graph Laplacian.
-        """
 
         # Store number of vertices
         self.n_vertices = L.shape[0]
@@ -385,21 +399,39 @@ class Convolve:
 
 
 class DyConvolve:
+    """
+    Dynamic graph convolution context with efficient topology updates.
+
+    Optimized for graphs with evolving topologies where poles/scales remain
+    constant. Pre-factors all shifted systems ``(L + qI)`` at initialization,
+    then uses CHOLMOD's updown routines for efficient rank-1 updates when
+    edges are added or removed.
+
+    Parameters
+    ----------
+    L : csc_matrix
+        Sparse Graph Laplacian of shape ``(n_vertices, n_vertices)``.
+    poles : list[float] | VFKernel
+        Predetermined set of poles (equivalent to 1/scale for analytical filters).
+
+    See Also
+    --------
+    Convolve : For graphs with constant topology.
+
+    Examples
+    --------
+    >>> from sgwt import DyConvolve, LAPLACIAN_TEXAS_DELAY
+    >>> import numpy as np
+    >>> L = LAPLACIAN_TEXAS_DELAY
+    >>> signal = np.random.randn(L.shape[0], 100)
+    >>> poles = [0.1, 1.0, 10.0]  # Pre-factor these shifted systems
+    >>> with DyConvolve(L, poles) as dconv:
+    ...     coeffs = dconv.lowpass(signal)
+    ...     dconv.addbranch(i=5, j=10, w=0.5)  # Topology change
+    ...     coeffs_new = dconv.lowpass(signal)
+    """
 
     def __init__(self, L:csc_matrix, poles: Union[List[float], VFKernel]) -> None:
-        """
-        Initializes a dynamic convolution context.
-        
-        Optimized for graphs with evolving topologies where poles/scales remain constant.
-        Uses CHOLMOD's updown routines for efficient rank-1 updates.
-
-        Parameters 
-        ----------
-        L : csc_matrix
-            Sparse Graph Laplacian.
-        poles : list[float] | VFKernel
-            Predetermined set of poles (equivalent to 1/scale for analytical filters).
-        """
 
         # Store number of vertices
         self.n_vertices = L.shape[0]
