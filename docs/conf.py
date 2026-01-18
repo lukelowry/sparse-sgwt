@@ -58,7 +58,7 @@ napoleon_type_aliases = {
 }
 
 
-exclude_patterns = ["_build", "index_for_pdf.rst"]
+exclude_patterns = ["_build"]
 source_suffix = ".rst"
 master_doc = "index"
 
