@@ -1,34 +1,24 @@
 .. _demo_sgma_2:
 
-System-Wide Peak Detection
-=============================
+Modal Analysis on a Bus Subset
+==============================
 
-Demonstrates system-wide peak detection across multiple buses to identify common oscillatory modes throughout the network.
+Demonstrates using ``analyze_many()`` to efficiently identify oscillatory modes across a subset of buses.
 
 This example shows how to:
 
-- Analyze SGMA transforms across a subset of randomly selected buses
-- Identify common peaks using clustering algorithms
-- Visualize the density of detected modes in the wavelength-frequency plane
+- Analyze a random subset of buses to get a representative view of network-wide modes.
+- Use the ``analyze_many()`` method for efficient batch processing.
+- Visualize the combined peaks from all analyzed buses on a heatmap.
 
 .. literalinclude:: ../../../examples/demo_sgma_2.py
    :language: python
    :start-after: # DOC_START_CODE_EXCLUDE_IMPORTS
    :end-before: # DOC_END_CODE_EXCLUDE_PLOT
-   :caption: System-Wide Peak Detection
+   :caption: Analysis on a Subset of Buses
 
 .. image:: /_static/images/demo_sgma_2.png
    :alt: Peak Density Heatmap Across Multiple Buses
    :align: center
 
-**Key Features:**
-
-- ``find_system_wide_peaks()``: Efficiently computes transforms across multiple buses by pre-computing the temporal wavelet matrix
-- ``cluster_peaks``: Identifies dominant modes that appear consistently across the system
-- ``subset_bus_indices``: Random sampling allows scalable analysis on large networks
-
-The resulting peak heatmap shows the distribution of detected modes across all analyzed buses, revealing system-wide oscillatory patterns.
-
-**Performance Note:**
-
-The method pre-computes ``V @ B`` once and reuses it for all buses, significantly reducing computation time compared to individual transforms.
+The ``analyze_many()`` method is highly efficient because it computes the temporal transform ``V @ B`` only once and reuses it for each bus. The resulting heatmap shows all detected peaks, providing a picture of the dominant modes present in the selected subset of the network.

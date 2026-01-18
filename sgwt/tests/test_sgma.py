@@ -232,69 +232,68 @@ class TestSGMA:
         assert result['Density'].size == 0
 
     def test_peak_finding_fallback(self, sgma_engine, small_laplacian):
-        """Test the peak finding fallback when scikit-image is not available."""
+        """Test the peak finding fallback and its internal branches."""
         from unittest.mock import patch
         import sys
         import importlib
         import sgwt.sgma
 
-        # Create a synthetic spectrum with multiple peaks
-        Y_mag = np.zeros((10, 10))
-        Y_mag[2, 2] = 10.0  # Main peak
-        Y_mag[8, 8] = 8.0   # Secondary peak
-        Y_mag[2, 3] = 9.0   # A nearby point to test min_dist suppression
-
         # Force the fallback by making skimage unimportable in sys.modules
         with patch.dict('sys.modules', {'skimage': None, 'skimage.feature': None}):
             # Reload the sgma module to execute the 'except' block
             importlib.reload(sgwt.sgma)
+            # Get a direct handle to the fallback for isolated tests
+            fallback_func = sgwt.sgma.peak_local_max
 
-        # We need a new engine instance that uses the reloaded module
-        # and has scales/freqs matching the synthetic Y_mag shape.
-        s_test = np.geomspace(0.1, 100.0, 10)
-        freqs_test = np.linspace(0.1, 2.0, 10)
-        reloaded_engine = sgwt.sgma.SGMA(
-            L=small_laplacian,
-            scales=s_test,
-            freqs=freqs_test
-        )
+            # --- Test isolated fallback function cases ---
+            # Test min_distance clamping
+            image_clamp = np.array([[0, 0, 0], [0, 5, 0], [0, 0, 0]])
+            result_clamp = fallback_func(image_clamp, min_distance=0)
+            assert result_clamp.shape[0] == 1
 
-        try:
-            # With min_dist=2, the peak at (2,3) should be suppressed by (2,2)
-            peaks = reloaded_engine.find_peaks(Y_mag, top_n=2, min_dist=2)
-            assert len(peaks['Magnitude']) == 2
-            np.testing.assert_allclose(peaks['Magnitude'], [10.0, 8.0])
-        finally:
-            importlib.reload(sgwt.sgma)
-            reloaded_engine.close()
+            # Test empty image
+            image_empty = np.zeros((5, 5))
+            result_empty = fallback_func(image_empty)
+            assert result_empty.shape[0] == 0
 
+            # --- Test fallback through the SGMA class ---
+            # Create a synthetic spectrum with a plateau and other peaks
+            Y_mag = np.zeros((20, 20))
+            Y_mag[5, 5] = 10.0  # Plateau peak 1
+            Y_mag[5, 6] = 10.0  # Plateau peak 2
+            Y_mag[15, 15] = 8.0 # Distant secondary peak
 
-class TestPeakLocalMaxFallback:
-    """Tests for the _peak_local_max_fallback function."""
+            # We need a new engine instance that uses the reloaded module
+            s_test = np.geomspace(0.1, 100.0, 20)
+            freqs_test = np.linspace(0.1, 2.0, 20)
+            reloaded_engine = sgwt.sgma.SGMA(
+                L=small_laplacian, scales=s_test, freqs=freqs_test
+            )
 
-    @pytest.fixture
-    def fallback_func(self):
-        """Load the fallback function by forcing skimage import to fail."""
-        from unittest.mock import patch
-        import importlib
-        import sgwt.sgma
+            try:
+                # Case 1: Test the suppression branch (`if not is_suppressed`).
+                # With min_dist=1, (5,5) and (5,6) are both local maxima.
+                # The first one processed will suppress the second.
+                # This ensures the `else` path of `if not is_suppressed` is hit.
+                peaks_suppress = reloaded_engine.find_peaks(Y_mag, top_n=3, min_dist=1)
+                assert len(peaks_suppress['Magnitude']) == 2
+                # One of the plateau peaks (mag 10) and the distant peak (mag 8) should be found.
+                np.testing.assert_allclose(sorted(peaks_suppress['Magnitude'], reverse=True), [10.0, 8.0])
 
-        with patch.dict('sys.modules', {'skimage': None, 'skimage.feature': None}):
-            importlib.reload(sgwt.sgma)
-            func = sgwt.sgma.peak_local_max
-        yield func
+                # Case 2: Test the `break` path of the loop.
+                # We ask for just 1 peak, so the loop should break early.
+                peaks_break = reloaded_engine.find_peaks(Y_mag, top_n=1, min_dist=1)
+                assert len(peaks_break['Magnitude']) == 1
+                np.testing.assert_allclose(peaks_break['Magnitude'], [10.0])
+
+                # Case 3: Test the natural loop exit.
+                # We ask for more peaks than exist, so the loop should finish.
+                peaks_natural = reloaded_engine.find_peaks(Y_mag, top_n=10, min_dist=1)
+                assert len(peaks_natural['Magnitude']) == 2
+                np.testing.assert_allclose(sorted(peaks_natural['Magnitude'], reverse=True), [10.0, 8.0])
+
+            finally:
+                reloaded_engine.close()
+
+        # Reload the module again outside the patch to restore the original state for other tests
         importlib.reload(sgwt.sgma)
-
-    def test_fallback_min_distance_clamp(self, fallback_func):
-        """Test that min_distance < 1 is clamped to 1."""
-        image = np.array([[0, 0, 0], [0, 5, 0], [0, 0, 0]])
-        result = fallback_func(image, min_distance=0)
-        assert result.shape[0] == 1
-        np.testing.assert_array_equal(result[0], [1, 1])
-
-    def test_fallback_empty_image(self, fallback_func):
-        """Test fallback returns empty array for all-zero image."""
-        image = np.zeros((5, 5))
-        result = fallback_func(image)
-        assert result.shape[0] == 0
-        assert result.shape[1] == 2

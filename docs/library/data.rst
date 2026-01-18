@@ -110,3 +110,24 @@ The following table summarizes the available built-in datasets.
      - Yes
      - Yes
      - No
+
+.. _mesh_laplacians:
+
+Mesh Laplacians
+---------------
+
+These Laplacians are derived from 3D mesh models. The original datasets can be
+found at the `Laplacian Library <https://github.com/lukelowry/laplib>`_.
+
+.. list-table::
+   :header-rows: 1
+
+   * - Name
+     - Vertices
+     - Edges
+   * - ``MESH_BUNNY``
+     - 35947
+     - 104288
+   * - ``MESH_HORSE``
+     - 48485
+     - 145449

@@ -1,15 +1,15 @@
 .. _demo_sgma_3:
 
 Full Network Analysis
-========================
+=====================
 
-Demonstrates SGMA analysis across all buses in the network to create a comprehensive modal identification map.
+Demonstrates using ``analyze_many()`` to perform a comprehensive modal analysis across all buses in a network.
 
 This example shows how to:
 
-- Compute SGMA transforms for every bus in the network
-- Identify system-wide oscillatory modes
-- Generate density plots showing modal participation across the entire system
+- Use ``analyze_many()`` to compute modes for every bus in the network.
+- Generate a peak density heatmap to visualize system-wide modal patterns.
+- Interpret the resulting wavelength-frequency plot.
 
 .. literalinclude:: ../../../examples/demo_sgma_3.py
    :language: python
@@ -21,21 +21,7 @@ This example shows how to:
    :alt: Complete Network Modal Density Map
    :align: center
 
-**Analysis Workflow:**
+By calling ``analyze_many()`` without the ``buses`` argument, the analysis runs on all buses in the graph. The resulting heatmap visualizes the density of all detected peaks. Hotspots on the map indicate dominant modes that are present across many buses in the system.
 
-1. Load voltage magnitude signals (``np.abs(V)``) from the network
-2. Initialize SGMA with appropriate spatial and temporal resolution
-3. Compute transforms across all buses using ``find_system_wide_peaks()``
-4. Generate peak density heatmaps for visualization
-
-**Interpreting Results:**
-
-- **Wavelength axis**: Larger wavelengths correspond to inter-area oscillation modes spanning the continent
-- **Frequency axis**: Identifies the temporal oscillation frequency (Hz)
-- **Density/Magnitude**: Indicates how many buses exhibit each mode
-
-This comprehensive analysis reveals the complete modal structure of the power system, enabling identification of both local and inter-area oscillations.
-
-**Computational Considerations:**
-
-For very large networks (>80k buses), consider using a representative subset of buses rather than analyzing all buses to reduce computation time.
+- **Wavelength (y-axis)**: Larger wavelengths correspond to wide-area inter-area modes, while smaller wavelengths indicate local modes.
+- **Frequency (x-axis)**: Identifies the temporal frequency of the oscillation in Hz.

@@ -331,6 +331,7 @@ def _json_kern_loader(path: str) -> Dict[str, Any]:
 def _lap(k: str, r: str) -> csc_matrix: return _load_resource(f"library/{k}/{r}_{k}.mat", lambda p: _mat_loader(p, to_csc=True)) # type: ignore
 def _sig(k: str, r: str) -> np.ndarray: return _load_resource(f"library/SIGNALS/{r}_{k}.mat", _mat_loader) # type: ignore
 def _kern(n: str) -> Dict[str, Any]:   return _load_resource(f"library/KERNELS/{n}.json", _json_kern_loader)
+def _mesh_lap(n: str) -> csc_matrix: return _load_resource(f"library/MESH/{n}.mat", lambda p: _mat_loader(p, to_csc=True)) # type: ignore
 
 # Lazy loading registry
 _LAZY_REGISTRY = {
@@ -358,6 +359,10 @@ _LAZY_REGISTRY = {
     "LENGTH_TEXAS":    lambda: _lap("LENGTH", "TEXAS"),
     "LENGTH_USA":      lambda: _lap("LENGTH", "USA"),
     "LENGTH_WECC":     lambda: _lap("LENGTH", "WECC"),
+
+    # Mesh Laplacians
+    "MESH_BUNNY":      lambda: _mesh_lap("BUNNY"),
+    "MESH_HORSE":      lambda: _mesh_lap("HORSE"),
 
     # Signals
     "COORD_EASTWEST":  lambda: _sig("COORDS", "EASTWEST"),

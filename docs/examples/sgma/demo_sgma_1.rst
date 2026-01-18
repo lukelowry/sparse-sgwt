@@ -1,15 +1,15 @@
 .. _demo_sgma_1:
 
-Single Bus SGMA Transform
-============================
+Local Mode Identification
+=========================
 
-Demonstrates computing the SGMA transform at a single bus location to identify dominant oscillatory modes in the wavenumber-frequency domain.
+Demonstrates computing the SGMA spectrum at a single bus to identify dominant oscillatory modes in the wavelength-frequency domain.
 
 This example shows how to:
 
-- Initialize the SGMA engine with spatial scales and temporal frequencies
-- Compute the joint spatial-temporal wavelet transform for a specific bus
-- Extract and visualize dominant peaks in the transform spectrum
+- Initialize the ``SGMA`` engine with spatial scales and temporal frequencies.
+- Compute the spectrum for a specific bus and time using ``sgma.spectrum()``.
+- Extract and visualize dominant peaks using ``sgma.find_peaks()``.
 
 .. literalinclude:: ../../../examples/demo_sgma_1.py
    :language: python
@@ -18,15 +18,7 @@ This example shows how to:
    :caption: Single Bus SGMA Analysis
 
 .. image:: /_static/images/demo_sgma_1.png
-   :alt: SGMA Transform Spectrum at Single Bus
+   :alt: SGMA Spectrum at a Single Bus
    :align: center
 
-**Key Parameters:**
-
-- ``spatial_scales``: Logarithmically spaced values covering the range of expected wavelengths
-- ``temporal_freqs``: Frequency range of interest (e.g., 0.02-2.0 Hz for power system oscillations)
-- ``time_target``: Time instant to center the temporal wavelet
-- ``order``: Order of the spatial bandpass filter (higher values provide sharper frequency localization)
-- ``w0``: Central frequency of the temporal wavelet (typically 2π)
-
-The transform produces a 2D spectrum in the wavelength-frequency domain, where peaks indicate dominant oscillatory modes.
+The resulting contour plot shows the spectrum in the wavelength-frequency domain. The overlaid markers indicate the ``top_n`` most dominant oscillatory modes (peaks) identified at the target bus and time instant.
