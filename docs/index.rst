@@ -1,10 +1,14 @@
-Sparse SGWT Documentation
-=========================
+Overview
+========
+
+.. include:: ../README.rst
+   :start-after: ====================================
 
 .. toctree::
+   :hidden:
    :maxdepth: 2
+   :caption: Contents
 
-   overview_content
    usage/index
    theory/index
    examples/index

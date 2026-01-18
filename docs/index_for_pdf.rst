@@ -1,12 +1,10 @@
-.. include:: ../README.rst
-
-Overview
-========
-
+Sparse SGWT Documentation
+=========================
 
 .. toctree::
    :maxdepth: 2
 
+   overview_content
    usage/index
    theory/index
    examples/index
