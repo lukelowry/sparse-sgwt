@@ -58,7 +58,7 @@ napoleon_type_aliases = {
 }
 
 
-exclude_patterns = ["_build"]
+exclude_patterns = ["_build", "index_for_pdf.rst"]
 source_suffix = ".rst"
 master_doc = "index"
 
@@ -78,6 +78,6 @@ autodoc_mock_imports = ["ctypes"]
 # -- Options for LaTeX output ---------------------------------------------
 
 latex_documents = [
-    ('index', 'sgwt-docs.tex', 'Sparse Graph Convolution',
+    ('index_for_pdf', 'sgwt-docs.tex', 'Sparse Graph Convolution',
      'Luke Lowery', 'manual'),
 ]
