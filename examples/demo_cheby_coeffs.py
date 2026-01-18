@@ -1,36 +1,23 @@
 # -*- coding: utf-8 -*-
-"""
-Example: Chebyshev Approximation Quality
----------------------------------------
-This demo illustrates how the order of the Chebyshev polynomial affects the 
-accuracy of the filter approximation across the graph spectrum.
-"""
-
-import sgwt
-import numpy as np
-from sgwt import IMPEDANCE_TEXAS as L
-# DOC_START_CODE_EXCLUDE_IMPORTS
 import os
 import matplotlib.pyplot as plt
-# Professional Plotting Style
 plt.rcParams.update({
     "font.family": "serif",
     "font.serif": ["Times New Roman"],
     "mathtext.fontset": "stix",
 })
 
-# 1. Define target filter function
-# The target is the analytical bandpass filter
+# DOC_START_CODE_EXCLUDE_IMPORTS
+import sgwt
+import numpy as np
+from sgwt import IMPEDANCE_TEXAS as L
+
 def f(x): return np.array([sgwt.functions.bandpass(x, scale=1.0, order=1)]).T
 
-# 2. Get spectrum bound from the module
 ubnd = sgwt.estimate_spectral_bound(L)
-
-# 3. Setup evaluation points
 x_eval = np.geomspace(1e-4, ubnd, 1000)
 y_true = f(x_eval)
 
-# 4. Compare different orders
 orders = [10, 50, 200]
 # DOC_END_CODE_EXCLUDE_PLOT
 

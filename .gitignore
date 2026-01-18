@@ -6,3 +6,4 @@ dist
 .coverage
 .benchmarks
 benchmark_*.pdf
+examples/.data_dir

@@ -2,7 +2,8 @@ import os
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-DIR = r"C:\Users\wyattluke.lowery\OneDrive - Texas A&M University\Research\Oscillations\Modal SGWT (Journal)\DETECTION_WECC_240"
+_config_path = os.path.join(os.path.dirname(__file__), ".data_dir")
+DATA_DIR = open(_config_path).read().strip() if os.path.exists(_config_path) else "."
 
 # DOC_START_CODE_EXCLUDE_IMPORTS
 import demo_plot as splt
@@ -17,39 +18,29 @@ def get_signal(fname, t_range):
     time = np.linspace(t_range[0], t_range[1], signal.shape[1])
     return signal, time
 
-FILEPATH = f"{DIR}\signal.parquet"
-
-TIME_TARGET = 2.0    # Time (s) to center the temporal wavelet
-T_RANGE = (0, 60)    # Time range (s) of the signal
-N_RANDOM_BUSES = 140 # Number of random buses to analyze
-ORDER = 10           # Order of the spatial bandpass filter
-TOP_N = 5            # Number of peaks to extract per bus
-F0 = 1
-W0 = 2 * np.pi  *F0     # Central frequency of the temporal wavelet
-
-# NOTE IT WORKS!
+FILEPATH = os.path.join(DATA_DIR, "signal.parquet")
+TIME_TARGET = 2.0
+T_RANGE = (0, 60)
+N_RANDOM_BUSES = 140
+ORDER = 10
+TOP_N = 5
+W0 = 2 * np.pi * 1
 
 spatial_scales = np.geomspace(1e-3, 1e1, 150)
 temporal_freqs = np.linspace(0.02, 2.0, 100)
-sgma = SGMA(L, s=spatial_scales, freqs=temporal_freqs, time_target=TIME_TARGET, order=ORDER, w0=W0)
+sgma = SGMA(L, spatial_scales, temporal_freqs, TIME_TARGET, order=ORDER, w0=W0)
 
 V, t = get_signal(FILEPATH, T_RANGE)
 
-print(f"\n--- Finding peaks for {N_RANDOM_BUSES} random buses ---")
-subset_bus_indices = np.random.choice(L.shape[0], N_RANDOM_BUSES, replace=False)
-subset_peaks, cluster_peaks = sgma.find_system_wide_peaks(V, t, subset_bus_indices, top_n=TOP_N)
-
-print("Cluster Peaks:")
-print(cluster_peaks)
+subset = np.random.choice(L.shape[0], N_RANDOM_BUSES, replace=False)
+local_peaks, global_peaks = sgma.find_system_wide_peaks(V, t, subset, top_n=TOP_N)
 # DOC_END_CODE_EXCLUDE_PLOT
 
-splt.plot_peak_heatmap(subset_peaks, sgma.wavlen, sgma.freqs, dpi=600)
+splt.plot_peak_heatmap(local_peaks, sgma.wavlen, sgma.freqs, dpi=600)
 
-# Save the figure for documentation
 script_dir = os.path.dirname(os.path.abspath(__file__))
 project_root = os.path.abspath(os.path.join(script_dir, '..'))
 static_images_dir = os.path.join(project_root, 'docs', '_static', 'images')
 os.makedirs(static_images_dir, exist_ok=True)
-save_path = os.path.join(static_images_dir, 'demo_sgma_2.png')
-plt.savefig(save_path, dpi=400, bbox_inches='tight')
+plt.savefig(os.path.join(static_images_dir, 'demo_sgma_2.png'), dpi=400, bbox_inches='tight')
 plt.show()
