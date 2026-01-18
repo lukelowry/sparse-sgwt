@@ -108,6 +108,24 @@ class TestLibrarySignals:
         assert sgwt.DELAY_USA.shape[0] == sgwt.COORD_USA.shape[0]
 
 
+class TestMeshSignals:
+    """Tests for built-in mesh signals."""
+
+    @pytest.mark.parametrize("signal_name, laplacian_name", [
+        ("BUNNY_XYZ", "MESH_BUNNY"),
+        ("HORSE_XYZ", "MESH_HORSE"),
+    ])
+    def test_mesh_signal_properties(self, signal_name, laplacian_name):
+        """Mesh signals are (N, 3) arrays and match their Laplacians."""
+        S = getattr(sgwt, signal_name)
+        L = getattr(sgwt, laplacian_name)
+
+        assert isinstance(S, np.ndarray)
+        assert S.ndim == 2, f"{signal_name} should be a 2D array"
+        assert S.shape[1] == 3, f"{signal_name} should have 3 columns (X, Y, Z)"
+        assert L.shape[0] == S.shape[0], f"Node count for {laplacian_name} and {signal_name} should match"
+
+
 class TestChebyKernelFromDict:
     """Tests for ChebyKernel.from_dict parsing."""
 

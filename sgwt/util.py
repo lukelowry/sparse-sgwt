@@ -327,11 +327,16 @@ def _json_kern_loader(path: str) -> Dict[str, Any]:
     with open(path, "r") as f:
         return jsonload(f)
 
+def _txt_loader(path: str) -> np.ndarray:
+    """Loads a space-separated text file into a NumPy array."""
+    return np.loadtxt(path, skiprows=1)
+
 # Factory helpers
 def _lap(k: str, r: str) -> csc_matrix: return _load_resource(f"library/{k}/{r}_{k}.mat", lambda p: _mat_loader(p, to_csc=True)) # type: ignore
 def _sig(k: str, r: str) -> np.ndarray: return _load_resource(f"library/SIGNALS/{r}_{k}.mat", _mat_loader) # type: ignore
 def _kern(n: str) -> Dict[str, Any]:   return _load_resource(f"library/KERNELS/{n}.json", _json_kern_loader)
 def _mesh_lap(n: str) -> csc_matrix: return _load_resource(f"library/MESH/{n}.mat", lambda p: _mat_loader(p, to_csc=True)) # type: ignore
+def _mesh_sig(n: str) -> np.ndarray: return _load_resource(f"library/SIGNALS/{n}_XYZ.txt", _txt_loader) # type: ignore
 
 # Lazy loading registry
 _LAZY_REGISTRY = {
@@ -369,6 +374,10 @@ _LAZY_REGISTRY = {
     "COORD_HAWAII":    lambda: _sig("COORDS", "HAWAII"),
     "COORD_TEXAS":     lambda: _sig("COORDS", "TEXAS"),
     "COORD_USA":       lambda: _sig("COORDS", "USA"),
+
+    # Mesh Signals
+    "BUNNY_XYZ":       lambda: _mesh_sig("BUNNY"),
+    "HORSE_XYZ":       lambda: _mesh_sig("HORSE"),
 }
 
 def __getattr__(name: str) -> Any:
