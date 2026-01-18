@@ -26,17 +26,13 @@ from typing import Any, Callable, Dict, List, Union, Optional
 
 @dataclass
 class ChebyKernel:
-    """Stores Chebyshev polynomial approximations for one or more kernels.
+    """Stores Chebyshev polynomial approximations for one or more kernels."""
 
-    Attributes
-    ----------
-    C : np.ndarray
-        Coefficient matrix of shape (order + 1, n_dims).
-    spectrum_bound : float
-        Shared upper spectrum bound for all kernels.
-    """
     C: np.ndarray
+    """Coefficient matrix of shape (order + 1, n_dims)."""
+
     spectrum_bound: float
+    """Shared upper spectrum bound for all kernels."""
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> 'ChebyKernel':
@@ -194,19 +190,16 @@ class VFKernel:
 
     A dataclass to store the components of a rational kernel approximation
     obtained from Vector Fitting.
-
-    Attributes
-    ----------
-    R : np.ndarray
-        Residue matrix of shape (n_poles, n_dims).
-    Q : np.ndarray
-        Poles vector of shape (n_poles,).
-    D : np.ndarray
-        Direct term (offset) of shape (n_dims,).
     """
+
     R: np.ndarray
+    """Residue matrix of shape (n_poles, n_dims)."""
+
     Q: np.ndarray
+    """Poles vector of shape (n_poles,)."""
+
     D: np.ndarray
+    """Direct term (offset) of shape (n_dims,)."""
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> 'VFKernel':

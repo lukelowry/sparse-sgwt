@@ -44,7 +44,7 @@ Install the latest stable release from `PyPI <https://pypi.org/project/sgwt/>`_:
 
 This command will also install the necessary dependencies (e.g., NumPy, SciPy).
 
-Usage Example
+Basic Example
 -------------
 
 Here is a quick example of applying a band-pass filter to an impulse signal on the built-in synthetic Texas grid Laplacian.

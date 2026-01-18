@@ -164,36 +164,8 @@ ORDERS = [1, 2, 3]
 # ---------------------------------------------------------------------------
 # pytest hooks for slow test marker
 # ---------------------------------------------------------------------------
-def pytest_addoption(parser):
-    """Add --run-slow option to pytest command line."""
-    parser.addoption(
-        "--run-slow",
-        action="store_true",
-        default=False,
-        help="run slow tests (stress tests on large graphs)"
-    )
-
-
 def pytest_configure(config):
     """Configure pytest to recognize slow marker."""
     config.addinivalue_line(
         "markers", "slow: marks tests as slow (stress tests, large graphs)"
     )
-
-
-def pytest_collection_modifyitems(config, items):
-    """Skip slow tests unless --run-slow is specified or explicitly selected."""
-    if config.getoption("--run-slow"):
-        # --run-slow given: do not skip slow tests
-        return
-
-    # If only specific tests are selected (not collecting whole suite),
-    # allow slow tests to run without --run-slow flag
-    # This enables running individual slow tests from VSCode/IDEs
-    if len(items) <= 10:  # Arbitrary threshold - likely individual test selection
-        return
-
-    skip_slow = pytest.mark.skip(reason="need --run-slow option to run (or select individual tests)")
-    for item in items:
-        if "slow" in item.keywords:
-            item.add_marker(skip_slow)

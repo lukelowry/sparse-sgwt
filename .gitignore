@@ -4,3 +4,5 @@ build
 dist
 .vscode/settings.json
 .coverage
+.benchmarks
+benchmark_*.pdf

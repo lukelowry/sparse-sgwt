@@ -363,7 +363,7 @@ class SGMA:
                 all_m.append(p['Magnitude'])
                 all_b.append(np.full(p['Wavelength'].shape, bus_idx, dtype=int))
             
-            if verbose and (i + 1) % 50 == 0:
+            if verbose and (i + 1) % 50 == 0: # pragma: no cover
                 print(f"  Processed {i + 1}/{n_buses} buses...")
         
         if not all_w:

@@ -92,22 +92,24 @@ class TestSGMA:
         assert peaks['Frequency'][0] == sgma_engine.freqs[2]
 
     def test_find_system_wide_peaks(self, sgma_engine, random_signal):
-        """Test system-wide peak finding returns two dicts."""
+        """Test system-wide peak finding returns two dicts with density clusters."""
         n_time = random_signal.shape[1]
         t = np.linspace(0, 5, n_time)
-        
-        # Use a subset of buses for speed
-        bus_indices = [0, 1]
-        
+
+        # Use all buses to ensure enough peaks for density clustering
+        bus_indices = list(range(random_signal.shape[0]))
+
         peaks, clusters = sgma_engine.find_system_wide_peaks(
-            random_signal, t, bus_indices=bus_indices, verbose=False
+            random_signal, t, bus_indices=bus_indices, verbose=False, min_dist=1
         )
-        
+
         assert isinstance(peaks, dict)
         assert isinstance(clusters, dict)
-        
-        if peaks['Wavelength'].size > 0:
-            assert 'Bus_ID' in peaks
+        assert 'Bus_ID' in peaks
+
+        # Verify density clustering produced results (covers success path)
+        if peaks['Wavelength'].size >= 2:
+            assert 'Density' in clusters
 
     def test_invalid_bus_index_raises(self, sgma_engine, random_signal):
         """Test out of bounds bus index raises ValueError."""
@@ -181,6 +183,20 @@ class TestSGMA:
             assert clusters['Wavelength'].size == 0, \
                 "Clusters should be empty when KDE raises exception"
 
+    def test_density_clustering_insufficient_peaks(self, sgma_engine):
+        """Test _compute_density_clusters returns empty when < 2 peaks."""
+        # Only one peak - triggers the size < 2 branch
+        single_peak = {
+            'Wavelength': np.array([1.0]),
+            'Frequency': np.array([0.5]),
+            'Magnitude': np.array([10.0]),
+            'Bus_ID': np.array([0])
+        }
+        result = sgma_engine._compute_density_clusters(single_peak, top_n=5, min_dist=5)
+        assert result['Wavelength'].size == 0
+        assert result['Frequency'].size == 0
+        assert result['Density'].size == 0
+
     def test_peak_finding_fallback(self, sgma_engine, small_laplacian):
         """Test the peak finding fallback when scikit-image is not available."""
         from unittest.mock import patch
@@ -218,3 +234,34 @@ class TestSGMA:
         finally:
             importlib.reload(sgwt.sgma)
             reloaded_engine.close()
+
+
+class TestPeakLocalMaxFallback:
+    """Tests for the _peak_local_max_fallback function."""
+
+    @pytest.fixture
+    def fallback_func(self):
+        """Load the fallback function by forcing skimage import to fail."""
+        from unittest.mock import patch
+        import importlib
+        import sgwt.sgma
+
+        with patch.dict('sys.modules', {'skimage': None, 'skimage.feature': None}):
+            importlib.reload(sgwt.sgma)
+            func = sgwt.sgma.peak_local_max
+        yield func
+        importlib.reload(sgwt.sgma)
+
+    def test_fallback_min_distance_clamp(self, fallback_func):
+        """Test that min_distance < 1 is clamped to 1."""
+        image = np.array([[0, 0, 0], [0, 5, 0], [0, 0, 0]])
+        result = fallback_func(image, min_distance=0)
+        assert result.shape[0] == 1
+        np.testing.assert_array_equal(result[0], [1, 1])
+
+    def test_fallback_empty_image(self, fallback_func):
+        """Test fallback returns empty array for all-zero image."""
+        image = np.zeros((5, 5))
+        result = fallback_func(image)
+        assert result.shape[0] == 0
+        assert result.shape[1] == 2

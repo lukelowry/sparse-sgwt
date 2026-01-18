@@ -67,6 +67,7 @@ omit = [
     "sgwt/tests/*",
     "sgwt/tests/conftest.py",
     "sgwt/klu/*",
+    "benchmark.py"
 ]
 
 [tool.coverage.report]
