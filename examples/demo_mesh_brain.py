@@ -10,8 +10,6 @@ from pathlib import Path
 # DOC_START_CODE_EXCLUDE_IMPORTS
 import sgwt
 
-
-# --- Brain Example ---
 L_brain = sgwt.MESH_LBRAIN
 brain_impulse_node = 70000
 brain_scale = 200
@@ -19,7 +17,6 @@ brain_scale = 200
 x_brain = sgwt.impulse(L_brain, n=brain_impulse_node)
 with sgwt.Convolve(L_brain) as conv:
     y_brain = conv.bandpass(x_brain, [brain_scale], order=40)[0]
-
 # DOC_END_CODE_EXCLUDE_PLOT
 
 print("GSP Done! Begin Rendering")
@@ -32,10 +29,9 @@ from demo_mesh_plot import plot_mesh_wavelet
 output_dir = Path(__file__).parent.parent / "docs/_static/images"
 output_dir.mkdir(parents=True, exist_ok=True)
 
-# Plot and save Brain
-brain_path = r"C:\Users\wyattluke.lowery\Documents\GitHub\laplib\Brain\lh.pial.ply"
+# Plot and save Brain (uses bundled PLY file)
 plot_mesh_wavelet(
-    y_brain, brain_path ,"",
+    y_brain, "LBRAIN", "",
     output_dir / "demo_mesh_wavelet_3.png",
     mesh_rotation=(-90, 0, 0),
     elev=15,

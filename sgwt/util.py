@@ -327,16 +327,163 @@ def _json_kern_loader(path: str) -> Dict[str, Any]:
     with open(path, "r") as f:
         return jsonload(f)
 
-def _txt_loader(path: str) -> np.ndarray:
-    """Loads a space-separated text file into a NumPy array."""
-    return np.loadtxt(path, skiprows=1)
+def _parse_ply(filepath: str) -> tuple:
+    """
+    Parses a .ply mesh file and returns vertices and faces.
+
+    Parameters
+    ----------
+    filepath : str
+        Path to the .ply file.
+
+    Returns
+    -------
+    tuple
+        (vertices, faces, vertex_count) where vertices is a list of (x,y,z) tuples,
+        faces is a list of vertex index lists, and vertex_count is the number of vertices.
+    """
+    import struct
+
+    with open(filepath, 'rb') as f:
+        # Parse header
+        fmt = "ascii"
+        vertex_count = 0
+        face_count = 0
+        vertex_props = []
+        current_element = None
+
+        while True:
+            line = f.readline().strip().decode('ascii', errors='ignore')
+            if line == "end_header":
+                break
+            parts = line.split()
+            if not parts:
+                continue
+            if parts[0] == "format":
+                fmt = parts[1]
+            elif parts[0] == "element":
+                current_element = parts[1]
+                if current_element == "vertex":
+                    vertex_count = int(parts[2])
+                elif current_element == "face":
+                    face_count = int(parts[2])
+            elif parts[0] == "property" and current_element == "vertex":
+                vertex_props.append((parts[2], parts[1]))
+
+        vertices = []
+        faces = []
+
+        if fmt == "ascii":
+            lines = f.readlines()
+            for i in range(vertex_count):
+                parts = lines[i].strip().split()
+                vertices.append((float(parts[0]), float(parts[1]), float(parts[2])))
+            for i in range(face_count):
+                parts = lines[vertex_count + i].strip().split()
+                faces.append([int(x) for x in parts[1:]])
+
+        elif fmt == "binary_little_endian":
+            np_type_map = {
+                'char': 'i1', 'uchar': 'u1', 'short': 'i2', 'ushort': 'u2',
+                'int': 'i4', 'uint': 'u4', 'float': 'f4', 'double': 'f8'
+            }
+            dtype_fields = [(name, np_type_map.get(t, 'f4')) for name, t in vertex_props]
+            vertex_dtype = np.dtype(dtype_fields)
+
+            vertex_data = f.read(vertex_count * vertex_dtype.itemsize)
+            v_arr = np.frombuffer(vertex_data, dtype=vertex_dtype)
+
+            if 'x' in v_arr.dtype.names and 'y' in v_arr.dtype.names and 'z' in v_arr.dtype.names:
+                vertices = list(zip(v_arr['x'], v_arr['y'], v_arr['z']))
+            else:
+                names = v_arr.dtype.names
+                vertices = list(zip(v_arr[names[0]], v_arr[names[1]], v_arr[names[2]]))
+
+            for _ in range(face_count):
+                n = struct.unpack('<B', f.read(1))[0]
+                faces.append(list(struct.unpack(f'<{n}i', f.read(n * 4))))
+        else:
+            raise ValueError(f"Unsupported PLY format: {fmt}")
+
+    return vertices, faces, vertex_count
+
+
+def load_ply_laplacian(filepath: str) -> csc_matrix:
+    """
+    Loads a .ply mesh file and returns its graph Laplacian.
+
+    This is a convenience function for loading mesh data directly into
+    the sparse format required by the convolution solvers.
+
+    Parameters
+    ----------
+    filepath : str
+        Path to the .ply file.
+
+    Returns
+    -------
+    csc_matrix
+        The graph Laplacian matrix L = B @ B.T where B is the incidence matrix.
+
+    Examples
+    --------
+    >>> from sgwt import load_ply_laplacian, Convolve
+    >>> L = load_ply_laplacian("my_mesh.ply")
+    >>> with Convolve(L) as conv:
+    ...     coeffs = conv.lowpass(signal, scales=[1.0])
+    """
+    vertices, faces, vertex_count = _parse_ply(filepath)
+
+    # Extract unique edges from faces
+    unique_edges = set()
+    for face in faces:
+        n = len(face)
+        for i in range(n):
+            u, v = face[i], face[(i + 1) % n]
+            unique_edges.add((u, v) if u < v else (v, u))
+
+    edges = np.array(sorted(unique_edges), dtype=int)
+    num_edges = len(edges)
+
+    # Build incidence matrix B and compute Laplacian L = B @ B.T
+    rows = edges.ravel()
+    cols = np.repeat(np.arange(num_edges), 2)
+    data = np.tile([1.0, -1.0], num_edges)
+
+    B = csc_matrix((data, (rows, cols)), shape=(vertex_count, num_edges))
+    return B @ B.T
+
+
+def load_ply_xyz(filepath: str) -> np.ndarray:
+    """
+    Loads a .ply mesh file and returns the vertex coordinates.
+
+    Parameters
+    ----------
+    filepath : str
+        Path to the .ply file.
+
+    Returns
+    -------
+    np.ndarray
+        An (N, 3) array of vertex coordinates (x, y, z).
+
+    Examples
+    --------
+    >>> from sgwt import load_ply_xyz
+    >>> xyz = load_ply_xyz("my_mesh.ply")
+    >>> print(xyz.shape)  # (num_vertices, 3)
+    """
+    vertices, _, _ = _parse_ply(filepath)
+    return np.array(vertices)
+
 
 # Factory helpers
 def _lap(k: str, r: str) -> csc_matrix: return _load_resource(f"library/{k}/{r}_{k}.mat", lambda p: _mat_loader(p, to_csc=True)) # type: ignore
 def _sig(k: str, r: str) -> np.ndarray: return _load_resource(f"library/SIGNALS/{r}_{k}.mat", _mat_loader) # type: ignore
 def _kern(n: str) -> Dict[str, Any]:   return _load_resource(f"library/KERNELS/{n}.json", _json_kern_loader)
-def _mesh_lap(n: str) -> csc_matrix: return _load_resource(f"library/MESH/{n}.mat", lambda p: _mat_loader(p, to_csc=True)) # type: ignore
-def _mesh_sig(n: str) -> np.ndarray: return _load_resource(f"library/SIGNALS/{n}_XYZ.txt", _txt_loader) # type: ignore
+def _ply_lap(n: str) -> csc_matrix: return _load_resource(f"library/MESH/{n}.ply", load_ply_laplacian) # type: ignore
+def _ply_xyz(n: str) -> np.ndarray: return _load_resource(f"library/MESH/{n}.ply", load_ply_xyz) # type: ignore
 
 # Lazy loading registry
 _LAZY_REGISTRY = {
@@ -365,11 +512,10 @@ _LAZY_REGISTRY = {
     "LENGTH_USA":      lambda: _lap("LENGTH", "USA"),
     "LENGTH_WECC":     lambda: _lap("LENGTH", "WECC"),
 
-    # Mesh Laplacians
-    "MESH_BUNNY":      lambda: _mesh_lap("BUNNY"),
-    "MESH_HORSE":      lambda: _mesh_lap("HORSE"),
-    "MESH_LBRAIN":     lambda: _mesh_lap("LBRAIN"),
-
+    # Mesh Laplacians (loaded from .ply files)
+    "MESH_BUNNY":      lambda: _ply_lap("BUNNY"),
+    "MESH_HORSE":      lambda: _ply_lap("HORSE"),
+    "MESH_LBRAIN":     lambda: _ply_lap("LBRAIN"),
 
     # Signals
     "COORD_EASTWEST":  lambda: _sig("COORDS", "EASTWEST"),
@@ -377,10 +523,10 @@ _LAZY_REGISTRY = {
     "COORD_TEXAS":     lambda: _sig("COORDS", "TEXAS"),
     "COORD_USA":       lambda: _sig("COORDS", "USA"),
 
-    # Mesh Signals
-    "BUNNY_XYZ":       lambda: _mesh_sig("BUNNY"),
-    "HORSE_XYZ":       lambda: _mesh_sig("HORSE"),
-    "LBRAIN_XYZ":      lambda: _mesh_sig("LBRAIN"),
+    # Mesh Signals (loaded from .ply files)
+    "BUNNY_XYZ":       lambda: _ply_xyz("BUNNY"),
+    "HORSE_XYZ":       lambda: _ply_xyz("HORSE"),
+    "LBRAIN_XYZ":      lambda: _ply_xyz("LBRAIN"),
 }
 
 def __getattr__(name: str) -> Any:
@@ -391,4 +537,4 @@ def __getattr__(name: str) -> Any:
 def __dir__() -> List[str]:
     return list(globals().keys()) + list(_LAZY_REGISTRY.keys())
 
-__all__ = list(_LAZY_REGISTRY.keys()) + ["ChebyKernel", "VFKernel", "impulse", "get_cholmod_dll", "get_klu_dll", "estimate_spectral_bound"]
+__all__ = list(_LAZY_REGISTRY.keys()) + ["ChebyKernel", "VFKernel", "impulse", "get_cholmod_dll", "get_klu_dll", "estimate_spectral_bound", "load_ply_laplacian", "load_ply_xyz"]

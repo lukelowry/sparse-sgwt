@@ -32,12 +32,13 @@ include-package-data = true
 packages = { find = {} }
 [tool.setuptools.package-data]
 "sgwt" = [
-    "library/dll/*.dll", 
+    "library/dll/*.dll",
     "library/KERNELS/*.json",
     "library/SIGNALS/*.mat",
     "library/IMPEDANCE/*.mat",
     "library/LENGTH/*.mat",
-    "library/DELAY/*.mat"
+    "library/DELAY/*.mat",
+    "library/MESH/*.ply"
 ]
 
 [project.optional-dependencies]

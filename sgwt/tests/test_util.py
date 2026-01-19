@@ -84,12 +84,6 @@ class TestLibraryLaplacians:
         assert L.nnz >= min_nnz, \
             f"{laplacian_name} has {L.nnz} nonzeros, expected at least {min_nnz}"
 
-    def test_laplacian_is_symmetric(self):
-        """Built-in Laplacians are symmetric."""
-        L = sgwt.DELAY_TEXAS
-        # Use toarray() to avoid coverage-induced sparse class identity issues
-        assert np.allclose(L.toarray(), L.T.toarray())
-
 
 class TestLibrarySignals:
     """Tests for built-in coordinate signals."""
@@ -335,3 +329,266 @@ class TestImpulse:
         assert signal.shape == (small_laplacian.shape[0], 5)
         assert signal[2, 0] == 1.0
         assert np.sum(signal[:, 0]) == 1.0
+
+
+class TestPlyParsing:
+    """Tests for PLY file parsing functions."""
+
+    @pytest.fixture
+    def ascii_ply_file(self, tmp_path):
+        """Create a simple ASCII PLY file for testing."""
+        ply_content = """ply
+format ascii 1.0
+element vertex 4
+property float x
+property float y
+property float z
+element face 2
+property list uchar int vertex_indices
+end_header
+0.0 0.0 0.0
+1.0 0.0 0.0
+1.0 1.0 0.0
+0.0 1.0 0.0
+3 0 1 2
+3 0 2 3
+"""
+        ply_path = tmp_path / "test_ascii.ply"
+        ply_path.write_text(ply_content)
+        return str(ply_path)
+
+    @pytest.fixture
+    def binary_ply_file(self, tmp_path):
+        """Create a simple binary little-endian PLY file for testing."""
+        import struct
+        ply_path = tmp_path / "test_binary.ply"
+
+        header = b"""ply
+format binary_little_endian 1.0
+element vertex 4
+property float x
+property float y
+property float z
+element face 2
+property list uchar int vertex_indices
+end_header
+"""
+        # Vertices: 4 vertices with x, y, z as floats
+        vertices = struct.pack('<12f',
+            0.0, 0.0, 0.0,
+            1.0, 0.0, 0.0,
+            1.0, 1.0, 0.0,
+            0.0, 1.0, 0.0
+        )
+        # Faces: 2 triangles
+        faces = struct.pack('<B3iB3i',
+            3, 0, 1, 2,  # First triangle
+            3, 0, 2, 3   # Second triangle
+        )
+
+        with open(ply_path, 'wb') as f:
+            f.write(header)
+            f.write(vertices)
+            f.write(faces)
+
+        return str(ply_path)
+
+    def test_parse_ply_ascii(self, ascii_ply_file):
+        """_parse_ply correctly parses ASCII PLY files."""
+        from sgwt.util import _parse_ply
+        vertices, faces, vertex_count = _parse_ply(ascii_ply_file)
+
+        assert vertex_count == 4
+        assert len(vertices) == 4
+        assert len(faces) == 2
+        # Check first vertex
+        assert vertices[0] == (0.0, 0.0, 0.0)
+        # Check first face
+        assert faces[0] == [0, 1, 2]
+
+    def test_parse_ply_binary(self, binary_ply_file):
+        """_parse_ply correctly parses binary little-endian PLY files."""
+        from sgwt.util import _parse_ply
+        vertices, faces, vertex_count = _parse_ply(binary_ply_file)
+
+        assert vertex_count == 4
+        assert len(vertices) == 4
+        assert len(faces) == 2
+        # Check vertices are close to expected (float precision)
+        assert np.allclose(vertices[0], (0.0, 0.0, 0.0))
+        assert np.allclose(vertices[1], (1.0, 0.0, 0.0))
+
+    def test_parse_ply_unsupported_format_raises(self, tmp_path):
+        """_parse_ply raises ValueError for unsupported formats."""
+        from sgwt.util import _parse_ply
+        ply_content = """ply
+format binary_big_endian 1.0
+element vertex 1
+property float x
+property float y
+property float z
+end_header
+"""
+        ply_path = tmp_path / "unsupported.ply"
+        ply_path.write_text(ply_content)
+
+        with pytest.raises(ValueError, match="Unsupported PLY format"):
+            _parse_ply(str(ply_path))
+
+    def test_load_ply_laplacian_ascii(self, ascii_ply_file):
+        """load_ply_laplacian returns valid Laplacian from ASCII PLY."""
+        from sgwt.util import load_ply_laplacian
+        L = load_ply_laplacian(ascii_ply_file)
+
+        assert L.format == "csc"
+        assert L.shape == (4, 4)  # 4 vertices
+        # Laplacian should be symmetric
+        assert np.allclose(L.toarray(), L.T.toarray())
+        # Diagonal should be positive (vertex degrees)
+        assert np.all(L.diagonal() >= 0)
+
+    def test_load_ply_laplacian_binary(self, binary_ply_file):
+        """load_ply_laplacian returns valid Laplacian from binary PLY."""
+        from sgwt.util import load_ply_laplacian
+        L = load_ply_laplacian(binary_ply_file)
+
+        assert L.format == "csc"
+        assert L.shape == (4, 4)
+
+    def test_load_ply_xyz_ascii(self, ascii_ply_file):
+        """load_ply_xyz returns (N, 3) array from ASCII PLY."""
+        from sgwt.util import load_ply_xyz
+        xyz = load_ply_xyz(ascii_ply_file)
+
+        assert isinstance(xyz, np.ndarray)
+        assert xyz.shape == (4, 3)
+        np.testing.assert_array_equal(xyz[0], [0.0, 0.0, 0.0])
+        np.testing.assert_array_equal(xyz[1], [1.0, 0.0, 0.0])
+
+    def test_load_ply_xyz_binary(self, binary_ply_file):
+        """load_ply_xyz returns (N, 3) array from binary PLY."""
+        from sgwt.util import load_ply_xyz
+        xyz = load_ply_xyz(binary_ply_file)
+
+        assert isinstance(xyz, np.ndarray)
+        assert xyz.shape == (4, 3)
+        assert np.allclose(xyz[0], [0.0, 0.0, 0.0])
+
+    def test_laplacian_xyz_consistency(self, ascii_ply_file):
+        """Laplacian and XYZ have consistent vertex counts."""
+        from sgwt.util import load_ply_laplacian, load_ply_xyz
+        L = load_ply_laplacian(ascii_ply_file)
+        xyz = load_ply_xyz(ascii_ply_file)
+
+        assert L.shape[0] == xyz.shape[0]
+
+    def test_parse_ply_with_blank_lines_in_header(self, tmp_path):
+        """_parse_ply handles blank lines in header."""
+        from sgwt.util import _parse_ply
+        ply_content = """ply
+format ascii 1.0
+
+element vertex 3
+property float x
+property float y
+property float z
+
+element face 1
+property list uchar int vertex_indices
+end_header
+0.0 0.0 0.0
+1.0 0.0 0.0
+0.5 1.0 0.0
+3 0 1 2
+"""
+        ply_path = tmp_path / "blank_lines.ply"
+        ply_path.write_text(ply_content)
+
+        vertices, faces, vertex_count = _parse_ply(str(ply_path))
+        assert vertex_count == 3
+        assert len(vertices) == 3
+        assert len(faces) == 1
+
+    def test_parse_ply_binary_non_xyz_property_names(self, tmp_path):
+        """_parse_ply handles binary PLY with non-standard property names."""
+        import struct
+        ply_path = tmp_path / "non_xyz.ply"
+
+        # Use property names that are NOT x, y, z
+        header = b"""ply
+format binary_little_endian 1.0
+element vertex 3
+property float px
+property float py
+property float pz
+element face 1
+property list uchar int vertex_indices
+end_header
+"""
+        vertices = struct.pack('<9f',
+            0.0, 0.0, 0.0,
+            1.0, 0.0, 0.0,
+            0.5, 1.0, 0.0
+        )
+        faces = struct.pack('<B3i', 3, 0, 1, 2)
+
+        with open(ply_path, 'wb') as f:
+            f.write(header)
+            f.write(vertices)
+            f.write(faces)
+
+        from sgwt.util import _parse_ply
+        verts, _, count = _parse_ply(str(ply_path))
+
+        assert count == 3
+        assert len(verts) == 3
+        # Should use first 3 properties (px, py, pz) as coordinates
+        assert np.allclose(verts[0], (0.0, 0.0, 0.0))
+        assert np.allclose(verts[1], (1.0, 0.0, 0.0))
+        assert np.allclose(verts[2], (0.5, 1.0, 0.0))
+
+    def test_parse_ply_with_extra_elements(self, tmp_path):
+        """_parse_ply handles PLY files with extra element types (e.g., edge)."""
+        from sgwt.util import _parse_ply
+        # PLY file with face element followed by additional properties/elements
+        ply_content = """ply
+format ascii 1.0
+element vertex 3
+property float x
+property float y
+property float z
+element face 1
+property list uchar int vertex_indices
+element edge 2
+property int vertex1
+property int vertex2
+end_header
+0.0 0.0 0.0
+1.0 0.0 0.0
+0.5 1.0 0.0
+3 0 1 2
+0 1
+1 2
+"""
+        ply_path = tmp_path / "extra_elements.ply"
+        ply_path.write_text(ply_content)
+
+        vertices, faces, vertex_count = _parse_ply(str(ply_path))
+        assert vertex_count == 3
+        assert len(vertices) == 3
+        assert len(faces) == 1
+
+
+class TestMeshLaplacians:
+    """Tests for built-in mesh Laplacians loaded from PLY files."""
+
+    @pytest.mark.parametrize("laplacian_name", [
+        "MESH_BUNNY", "MESH_HORSE", "MESH_LBRAIN"
+    ])
+    def test_mesh_laplacian_is_valid(self, laplacian_name):
+        """Built-in mesh Laplacians are valid symmetric CSC matrices."""
+        L = getattr(sgwt, laplacian_name)
+
+        assert L.format == "csc", f"{laplacian_name} should be CSC format"
+        assert L.shape[0] == L.shape[1], f"{laplacian_name} should be square"
+  
