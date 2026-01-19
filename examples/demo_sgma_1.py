@@ -18,28 +18,41 @@ def get_signal(fname, t_range):
 
 # DOC_START_CODE_EXCLUDE_IMPORTS
 from sgwt import SGMA
-from sgwt import DELAY_WECC as L
+from sgwt import LENGTH_WECC as L
 
 # Signals: Real or Complex Matrix (Rows: Buses, Cols: Time)
 V, t = get_signal(FILEPATH, t_range=(0, 60))
 
 # SGMA Parameters
-BUS_TARGET = 140
+BUS_TARGET = 36
 TIME_TARGET = 2.0
-ORDER = 10
-TOP_N = 5
+ORDER = 1
+TOP_N = 3
 
-spatial_scales = np.geomspace(1e-3, 1e1, 150)
-temporal_freqs = np.linspace(0.02, 2.0, 100)
-sgma = SGMA(L, spatial_scales, temporal_freqs, order=ORDER)
+wmin = 1
+wmax = 3e3
+nscales = 150
+spatial_scales = np.geomspace(wmin**2, wmax**2, nscales)  
 
-M = sgma.spectrum(V, t, BUS_TARGET, TIME_TARGET)
-peaks = sgma.find_peaks(M, top_n=TOP_N)
+temporal_freqs = np.linspace(0.05, 2.0, 100)
+sgma = SGMA(L, spatial_scales, temporal_freqs, order=ORDER, w0=2*np.pi)
+
+# Get complex spectrum (compute once)
+M = sgma.spectrum(V, t, BUS_TARGET, TIME_TARGET, return_complex=True)
+
+# Identify modes with frequency, damping ratio, wavelength, and magnitude
+modes = sgma.find_modes(M, top_n=TOP_N)
 # DOC_END_CODE_EXCLUDE_PLOT
+
+print(modes)
+
+# For plotting, get magnitude spectrum and peak locations
+Mabs = np.abs(M)
+peaks = sgma.find_peaks(Mabs, top_n=TOP_N, return_indices=True)
 
 fig, ax = plt.subplots(figsize=(7, 5))
 fig.patch.set_facecolor('#2b2b2b')
-splt.plot_contour(ax, sgma.wavlen, sgma.freqs, M, cmap='Spectral', levels=15)
+splt.plot_contour(ax, sgma.wavlen, sgma.freqs, Mabs, cmap='Spectral', levels=35)
 splt.overlay_peaks(ax, peaks)
 
 script_dir = os.path.dirname(os.path.abspath(__file__))

@@ -297,3 +297,211 @@ class TestSGMA:
 
         # Reload the module again outside the patch to restore the original state for other tests
         importlib.reload(sgwt.sgma)
+
+
+class TestModeTable:
+    """Tests for the ModeTable class."""
+
+    def test_modetable_creation(self):
+        """Test ModeTable initialization with valid data."""
+        from sgwt.sgma import ModeTable
+
+        freq = np.array([0.5, 1.0, 1.5])
+        damping = np.array([0.05, 0.03, 0.08])
+        wavelength = np.array([10.0, 5.0, 2.5])
+        magnitude = np.array([100.0, 80.0, 60.0])
+
+        modes = ModeTable(freq, damping, wavelength, magnitude)
+
+        assert modes.n_modes == 3
+        np.testing.assert_array_equal(modes.frequency, freq)
+        np.testing.assert_array_equal(modes.damping, damping)
+        np.testing.assert_array_equal(modes.wavelength, wavelength)
+        np.testing.assert_array_equal(modes.magnitude, magnitude)
+
+    def test_modetable_empty(self):
+        """Test ModeTable with empty arrays."""
+        from sgwt.sgma import ModeTable
+
+        modes = ModeTable(
+            frequency=np.array([]),
+            damping=np.array([]),
+            wavelength=np.array([]),
+            magnitude=np.array([])
+        )
+
+        assert modes.n_modes == 0
+        assert "empty" in repr(modes)
+
+    def test_modetable_repr(self):
+        """Test ModeTable string representation."""
+        from sgwt.sgma import ModeTable
+
+        modes = ModeTable(
+            frequency=np.array([0.5, 1.0]),
+            damping=np.array([0.05, 0.03]),
+            wavelength=np.array([10.0, 5.0]),
+            magnitude=np.array([100.0, 80.0])
+        )
+
+        repr_str = repr(modes)
+        assert "ModeTable" in repr_str
+        assert "2 modes" in repr_str
+        assert "Freq (Hz)" in repr_str
+        assert "Damping" in repr_str
+        assert "Wavelength" in repr_str
+        assert "Magnitude" in repr_str
+
+    def test_modetable_single_mode(self):
+        """Test ModeTable repr with single mode (no 's' plural)."""
+        from sgwt.sgma import ModeTable
+
+        modes = ModeTable(
+            frequency=np.array([0.5]),
+            damping=np.array([0.05]),
+            wavelength=np.array([10.0]),
+            magnitude=np.array([100.0])
+        )
+
+        repr_str = repr(modes)
+        assert "1 mode identified" in repr_str
+        # Should not have "modes" (plural)
+        assert "1 modes" not in repr_str
+
+    def test_modetable_to_dict(self):
+        """Test ModeTable to_dict method."""
+        from sgwt.sgma import ModeTable
+
+        freq = np.array([0.5, 1.0])
+        damping = np.array([0.05, 0.03])
+        wavelength = np.array([10.0, 5.0])
+        magnitude = np.array([100.0, 80.0])
+
+        modes = ModeTable(freq, damping, wavelength, magnitude)
+        d = modes.to_dict()
+
+        assert isinstance(d, dict)
+        assert 'Frequency' in d
+        assert 'Damping' in d
+        assert 'Wavelength' in d
+        assert 'Magnitude' in d
+        np.testing.assert_array_equal(d['Frequency'], freq)
+
+    def test_modetable_to_array(self):
+        """Test ModeTable to_array method."""
+        from sgwt.sgma import ModeTable
+
+        modes = ModeTable(
+            frequency=np.array([0.5, 1.0]),
+            damping=np.array([0.05, 0.03]),
+            wavelength=np.array([10.0, 5.0]),
+            magnitude=np.array([100.0, 80.0])
+        )
+
+        arr = modes.to_array()
+        assert arr.shape == (2, 4)
+        # First column is frequency
+        np.testing.assert_array_equal(arr[:, 0], [0.5, 1.0])
+        # Second column is damping
+        np.testing.assert_array_equal(arr[:, 1], [0.05, 0.03])
+
+
+class TestFindModes:
+    """Tests for the find_modes method."""
+
+    @pytest.fixture
+    def sgma_engine(self, small_laplacian):
+        """Fixture to create an SGMA instance."""
+        scales = np.geomspace(0.1, 10.0, 10)
+        freqs = np.linspace(0.1, 2.0, 20)
+        engine = SGMA(small_laplacian, scales=scales, freqs=freqs)
+        yield engine
+        try:
+            engine.close()
+        except Exception:
+            pass
+
+    def test_find_modes_requires_complex(self, sgma_engine):
+        """Test find_modes raises error for real spectrum."""
+        # Create a real (non-complex) spectrum
+        real_spectrum = np.random.rand(10, 20)
+
+        with pytest.raises(ValueError, match="complex spectrum"):
+            sgma_engine.find_modes(real_spectrum)
+
+    def test_find_modes_returns_modetable(self, sgma_engine, random_signal):
+        """Test find_modes returns a ModeTable object."""
+        from sgwt.sgma import ModeTable
+
+        n_time = random_signal.shape[1]
+        t = np.linspace(0, 5, n_time)
+        time_target = 2.5
+
+        # Get complex spectrum
+        spectrum = sgma_engine.spectrum(
+            random_signal, t, bus=0, time=time_target, return_complex=True
+        )
+
+        modes = sgma_engine.find_modes(spectrum, top_n=3)
+
+        assert isinstance(modes, ModeTable)
+
+    def test_find_modes_empty_spectrum(self, sgma_engine):
+        """Test find_modes with zero spectrum returns empty ModeTable."""
+        # Create a complex zero spectrum
+        spectrum = np.zeros((10, 20), dtype=complex)
+
+        modes = sgma_engine.find_modes(spectrum)
+
+        assert modes.n_modes == 0
+        assert modes.frequency.size == 0
+
+    def test_find_modes_synthetic_peak(self, sgma_engine):
+        """Test find_modes with synthetic spectrum containing clear peak."""
+        # Create a synthetic complex spectrum with a peak
+        n_scales, n_freqs = 10, 20
+        spectrum = np.ones((n_scales, n_freqs), dtype=complex) * 0.1
+
+        # Add a peak at (5, 10) with specific phase behavior
+        peak_scale, peak_freq = 5, 10
+        spectrum[peak_scale, peak_freq] = 10.0 * np.exp(1j * 0.5)
+
+        # Add phase gradient around the peak (simulating resonance)
+        for j in range(n_freqs):
+            spectrum[peak_scale, j] *= np.exp(1j * (j - peak_freq) * 0.1)
+
+        modes = sgma_engine.find_modes(spectrum, top_n=1, min_dist=1)
+
+        assert modes.n_modes >= 1
+        # The peak should be detected at the expected frequency
+        assert modes.frequency[0] == sgma_engine.freqs[peak_freq]
+
+    def test_find_modes_boundary_peaks(self, sgma_engine):
+        """Test find_modes with peaks at frequency boundaries."""
+        n_scales, n_freqs = 10, 20
+        spectrum = np.ones((n_scales, n_freqs), dtype=complex) * 0.1
+
+        # Add peak at left boundary (freq index 0)
+        spectrum[3, 0] = 10.0 * np.exp(1j * 0.5)
+        # Add peak at right boundary (freq index n_freqs-1)
+        spectrum[7, n_freqs - 1] = 8.0 * np.exp(1j * 0.3)
+
+        modes = sgma_engine.find_modes(spectrum, top_n=2, min_dist=1)
+
+        # Should find both boundary peaks
+        assert modes.n_modes == 2
+
+    def test_find_modes_damping_finite(self, sgma_engine, random_signal):
+        """Test that damping values are finite (not inf/nan)."""
+        n_time = random_signal.shape[1]
+        t = np.linspace(0, 5, n_time)
+        time_target = 2.5
+
+        spectrum = sgma_engine.spectrum(
+            random_signal, t, bus=0, time=time_target, return_complex=True
+        )
+
+        modes = sgma_engine.find_modes(spectrum, top_n=3, min_dist=1)
+
+        # All damping values should be finite
+        assert np.all(np.isfinite(modes.damping))

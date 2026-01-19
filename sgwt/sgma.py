@@ -14,7 +14,7 @@ Author: Luke Lowery (lukel@tamu.edu)
 
 """
 import numpy as np
-from typing import Optional, List, Tuple, Dict, NamedTuple
+from typing import Optional, List, Dict, NamedTuple
 from scipy.stats import gaussian_kde
 
 # Optional dependency for peak finding, with a NumPy/SciPy fallback
@@ -76,6 +76,70 @@ from .util import impulse
 
 
 NetworkAnalysisResult = NamedTuple('NetworkAnalysisResult', [('peaks', Dict), ('clusters', Dict)])
+
+
+class ModeTable:
+    """
+    Container for identified oscillatory modes with tabular display.
+
+    Stores mode parameters (frequency, damping ratio, wavelength, magnitude)
+    and provides a formatted string representation for easy inspection.
+
+    Attributes
+    ----------
+    frequency : ndarray
+        Oscillation frequencies in Hz.
+    damping : ndarray
+        Damping ratios (dimensionless). Positive values indicate stable modes.
+    wavelength : ndarray
+        Spatial wavelengths (sqrt of spatial scale). Larger values indicate
+        inter-area modes; smaller values indicate local modes.
+    magnitude : ndarray
+        Transform magnitudes at peak locations.
+    """
+
+    def __init__(self, frequency: np.ndarray, damping: np.ndarray,
+                 wavelength: np.ndarray, magnitude: np.ndarray):
+        self.frequency = np.atleast_1d(frequency)
+        self.damping = np.atleast_1d(damping)
+        self.wavelength = np.atleast_1d(wavelength)
+        self.magnitude = np.atleast_1d(magnitude)
+        self.n_modes = len(self.frequency)
+
+    def __repr__(self) -> str:
+        if self.n_modes == 0:
+            return "ModeTable (empty - no modes identified)"
+
+        lines = [
+            f"ModeTable ({self.n_modes} mode{'s' if self.n_modes > 1 else ''} identified)",
+            "-" * 60,
+            f"{'#':>3}  {'Freq (Hz)':>10}  {'Damping':>10}  {'Wavelength':>12}  {'Magnitude':>10}",
+            "-" * 60,
+        ]
+
+        for i in range(self.n_modes):
+            lines.append(
+                f"{i+1:>3}  {self.frequency[i]:>10.4f}  {self.damping[i]:>10.4f}  "
+                f"{self.wavelength[i]:>12.2f}  {self.magnitude[i]:>10.4f}"
+            )
+
+        lines.append("-" * 60)
+        return "\n".join(lines)
+
+    def to_dict(self) -> Dict[str, np.ndarray]:
+        """Return mode data as a dictionary."""
+        return {
+            'Frequency': self.frequency,
+            'Damping': self.damping,
+            'Wavelength': self.wavelength,
+            'Magnitude': self.magnitude
+        }
+
+    def to_array(self) -> np.ndarray:
+        """Return mode data as a 2D array (n_modes x 4)."""
+        return np.column_stack([
+            self.frequency, self.damping, self.wavelength, self.magnitude
+        ])
 
 
 class SGMA:
@@ -151,33 +215,19 @@ class SGMA:
         self.order = order
         self.w0 = w0
 
-        # Derived parameters
+        # Derived: temporal scale a = w0/(2πf) gives wavelet centered at frequency f
         self.Ts = self.w0 / (2 * np.pi * self.freqs)
-        self.wavlen = np.sqrt(self.scales)     # Wavelength approximation
-
-        # Convert scales to poles for DyConvolve: pole = 1/scale
+        self.wavlen = np.sqrt(self.scales)
         self.poles = [1.0 / scale for scale in self.scales]
 
-        # Cached convolution context (lazy initialization)
+        # Lazy-initialized caches
         self._conv: Optional[DyConvolve] = None
-        
-        # Cached temporal matrix
         self._B: Optional[np.ndarray] = None
         self._t_cached: Optional[np.ndarray] = None
         self._time_target_cached: Optional[float] = None
 
     def _get_conv(self) -> DyConvolve:
-        """
-        Get or create the DyConvolve context.
-
-        DyConvolve pre-factors all shifted systems ``(L + qI)`` at 
-        initialization, making repeated bandpass operations efficient [1].
-
-        Returns
-        -------
-        DyConvolve
-            Convolution context with pre-factored poles.
-        """
+        """Get or lazily create the DyConvolve context."""
         if self._conv is None:
             self._conv = DyConvolve(self.L, poles=self.poles)
             self._conv.__enter__()
@@ -185,11 +235,7 @@ class SGMA:
 
     def _build_temporal_matrix(self, t: np.ndarray, time_target: float) -> np.ndarray:
         """
-        Construct the temporal wavelet matrix R_τ.
-
-        Builds the right transformation matrix in the joint wavelet
-        transform using Gaussian wavelets centered at ``time_target``.
-        Caches the result to avoid recomputation for repeated calls.
+        Construct the temporal wavelet matrix R_τ (cached).
 
         Parameters
         ----------
@@ -203,14 +249,12 @@ class SGMA:
         ndarray
             Temporal wavelet matrix of shape ``(n_time, n_freqs)``.
         """
-        # Check if we can use cached matrix
         if (self._B is not None and self._t_cached is not None and
                 self._time_target_cached is not None):
             if (len(t) == len(self._t_cached) and np.allclose(t, self._t_cached) and
                     self._time_target_cached == time_target):
                 return self._B
-        
-        # Build and cache
+
         self._B = np.stack([
             gaussian_wavelet(t, a=sc, b=time_target, w0=self.w0)
             for sc in self.Ts
@@ -225,11 +269,12 @@ class SGMA:
         t: np.ndarray,
         bus: int,
         time: float,
-        VB: Optional[np.ndarray] = None
+        VB: Optional[np.ndarray] = None,
+        return_complex: bool = False
     ) -> np.ndarray:
         """
-        Compute the SGMA spectrum magnitude at a specific bus and time.
-        
+        Compute the SGMA spectrum at a specific bus and time.
+
         Parameters
         ----------
         V : ndarray
@@ -244,34 +289,35 @@ class SGMA:
             Pre-computed ``V @ B`` matrix. If provided, skips temporal
             matrix multiplication. Note: The provided VB must be computed
             for the given `time`.
-        
+        return_complex : bool, optional
+            If True, return the complex spectrum instead of magnitude.
+            Default is False (returns magnitude).
+
         Returns
         -------
         ndarray
-            Spectrum magnitude of shape ``(n_scales, n_freqs)``.
+            Spectrum of shape ``(n_scales, n_freqs)``. Complex if
+            ``return_complex=True``, otherwise magnitude (sqrt of abs).
         """
-        # Validate bus to prevent out-of-bounds errors
         n_buses = self.L.shape[0]
         if not (0 <= bus < n_buses):
             raise ValueError(f"bus {bus} is out of bounds for the graph with {n_buses} nodes.")
 
-        # 1. Temporal Transform - use pre-computed VB if available
+        # Temporal transform
         if VB is None:
             B = self._build_temporal_matrix(t, time_target=time)
             VB = V @ B
-        
-        # 2. Spatial Transform using DyConvolve singleton method
+
+        # Spatial transform
         conv = self._get_conv()
         X_imp = impulse(self.L, n=bus)
         spatial_responses = conv.bandpass(X_imp, order=self.order)
-        
-        # Build spatial transform matrix A (L_n in formulation)
         A = np.column_stack([resp.flatten() for resp in spatial_responses]).T
-        
-        # 3. Joint transform: m_{n,τ} ≈ L_n (V @ B)
+
+        # Joint transform: m_{n,τ} ≈ L_n (V @ B)
         Y = A @ VB
-        
-        return np.sqrt(np.abs(Y))
+
+        return Y if return_complex else np.abs(Y)
 
     def analyze(
         self,
@@ -315,7 +361,8 @@ class SGMA:
         self,
         spectrum: np.ndarray,
         top_n: int = 5,
-        min_dist: int = 5
+        min_dist: int = 5,
+        return_indices: bool = False
     ) -> Dict[str, np.ndarray]:
         """
         Identify local maxima in the transform magnitude.
@@ -331,6 +378,9 @@ class SGMA:
             Maximum peaks to return. Default is 5.
         min_dist : int, optional
             Minimum index distance between peaks. Default is 5.
+        return_indices : bool, optional
+            If True, also return 'ScaleIdx' and 'FreqIdx' arrays containing
+            the indices into the spectrum array. Default is False.
 
         Returns
         -------
@@ -340,32 +390,175 @@ class SGMA:
             - ``Wavelength``: ndarray of spatial wavelengths (sqrt of scale)
             - ``Frequency``: ndarray of temporal frequencies in Hz
             - ``Magnitude``: ndarray of transform magnitudes at peaks
+            - ``ScaleIdx``: (if return_indices=True) ndarray of scale indices
+            - ``FreqIdx``: (if return_indices=True) ndarray of frequency indices
 
-        Notes
-        -----
-        Larger wavelengths correspond to inter-area oscillation modes,
-        while smaller wavelengths indicate local oscillations [1].
         """
-        # Ensure the input is real-valued magnitude for peak detection
         Y_mag = np.abs(spectrum)
-
-        # We use exclude_border=False to ensure peaks near the edges of the 
-        # spectrum (e.g. high frequency or large scale) are not lost.
         coords = peak_local_max(Y_mag, min_distance=min_dist, num_peaks=top_n, exclude_border=False)
 
         if coords.size == 0:
-            return {k: np.array([]) for k in ['Wavelength', 'Frequency', 'Magnitude']}
+            keys = ['Wavelength', 'Frequency', 'Magnitude']
+            if return_indices:
+                keys.extend(['ScaleIdx', 'FreqIdx'])
+            return {k: np.array([]) for k in keys}
 
-        # Extract magnitudes and sort to handle case where peak_local_max doesn't sort
         magnitudes = Y_mag[coords[:, 0], coords[:, 1]]
         sort_idx = np.argsort(magnitudes)[::-1]
+        sorted_coords = coords[sort_idx]
 
-        return {
-            'Wavelength': self.wavlen[coords[sort_idx, 0]],
-            'Frequency': self.freqs[coords[sort_idx, 1]],
+        result = {
+            'Wavelength': self.wavlen[sorted_coords[:, 0]],
+            'Frequency': self.freqs[sorted_coords[:, 1]],
             'Magnitude': magnitudes[sort_idx]
         }
-    
+
+        if return_indices:
+            result['ScaleIdx'] = sorted_coords[:, 0]
+            result['FreqIdx'] = sorted_coords[:, 1]
+
+        return result
+
+    def find_modes(
+        self,
+        spectrum: np.ndarray,
+        top_n: int = 5,
+        min_dist: int = 5
+    ) -> ModeTable:
+        """
+        Identify oscillatory modes with frequency, damping ratio, and magnitude.
+
+        This method extends peak detection by computing damping ratios from
+        the phase slope of the complex spectrum at each peak location.
+
+        Mathematical Background
+        -----------------------
+        A second-order oscillatory mode can be modeled by the transfer function:
+
+        .. math::
+
+            H(s) = \\frac{\\omega_n^2}{s^2 + 2\\zeta\\omega_n s + \\omega_n^2}
+
+        where :math:`\\omega_n = 2\\pi f_0` is the natural frequency and
+        :math:`\\zeta` is the damping ratio. Substituting :math:`s = j\\omega`:
+
+        .. math::
+
+            H(j\\omega) = \\frac{\\omega_n^2}{\\omega_n^2 - \\omega^2 + 2j\\zeta\\omega_n\\omega}
+
+        The phase response is:
+
+        .. math::
+
+            \\phi(\\omega) = -\\arctan\\left(\\frac{2\\zeta\\omega_n\\omega}{\\omega_n^2 - \\omega^2}\\right)
+
+        At resonance (:math:`\\omega = \\omega_n`), the phase slope satisfies:
+
+        .. math::
+
+            \\left.\\frac{d\\phi}{d\\omega}\\right|_{\\omega=\\omega_n} = -\\frac{1}{\\zeta\\omega_n}
+
+        Converting to frequency :math:`f = \\omega/(2\\pi)`:
+
+        .. math::
+
+            \\frac{d\\phi}{df} = 2\\pi\\frac{d\\phi}{d\\omega} = -\\frac{2\\pi}{\\zeta\\omega_n} = -\\frac{1}{\\zeta f_0}
+
+        Solving for damping ratio yields the estimation formula:
+
+        .. math::
+
+            \\boxed{\\zeta = -\\frac{1}{f_0 \\cdot d\\phi/df}}
+
+        The phase :math:`\\phi` is computed via ``np.unwrap(np.angle(M))`` to
+        handle discontinuities at :math:`\\pm\\pi`, and the derivative is
+        approximated using centered finite differences.
+
+        Parameters
+        ----------
+        spectrum : ndarray
+            Complex spectrum of shape ``(n_scales, n_freqs)`` from
+            ``spectrum(..., return_complex=True)``.
+        top_n : int, optional
+            Maximum number of modes to identify. Default is 5.
+        min_dist : int, optional
+            Minimum index distance between peaks. Default is 5.
+
+        Returns
+        -------
+        ModeTable
+            A printable table containing for each identified mode:
+
+            - ``frequency``: Oscillation frequency in Hz
+            - ``damping``: Damping ratio (dimensionless)
+            - ``wavelength``: Spatial wavelength (mode extent)
+            - ``magnitude``: Transform magnitude at peak
+
+        Examples
+        --------
+        >>> M = sgma.spectrum(V, t, bus=0, time=5.0, return_complex=True)
+        >>> modes = sgma.find_modes(M, top_n=5)
+        >>> print(modes)
+        ModeTable (5 modes identified)
+        ------------------------------------------------------------
+          #   Freq (Hz)     Damping    Wavelength   Magnitude
+        ------------------------------------------------------------
+          1      0.3500      0.0423         45.21      1.2345
+          2      0.7200      0.0156         12.34      0.9876
+        ...
+        """
+        if not np.iscomplexobj(spectrum):
+            raise ValueError(
+                "find_modes requires the complex spectrum. "
+                "Use spectrum(..., return_complex=True)."
+            )
+
+        Y_mag = np.abs(spectrum)
+        peaks = self.find_peaks(Y_mag, top_n=top_n, min_dist=min_dist, return_indices=True)
+
+        if peaks['Frequency'].size == 0:
+            return ModeTable(
+                frequency=np.array([]),
+                damping=np.array([]),
+                wavelength=np.array([]),
+                magnitude=np.array([])
+            )
+
+        # Unwrap phase to handle discontinuities at ±π
+        #z = np.log(spectrum) # sigma + j phase
+        
+        phase =  np.unwrap(np.angle(spectrum), axis=1)
+
+        scale_idx = peaks['ScaleIdx']
+        freq_idx = peaks['FreqIdx']
+        n_freqs = len(self.freqs)
+
+        # Compute phase slope using centered differences (boundary conditions if at edge)
+        phase_slope = np.zeros(len(freq_idx))
+        for i, (si, fi) in enumerate(zip(scale_idx, freq_idx)):
+            if fi > 0 and fi < n_freqs - 1:
+                phase_slope[i] = (phase[si, fi + 1] - phase[si, fi - 1]) / \
+                                 (self.freqs[fi + 1] - self.freqs[fi - 1])
+            elif fi == 0:
+                phase_slope[i] = (phase[si, fi + 1] - phase[si, fi]) / \
+                                 (self.freqs[fi + 1] - self.freqs[fi])
+            else:
+                phase_slope[i] = (phase[si, fi] - phase[si, fi - 1]) / \
+                                 (self.freqs[fi] - self.freqs[fi - 1])
+
+        # Damping: ζ = -1/(f₀ · dφ/df) from 2nd-order transfer function theory
+        f0 = peaks['Frequency']
+        with np.errstate(divide='ignore', invalid='ignore'):
+            damping = -1.0 / (f0 * phase_slope)
+            damping = np.where(np.isfinite(damping), damping, 0.0)
+
+        return ModeTable(
+            frequency=f0,
+            damping=damping,
+            wavelength=peaks['Wavelength'],
+            magnitude=peaks['Magnitude']
+        )
+
     def analyze_many(
         self,
         V: np.ndarray,
@@ -408,84 +601,66 @@ class SGMA:
         """
         if buses is None:
             buses = list(range(V.shape[0]))
-        
-        n_buses = len(buses)
-        
-        # Pre-compute temporal matrix and V @ B (constant across all buses)
-        B = self._build_temporal_matrix(t, time_target=time)
-        VB = V @ B  # Computed ONCE, not n_buses times
-        
-        all_w, all_f, all_m, all_b = [], [], [], []
 
+        n_buses = len(buses)
+        B = self._build_temporal_matrix(t, time_target=time)
+        VB = V @ B
+
+        all_w, all_f, all_m, all_b = [], [], [], []
         for i, bus_idx in enumerate(buses):
-            # Pass pre-computed VB to avoid redundant multiplication
             Y = self.spectrum(V, t, bus=bus_idx, time=time, VB=VB)
-            
             p = self.find_peaks(Y, top_n=top_n, min_dist=min_dist)
             if p['Wavelength'].size > 0:
                 all_w.append(p['Wavelength'])
                 all_f.append(p['Frequency'])
                 all_m.append(p['Magnitude'])
                 all_b.append(np.full(p['Wavelength'].shape, bus_idx, dtype=int))
-            
-            if verbose and (i + 1) % 50 == 0: # pragma: no cover
+
+            if verbose and (i + 1) % 50 == 0:  # pragma: no cover
                 print(f"  Processed {i + 1}/{n_buses} buses...")
-        
+
         empty_peaks = {k: np.array([]) for k in ['Wavelength', 'Frequency', 'Magnitude', 'Bus_ID']}
         empty_clusters = {k: np.array([]) for k in ['Wavelength', 'Frequency', 'Density']}
 
         if not all_w:
             return NetworkAnalysisResult(peaks=empty_peaks, clusters=empty_clusters)
-        
+
         master_peaks = {
             'Wavelength': np.concatenate(all_w),
             'Frequency': np.concatenate(all_f),
             'Magnitude': np.concatenate(all_m),
             'Bus_ID': np.concatenate(all_b)
         }
-        
-        # --- Density Clustering ---
-        cluster_peaks = self._compute_density_clusters(master_peaks, top_n, min_dist)
 
+        cluster_peaks = self._compute_density_clusters(master_peaks, top_n, min_dist)
         return NetworkAnalysisResult(peaks=master_peaks, clusters=cluster_peaks)
 
     def _compute_density_clusters(self, peaks_dict: Dict[str, np.ndarray], top_n: int, min_dist: int) -> Dict[str, np.ndarray]:
-        """Helper to compute density-based clusters from peak data."""
+        """Compute density-based clusters from peak data using KDE."""
         if peaks_dict['Wavelength'].size < 2:
             return {k: np.array([]) for k in ['Wavelength', 'Frequency', 'Density']}
 
         try:
             x, y = np.log10(peaks_dict['Wavelength']), peaks_dict['Frequency']
             kernel = gaussian_kde(np.vstack([x, y]))
-            
+
             X_grid, Y_grid = np.meshgrid(np.log10(self.wavlen), self.freqs, indexing='ij')
             Z = kernel(np.vstack([X_grid.ravel(), Y_grid.ravel()])).reshape(X_grid.shape)
-            
+
             cluster_peaks = self.find_peaks(Z, top_n=top_n, min_dist=min_dist)
-            
-            # Rename 'Magnitude' to 'Density' for these cluster peaks
             cluster_peaks['Density'] = cluster_peaks.pop('Magnitude')
-            
             return cluster_peaks
         except Exception:
             return {k: np.array([]) for k in ['Wavelength', 'Frequency', 'Density']}
 
     def close(self):
-        """
-        Release cached convolution resources.
-        
-        Call this method when finished using the SGMA instance to
-        free CHOLMOD memory allocations.
-        """
+        """Release cached convolution resources and free CHOLMOD memory."""
         if self._conv is not None:
             self._conv.__exit__(None, None, None)
             self._conv = None
-        
-        # Clear cached matrices
         self._B = None
         self._t_cached = None
         self._time_target_cached = None
 
     def __del__(self):
-        """Cleanup on garbage collection."""
         self.close()

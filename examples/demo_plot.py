@@ -165,7 +165,7 @@ def plot_peak_heatmap(master_df, wavlen, freqs, cmap='inferno', output_dir=None,
 
     ax.set_xlabel("Wavelength [km]", color=text_c)
     ax.set_ylabel("Frequency [Hz]", color=text_c)
-    ax.set_title("System-Wide Mode Clusters (Density)", color=text_c, pad=15)
+    ax.set_title("Density Function of Modes Approximated via SGMA", color=text_c, pad=15)
     
     ax.tick_params(colors=text_c, which='both')
     for spine in ax.spines.values(): spine.set_color(text_c)

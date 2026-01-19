@@ -11,7 +11,7 @@ def gaussian_wavelet(time, a=1, b=0, w0=1):
     The analytical form is:
 
     .. math::
-        \psi_{a,b}(t) = C \\cdot \\left( e^{i \omega_0 t'} - e^{-\omega_0^2 / 2} \\right) \\cdot e^{-(t')^2 / 2}
+        \psi_{a,b}(t) = C e^{-\\frac{(t')^2}{2}} \\left( e^{i \omega_0 t'} - e^{-\\frac{\omega_0^2}{2}} \\right) 
 
     where :math:`t' = (t-b)/a` and the normalization constant is
     :math:`C = (\\Delta t / a) \pi^{-1/4}`. The term :math:`e^{-\omega_0^2 / 2}`

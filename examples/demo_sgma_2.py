@@ -26,8 +26,8 @@ V, t = get_signal(FILEPATH, t_range=(0, 60))
 # SGMA Parameters
 TIME_TARGET = 2.0
 N_RANDOM_BUSES = 50
-ORDER = 10
-TOP_N = 5
+ORDER = 3
+TOP_N = 3
 
 spatial_scales = np.geomspace(1e-3, 1e1, 150)
 temporal_freqs = np.linspace(0.02, 2.0, 100)

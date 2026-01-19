@@ -26,8 +26,8 @@ V = np.abs(V)
 
 # SGMA Parameters
 TIME_TARGET = 2.0
-ORDER = 10
-TOP_N = 4
+ORDER = 3
+TOP_N = 3
 
 spatial_scales = np.geomspace(1e-3, 1e1, 150)
 temporal_freqs = np.linspace(0.02, 2.0, 100)
