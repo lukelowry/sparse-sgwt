@@ -74,60 +74,54 @@ Pre-computed rational approximations for common spectral graph wavelets are avai
 Available Data Summary
 ----------------------
 
-The following table summarizes the available built-in datasets.
+The following table summarizes all available built-in datasets, including both power grid networks and 3D mesh models. The original mesh datasets can be found at the `Laplacian Library <https://github.com/lukelowry/laplib>`_.
 
 .. list-table::
-   :widths: 25 15 15 15 15
+   :widths: 20 12 18 12 25
    :header-rows: 1
 
-   * - Graph Name
-     - DELAY
-     - IMPEDANCE
-     - LENGTH
-     - COORDS
-   * - **TEXAS**
-     - Yes
-     - Yes
-     - Yes
-     - Yes
-   * - **USA**
-     - Yes
-     - Yes
-     - Yes
-     - Yes
-   * - **EASTWEST**
-     - Yes
-     - Yes
-     - Yes
-     - Yes
-   * - **HAWAII**
-     - Yes
-     - Yes
-     - Yes
-     - Yes
-   * - **WECC**
-     - Yes
-     - Yes
-     - Yes
-     - No
-
-.. _mesh_laplacians:
-
-Mesh Laplacians
----------------
-
-These Laplacians are derived from 3D mesh models. The original datasets can be
-found at the `Laplacian Library <https://github.com/lukelowry/laplib>`_.
-
-.. list-table::
-   :header-rows: 1
-
-   * - Name
+   * - Dataset
      - Vertices
      - Edges
-   * - ``MESH_BUNNY``
+     - Vertex Signals
+     - Edge Weights
+   * - **BUNNY**
      - 35947
      - 104288
-   * - ``MESH_HORSE``
+     - ``x``, ``y``, ``z``
+     -
+   * - **HORSE**
      - 48485
      - 145449
+     - ``x``, ``y``, ``z``
+     -
+   * - **LBRAIN**
+     - 149351
+     - 448041
+     - ``x``, ``y``, ``z``
+     -
+   * - **HAWAII**
+     - 37
+     - 98
+     - ``long``, ``lat``
+     - ``length``, ``impedance``, ``delay``
+   * - **TEXAS**
+     - 2000
+     - 2998
+     - ``long``, ``lat``
+     - ``length``, ``impedance``, ``delay``
+   * - **EASTWEST**
+     - 78000
+     - 100923
+     - ``long``, ``lat``
+     - ``length``, ``impedance``, ``delay``
+   * - **USA**
+     - 82000
+     - 104123
+     - ``long``, ``lat``
+     - ``length``, ``impedance``, ``delay``
+   * - **WECC**
+     - 240
+     - 451
+     -
+     - ``length``, ``impedance``, ``delay``

@@ -368,6 +368,8 @@ _LAZY_REGISTRY = {
     # Mesh Laplacians
     "MESH_BUNNY":      lambda: _mesh_lap("BUNNY"),
     "MESH_HORSE":      lambda: _mesh_lap("HORSE"),
+    "MESH_LBRAIN":     lambda: _mesh_lap("LBRAIN"),
+
 
     # Signals
     "COORD_EASTWEST":  lambda: _sig("COORDS", "EASTWEST"),
@@ -378,6 +380,7 @@ _LAZY_REGISTRY = {
     # Mesh Signals
     "BUNNY_XYZ":       lambda: _mesh_sig("BUNNY"),
     "HORSE_XYZ":       lambda: _mesh_sig("HORSE"),
+    "LBRAIN_XYZ":      lambda: _mesh_sig("LBRAIN"),
 }
 
 def __getattr__(name: str) -> Any:
