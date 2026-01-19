@@ -1,5 +1,5 @@
 Examples
-============
+========
 
 The ``sgwt`` package includes a repository of examples:
 
@@ -10,4 +10,4 @@ The ``sgwt`` package includes a repository of examples:
    dynamic
    sgma
    meshes
-   cheby
+   benchmarks
