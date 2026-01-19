@@ -155,7 +155,7 @@ class SGMA:
 
     .. math::
 
-        m_{n,\\tau}(\\Lambda \\times S) \\approx L_n X R_\\tau
+        m_{n,\\tau}(\\Lambda \\times \\mathbf{\\Omega}) \\approx L_n X R_\\tau
 
     where :math:`L_n` is the SGWT localized at bus :math:`n`, :math:`X` is
     the time-vertex signal, and :math:`R_\\tau` is the temporal wavelet

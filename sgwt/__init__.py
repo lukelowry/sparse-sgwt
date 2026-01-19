@@ -31,7 +31,7 @@ from .util import (
 )
 
 # Delegate lazy-loading of data resources to the util module
-_LAZY_RESOURCES = list(util._LAZY_REGISTRY.keys())
+_LAZY_RESOURCES = list(util._ensure_registry().keys())
 
 def __getattr__(name):
     """Lazily loads data resources (Laplacians, signals, etc.) on first access."""

@@ -172,6 +172,8 @@ class TestScalingPerformance:
         """Benchmark static convolution (Convolve) scaling."""
         L = request.getfixturevalue(graph_name)
         n_nodes = L.shape[0]
+        benchmark.extra_info['num_edges'] = (L.nnz - n_nodes) // 2
+        n_nodes = L.shape[0]
         X = create_random_signal(n_nodes, 1)
         scales = [1.0]
 
@@ -184,6 +186,8 @@ class TestScalingPerformance:
     def test_dynamic_convolution(self, graph_name, method_name, request, benchmark):
         """Benchmark dynamic convolution (DyConvolve) scaling."""
         L = request.getfixturevalue(graph_name)
+        n_nodes = L.shape[0]
+        benchmark.extra_info['num_edges'] = (L.nnz - n_nodes) // 2
         n_nodes = L.shape[0]
         X = create_random_signal(n_nodes, 1)
         poles = [1.0]

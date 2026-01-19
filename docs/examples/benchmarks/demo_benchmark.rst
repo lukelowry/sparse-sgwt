@@ -5,7 +5,7 @@ This benchmark visualizes the performance characteristics of the analytical grap
 
 The four panels show:
 
-- **Graph Size Scaling**: Execution time vs. number of nodes for both ``Convolve`` (Static) and ``DyConvolve`` (Dynamic) solvers across lowpass, bandpass, and highpass filters.
+- **Graph Size Scaling**: Execution time vs. number of edges for both ``Convolve`` (Static) and ``DyConvolve`` (Dynamic) solvers across lowpass, bandpass, and highpass filters.
 - **Signal Count Scaling**: How execution time scales with the number of input signals.
 - **Scale Count Scaling**: How execution time scales with the number of wavelet scales.
 - **Filter Order Scaling**: How bandpass filter order affects execution time.

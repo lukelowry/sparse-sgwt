@@ -43,6 +43,17 @@ GRAPH_SIZES = {
     "usa_laplacian": 82223,
 }
 
+# Number of edges for known fixtures (undirected graphs, each edge counted once)
+GRAPH_EDGES = {
+    "medium_path_laplacian": 99,        # Path graph: N-1 edges
+    "large_path_laplacian": 999,        # Path graph: N-1 edges
+    "texas_laplacian": 3667,            # DELAY_TEXAS.nnz // 2
+    "hawaii_laplacian": 90,             # DELAY_HAWAII.nnz // 2
+    "wecc_laplacian": 472,              # DELAY_WECC.nnz // 2
+    "eastwest_laplacian": 135544,       # DELAY_EASTWEST.nnz // 2
+    "usa_laplacian": 139205,            # DELAY_USA.nnz // 2
+}
+
 GRAPH_LABELS = {
     37: "Hawaii",
     100: "Path-100",
@@ -80,6 +91,11 @@ def get_graph_size(graph_name):
     return GRAPH_SIZES.get(graph_name)
 
 
+def get_graph_edges(graph_name):
+    """Map graph fixture name to edge count."""
+    return GRAPH_EDGES.get(graph_name)
+
+
 def setup_style():
     """Configure matplotlib for clean, professional plots."""
     plt.rcParams.update({
@@ -98,7 +114,7 @@ def setup_style():
 
 
 def extract_graph_scaling_data(benchmarks):
-    """Extract graph size scaling data for Static and Dynamic solvers."""
+    """Extract graph edge scaling data for Static and Dynamic solvers."""
     static_data = {}
     dynamic_data = {}
 
@@ -109,8 +125,9 @@ def extract_graph_scaling_data(benchmarks):
             continue
 
         graph_name = params.get('graph_name')
-        size = get_graph_size(graph_name)
-        if not size:
+        # Use number of edges from lookup table
+        size = get_graph_edges(graph_name)
+        if size is None:
             continue
 
         mean_time = b['stats']['mean']
@@ -196,7 +213,7 @@ def plot_graph_scaling(ax, static_data, dynamic_data, y_lim=None):
                       alpha=0.85, markerfacecolor='white', markeredgecolor=color,
                       markeredgewidth=1.2)
 
-    ax.set_xlabel('Graph Size (N)')
+    ax.set_xlabel('Number of Edges')
     ax.set_ylabel('Execution Time (s)')
     ax.set_title('Static vs. Dynamic Solver Scaling')
     ax.legend(loc='upper left', fontsize=9, ncol=3)

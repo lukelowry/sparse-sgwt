@@ -21,7 +21,17 @@ from scipy.io import loadmat
 from scipy.sparse import csc_matrix, linalg
 
 from json import load as jsonload
-from typing import Any, Callable, Dict, List, Union, Optional
+from typing import Any, Callable, Dict, List, Union, Optional, Tuple
+
+
+@dataclass
+class _FolderConfig:
+    """Configuration for auto-discovering resources in a library folder."""
+    folder: str
+    extension: str
+    key_fn: Callable[[str], str]
+    loader_fn: Callable[[str], Callable[[], Any]]
+    secondary_fn: Optional[Callable[[str], Tuple[str, Callable[[], Any]]]] = None
 
 
 @dataclass
@@ -479,62 +489,102 @@ def load_ply_xyz(filepath: str) -> np.ndarray:
 
 
 # Factory helpers
-def _lap(k: str, r: str) -> csc_matrix: return _load_resource(f"library/{k}/{r}_{k}.mat", lambda p: _mat_loader(p, to_csc=True)) # type: ignore
-def _sig(k: str, r: str) -> np.ndarray: return _load_resource(f"library/SIGNALS/{r}_{k}.mat", _mat_loader) # type: ignore
-def _kern(n: str) -> Dict[str, Any]:   return _load_resource(f"library/KERNELS/{n}.json", _json_kern_loader)
-def _ply_lap(n: str) -> csc_matrix: return _load_resource(f"library/MESH/{n}.ply", load_ply_laplacian) # type: ignore
-def _ply_xyz(n: str) -> np.ndarray: return _load_resource(f"library/MESH/{n}.ply", load_ply_xyz) # type: ignore
+def _lap(k: str, r: str) -> csc_matrix:
+    """Loads a Laplacian from library/{TYPE}/{REGION}.mat."""
+    return _load_resource(f"library/{k}/{r}.mat", lambda p: _mat_loader(p, to_csc=True))  # type: ignore
 
-# Lazy loading registry
-_LAZY_REGISTRY = {
-    # Kernels
-    "MEXICAN_HAT":     lambda: _kern("MEXICAN_HAT"),
-    "GAUSSIAN_WAV":    lambda: _kern("GAUSSIAN_WAV"),
-    "MODIFIED_MORLET": lambda: _kern("MODIFIED_MORLET"),
-    "SHANNON":         lambda: _kern("SHANNON"),
 
-    # Laplacians
-    "DELAY_EASTWEST":  lambda: _lap("DELAY", "EASTWEST"),
-    "DELAY_HAWAII":    lambda: _lap("DELAY", "HAWAII"),
-    "DELAY_TEXAS":     lambda: _lap("DELAY", "TEXAS"),
-    "DELAY_USA":       lambda: _lap("DELAY", "USA"),
-    "DELAY_WECC":      lambda: _lap("DELAY", "WECC"),
+def _sig(r: str) -> np.ndarray:
+    """Loads a signal from library/SIGNALS/{REGION}.mat."""
+    return _load_resource(f"library/SIGNALS/{r}.mat", _mat_loader)  # type: ignore
 
-    "IMPEDANCE_EASTWEST": lambda: _lap("IMPEDANCE", "EASTWEST"),
-    "IMPEDANCE_HAWAII":   lambda: _lap("IMPEDANCE", "HAWAII"),
-    "IMPEDANCE_TEXAS":    lambda: _lap("IMPEDANCE", "TEXAS"),
-    "IMPEDANCE_USA":      lambda: _lap("IMPEDANCE", "USA"),
-    "IMPEDANCE_WECC":     lambda: _lap("IMPEDANCE", "WECC"),
 
-    "LENGTH_EASTWEST": lambda: _lap("LENGTH", "EASTWEST"),
-    "LENGTH_HAWAII":   lambda: _lap("LENGTH", "HAWAII"),
-    "LENGTH_TEXAS":    lambda: _lap("LENGTH", "TEXAS"),
-    "LENGTH_USA":      lambda: _lap("LENGTH", "USA"),
-    "LENGTH_WECC":     lambda: _lap("LENGTH", "WECC"),
+def _kern(n: str) -> Dict[str, Any]:
+    """Loads a kernel from library/KERNELS/{NAME}.json."""
+    return _load_resource(f"library/KERNELS/{n}.json", _json_kern_loader)
 
-    # Mesh Laplacians (loaded from .ply files)
-    "MESH_BUNNY":      lambda: _ply_lap("BUNNY"),
-    "MESH_HORSE":      lambda: _ply_lap("HORSE"),
-    "MESH_LBRAIN":     lambda: _ply_lap("LBRAIN"),
 
-    # Signals
-    "COORD_EASTWEST":  lambda: _sig("COORDS", "EASTWEST"),
-    "COORD_HAWAII":    lambda: _sig("COORDS", "HAWAII"),
-    "COORD_TEXAS":     lambda: _sig("COORDS", "TEXAS"),
-    "COORD_USA":       lambda: _sig("COORDS", "USA"),
+def _ply_lap(n: str) -> csc_matrix:
+    """Loads a mesh Laplacian from library/MESH/{NAME}.ply."""
+    return _load_resource(f"library/MESH/{n}.ply", load_ply_laplacian)  # type: ignore
 
-    # Mesh Signals (loaded from .ply files)
-    "BUNNY_XYZ":       lambda: _ply_xyz("BUNNY"),
-    "HORSE_XYZ":       lambda: _ply_xyz("HORSE"),
-    "LBRAIN_XYZ":      lambda: _ply_xyz("LBRAIN"),
-}
+
+def _ply_xyz(n: str) -> np.ndarray:
+    """Loads mesh coordinates from library/MESH/{NAME}.ply."""
+    return _load_resource(f"library/MESH/{n}.ply", load_ply_xyz)  # type: ignore
+
+
+# Auto-discovery configuration for library folders
+_FOLDER_CONFIGS: List[_FolderConfig] = [
+    _FolderConfig("KERNELS", ".json",
+                  lambda s: s,
+                  lambda s: lambda: _kern(s)),
+    _FolderConfig("DELAY", ".mat",
+                  lambda s: f"DELAY_{s}",
+                  lambda s: lambda: _lap("DELAY", s)),
+    _FolderConfig("IMPEDANCE", ".mat",
+                  lambda s: f"IMPEDANCE_{s}",
+                  lambda s: lambda: _lap("IMPEDANCE", s)),
+    _FolderConfig("LENGTH", ".mat",
+                  lambda s: f"LENGTH_{s}",
+                  lambda s: lambda: _lap("LENGTH", s)),
+    _FolderConfig("SIGNALS", ".mat",
+                  lambda s: f"COORD_{s}",
+                  lambda s: lambda: _sig(s)),
+    _FolderConfig("MESH", ".ply",
+                  lambda s: f"MESH_{s}",
+                  lambda s: lambda: _ply_lap(s),
+                  lambda s: (f"{s}_XYZ", lambda: _ply_xyz(s))),
+]
+
+_LAZY_REGISTRY: Optional[Dict[str, Callable[[], Any]]] = None
+
+
+def _discover_resources() -> Dict[str, Callable[[], Any]]:
+    """Scans library folders and builds the lazy-loading registry."""
+    registry: Dict[str, Callable[[], Any]] = {}
+    library = files("sgwt") / "library"
+
+    for cfg in _FOLDER_CONFIGS:
+        folder = library / cfg.folder
+        try:
+            items = list(folder.iterdir())
+        except (TypeError, FileNotFoundError):
+            continue
+
+        for item in items:
+            if not item.name.endswith(cfg.extension):
+                continue
+            stem = item.name[:-len(cfg.extension)]
+
+            # Add primary entry
+            registry[cfg.key_fn(stem)] = cfg.loader_fn(stem)
+
+            # Add secondary entry if configured (e.g., MESH -> XYZ)
+            if cfg.secondary_fn:
+                key, loader = cfg.secondary_fn(stem)
+                registry[key] = loader
+
+    return registry
+
+
+def _ensure_registry() -> Dict[str, Callable[[], Any]]:
+    """Returns the registry, building it on first access."""
+    global _LAZY_REGISTRY
+    if _LAZY_REGISTRY is None:
+        _LAZY_REGISTRY = _discover_resources()
+    return _LAZY_REGISTRY
+
 
 def __getattr__(name: str) -> Any:
-    if name in _LAZY_REGISTRY:
-        return _LAZY_REGISTRY[name]()
+    registry = _ensure_registry()
+    if name in registry:
+        return registry[name]()
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
-def __dir__() -> List[str]:
-    return list(globals().keys()) + list(_LAZY_REGISTRY.keys())
 
-__all__ = list(_LAZY_REGISTRY.keys()) + ["ChebyKernel", "VFKernel", "impulse", "get_cholmod_dll", "get_klu_dll", "estimate_spectral_bound", "load_ply_laplacian", "load_ply_xyz"]
+def __dir__() -> List[str]:
+    return list(globals().keys()) + list(_ensure_registry().keys())
+
+
+__all__ = ["ChebyKernel", "VFKernel", "impulse", "get_cholmod_dll", "get_klu_dll", "estimate_spectral_bound", "load_ply_laplacian", "load_ply_xyz"]

@@ -87,7 +87,7 @@ The following table summarizes all available built-in datasets, including both p
      - Edge Weights
    * - **BUNNY**
      - 35947
-     - 104288
+     - 103731
      - ``x``, ``y``, ``z``
      -
    * - **HORSE**
@@ -96,32 +96,76 @@ The following table summarizes all available built-in datasets, including both p
      - ``x``, ``y``, ``z``
      -
    * - **LBRAIN**
-     - 149351
-     - 448041
+     - 144490
+     - 433464
+     - ``x``, ``y``, ``z``
+     -
+   * - **RBRAIN**
+     - 145071
+     - 435207
      - ``x``, ``y``, ``z``
      -
    * - **HAWAII**
-     - 37
-     - 98
+     - 46
+     - 67
      - ``long``, ``lat``
      - ``length``, ``impedance``, ``delay``
    * - **TEXAS**
      - 2000
-     - 2998
+     - 2667
      - ``long``, ``lat``
      - ``length``, ``impedance``, ``delay``
    * - **EASTWEST**
-     - 78000
-     - 100923
+     - 80000
+     - 95544
      - ``long``, ``lat``
      - ``length``, ``impedance``, ``delay``
    * - **USA**
      - 82000
-     - 104123
+     - 98205
      - ``long``, ``lat``
      - ``length``, ``impedance``, ``delay``
    * - **WECC**
-     - 240
-     - 451
+     - 243
+     - 351
      -
      - ``length``, ``impedance``, ``delay``
+   * - **NEISO**
+     - 39
+     - 46
+     -
+     - ``length``, ``delay``
+
+Adding New Data
+---------------
+
+The library uses auto-discovery to find data files. To add new datasets, simply place files in the appropriate folder with the correct naming convention:
+
+**Laplacians** (stored as ``.mat`` files containing a sparse matrix):
+
+.. code-block:: text
+
+   sgwt/library/DELAY/{REGION}.mat      →  sgwt.DELAY_{REGION}
+   sgwt/library/IMPEDANCE/{REGION}.mat  →  sgwt.IMPEDANCE_{REGION}
+   sgwt/library/LENGTH/{REGION}.mat     →  sgwt.LENGTH_{REGION}
+
+**Signals** (stored as ``.mat`` files containing an array):
+
+.. code-block:: text
+
+   sgwt/library/SIGNALS/{REGION}.mat    →  sgwt.COORD_{REGION}
+
+**Meshes** (stored as ``.ply`` files):
+
+.. code-block:: text
+
+   sgwt/library/MESH/{NAME}.ply         →  sgwt.MESH_{NAME}  (Laplacian)
+                                        →  sgwt.{NAME}_XYZ   (coordinates)
+
+**Kernels** (stored as ``.json`` files):
+
+.. code-block:: text
+
+   sgwt/library/KERNELS/{NAME}.json     →  sgwt.{NAME}
+
+No code changes are required—new files are automatically discovered at runtime

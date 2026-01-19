@@ -38,27 +38,12 @@ Derivation of the Delay Weight
 
 To derive the precise branch weights for the **Delay Graph Laplacian**, we must calculate the effective parameters of transformers and transmission lines, accounting for the fact that real-world grid data often aggregates these values.
 
-**Effective Branch Parameters**
-
-1. **Inductance:**
-   We derive the branch inductance :math:`L_{ij}` from the imaginary part of the series impedance :math:`Z^{br}_{ij}`:
+**Effective Branch Shunt Admittance**
+   Shunt admittance is often stored as a nodal aggregate, the sum of the pi-model tranmission lines connected to each node. We define the effective branch shunt admittance :math:`Y^{sh}_{ij}` as the average of the nodal shunt admittance at the branch terminals:
 
    .. math::
 
-      \omega L_{ij}= \text{Im}\left(Z^{br}_{ij}\right)
-
-2. **Capacitance:**
-   Shunt admittance is often stored as a nodal aggregate. We first calculate the net nodal capacitance :math:`C_n` from the shunt admittance :math:`Y^{sh}_{n}`:
-
-   .. math::
-
-       \omega C_{n}= \text{Im}\left(Y^{sh}_{n}\right)
-
-   To apply this to the edges (consistent with :math:`\pi`-model assumptions), we define the **effective branch capacitance** :math:`C_{ij}` as the average of the nodal capacitances at the branch terminals:
-
-   .. math::
-
-       C_{ij}=\dfrac{1}{2}(C_{i}+C_{j})
+       Y^{sh}_{ij}=\dfrac{1}{2}(Y^{sh}_{i}+Y^{sh}_{j})
 
 **Lossless Propagation Delay**
 
@@ -66,7 +51,7 @@ Using these parameters, we estimate the lossless propagation delay :math:`\theta
 
 .. math::
 
-    \theta_{ij} = \beta_{ij} \ell_{ij} =\omega\tau_{ij}= \text{Re}\left( \sqrt{Y_{ij}Z_{ij}} \right)
+    \theta_{ij} = \beta_{ij} \ell_{ij} =\omega\tau_{ij}= \text{Re}\left( \sqrt{Y_{ij}^{sh}Z_{ij}^{br}} \right)
 
 The expression above works because the total line parameters of the line are given, rather than the per-meter values. This forms the definition of the **Delay Graph Laplacian**:
 
