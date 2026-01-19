@@ -159,7 +159,7 @@ class SGMA:
 
     where :math:`L_n` is the SGWT localized at bus :math:`n`, :math:`X` is
     the time-vertex signal, and :math:`R_\\tau` is the temporal wavelet
-    matrix centered at time :math:`\\tau` [2].
+    matrix centered at time :math:`\\tau`.
 
     Parameters
     ----------
@@ -428,51 +428,16 @@ class SGMA:
         """
         Identify oscillatory modes with frequency, damping ratio, and magnitude.
 
-        This method extends peak detection by computing damping ratios from
-        the phase slope of the complex spectrum at each peak location.
-
-        Mathematical Background
-        -----------------------
-        A second-order oscillatory mode can be modeled by the transfer function:
+        Extends peak detection by computing damping ratios from the phase slope
+        of the complex spectrum. The damping ratio :math:`\\zeta` is estimated
+        at each peak using the phase-frequency relationship:
 
         .. math::
 
-            H(s) = \\frac{\\omega_n^2}{s^2 + 2\\zeta\\omega_n s + \\omega_n^2}
+            \\zeta = -\\frac{1}{f_0 \\cdot d\\phi/df}
 
-        where :math:`\\omega_n = 2\\pi f_0` is the natural frequency and
-        :math:`\\zeta` is the damping ratio. Substituting :math:`s = j\\omega`:
-
-        .. math::
-
-            H(j\\omega) = \\frac{\\omega_n^2}{\\omega_n^2 - \\omega^2 + 2j\\zeta\\omega_n\\omega}
-
-        The phase response is:
-
-        .. math::
-
-            \\phi(\\omega) = -\\arctan\\left(\\frac{2\\zeta\\omega_n\\omega}{\\omega_n^2 - \\omega^2}\\right)
-
-        At resonance (:math:`\\omega = \\omega_n`), the phase slope satisfies:
-
-        .. math::
-
-            \\left.\\frac{d\\phi}{d\\omega}\\right|_{\\omega=\\omega_n} = -\\frac{1}{\\zeta\\omega_n}
-
-        Converting to frequency :math:`f = \\omega/(2\\pi)`:
-
-        .. math::
-
-            \\frac{d\\phi}{df} = 2\\pi\\frac{d\\phi}{d\\omega} = -\\frac{2\\pi}{\\zeta\\omega_n} = -\\frac{1}{\\zeta f_0}
-
-        Solving for damping ratio yields the estimation formula:
-
-        .. math::
-
-            \\boxed{\\zeta = -\\frac{1}{f_0 \\cdot d\\phi/df}}
-
-        The phase :math:`\\phi` is computed via ``np.unwrap(np.angle(M))`` to
-        handle discontinuities at :math:`\\pm\\pi`, and the derivative is
-        approximated using centered finite differences.
+        where :math:`f_0` is the peak frequency and :math:`d\\phi/df` is computed
+        using centered finite differences on the unwrapped phase.
 
         Parameters
         ----------
@@ -487,12 +452,8 @@ class SGMA:
         Returns
         -------
         ModeTable
-            A printable table containing for each identified mode:
-
-            - ``frequency``: Oscillation frequency in Hz
-            - ``damping``: Damping ratio (dimensionless)
-            - ``wavelength``: Spatial wavelength (mode extent)
-            - ``magnitude``: Transform magnitude at peak
+            Table with identified modes. Attributes include ``frequency``,
+            ``damping``, ``wavelength``, and ``magnitude``.
 
         Examples
         --------

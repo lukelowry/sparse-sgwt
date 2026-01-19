@@ -15,13 +15,39 @@ from scipy.sparse import csc_matrix
 from ctypes import byref
 
 class ChebyConvolve:
+    """
+    Chebyshev polynomial graph convolution context.
+
+    Approximates spectral graph filters using Chebyshev polynomials of the
+    first kind. Given a filter :math:`g(\\lambda)`, the approximation is:
+
+    .. math::
+
+        g(\\mathbf{L}) \\approx \\sum_{k=0}^{K-1} c_k T_k(\\tilde{\\mathbf{L}})
+
+    where :math:`T_k` are Chebyshev polynomials, :math:`c_k` are the
+    coefficients, and :math:`\\tilde{\\mathbf{L}} = 2\\mathbf{L}/\\lambda_{\\max} - \\mathbf{I}`
+    maps eigenvalues to :math:`[-1, 1]`.
+
+    The polynomials are evaluated using the three-term recurrence:
+
+    .. math::
+
+        T_0(x) = 1, \\quad T_1(x) = x, \\quad T_k(x) = 2x T_{k-1}(x) - T_{k-2}(x)
+
+    Parameters
+    ----------
+    L : csc_matrix
+        Sparse Graph Laplacian.
+
+    See Also
+    --------
+    Convolve : Rational approximation via direct solves (often faster).
+    """
+
     def __init__(self, L: csc_matrix) -> None:
         """
         Initializes a Chebyshev convolution context.
-
-        This context manager is used to perform graph convolutions via
-        Chebyshev polynomial approximation. It estimates the spectral bound
-        of the Laplacian upon initialization.
 
         Parameters
         ----------
@@ -64,24 +90,28 @@ class ChebyConvolve:
         """
         Performs graph convolution using Chebyshev polynomial approximation.
 
-        This method implements Clenshaw's algorithm for the stable evaluation of
-        the Chebyshev series on the graph signal `B`.
+        Computes :math:`g(\\mathbf{L})\\mathbf{B}` using Clenshaw's algorithm,
+        which evaluates the Chebyshev series via the recurrence:
+
+        .. math::
+
+            \\mathbf{Y} = \\sum_{k=0}^{K-1} c_k T_k(\\tilde{\\mathbf{L}}) \\mathbf{B}
+
+        where :math:`\\tilde{\\mathbf{L}} = 2\\mathbf{L}/\\lambda_{\\max} - \\mathbf{I}`.
 
         Parameters
         ----------
         B : np.ndarray
-            Input signal array of shape (n_vertices,) or (n_vertices, n_signals).
+            Input signal array of shape ``(n_vertices,)`` or ``(n_vertices, n_signals)``.
         C : ChebyKernel
-            A `ChebyKernel` object containing the Chebyshev coefficients and
-            the spectral bound of the approximation.
+            A ``ChebyKernel`` object containing the Chebyshev coefficients
+            :math:`c_k` and the spectral bound :math:`\\lambda_{\\max}`.
 
         Returns
         -------
         np.ndarray
-            The convolved signal. The shape of the output is
-            (n_vertices, n_signals, n_dims) for a 2D input `B`, or
-            (n_vertices, n_dims) for a 1D input `B`. `n_dims` is the
-            number of filter dimensions in the kernel.
+            The convolved signal. Shape is ``(n_vertices, n_signals, n_dims)``
+            for 2D input, or ``(n_vertices, n_dims)`` for 1D input.
         """
         # Handle complex inputs by processing real and imaginary parts separately
         if np.iscomplexobj(B):

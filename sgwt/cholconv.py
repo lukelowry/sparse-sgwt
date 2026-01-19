@@ -204,20 +204,26 @@ class Convolve:
         """
         Computes low-pass filtered scaling coefficients at specified scales.
 
-        Uses the analytical form: I / (sL + I).
+        Applies the spectral filter:
 
-        Warning: orders > 1 may cause issues if Bset is passed, untested
+        .. math::
+
+            \\phi_s(\\mathbf{L}) = \\left( \\frac{\\mathbf{I}}{s\\mathbf{L} + \\mathbf{I}} \\right)^n
+
+        where :math:`s` is the scale and :math:`n` is the filter order.
 
         Parameters
         ----------
         B : np.ndarray
             Input signal array (n_vertices, n_timesteps).
         scales : list[float], default: [1]
-            List of scales to compute coefficients for.
+            List of scales :math:`s` to compute coefficients for.
         Bset : csc_matrix, optional
             Sparse indicator vector for localized coefficient computation.
         refactor : bool, default: True
             Whether to perform numeric factorization for each scale.
+        order : int, default: 1
+            Filter order :math:`n`.
 
         Returns
         -------
@@ -275,16 +281,23 @@ class Convolve:
         """
         Computes band-pass filtered wavelet coefficients at specified scales.
 
-        Uses the analytical form: ((4/s) * L / (L + I/s)^2)^order.
+        Applies the spectral wavelet kernel:
+
+        .. math::
+
+            \\Psi_s(\\mathbf{L}) = \\left( \\frac{4\\mathbf{L}/s}{(\\mathbf{L} + \\mathbf{I}/s)^2} \\right)^n
+
+        where :math:`s` is the scale and :math:`n` is the filter order.
+        This kernel satisfies the admissibility condition :math:`\\Psi(0) = 0`.
 
         Parameters
         ----------
         B : np.ndarray
             Input signal array (n_vertices, n_timesteps).
         scales : list[float], default: [1]
-            List of scales to compute coefficients for.
+            List of scales :math:`s` to compute coefficients for.
         order : int, default: 1
-            The order of the filter (number of times the operator is applied).
+            Filter order :math:`n`.
 
         Returns
         -------
@@ -341,14 +354,20 @@ class Convolve:
         """
         Computes high-pass filtered coefficients at specified scales.
 
-        Uses the analytical form: sL / (sL + I).
+        Applies the spectral filter:
+
+        .. math::
+
+            \\mu_s(\\mathbf{L}) = \\frac{s\\mathbf{L}}{s\\mathbf{L} + \\mathbf{I}}
+
+        where :math:`s` is the scale.
 
         Parameters
         ----------
         B : np.ndarray
             Input signal array (n_vertices, n_timesteps).
         scales : list[float], default: [1]
-            List of scales to compute coefficients for.
+            List of scales :math:`s` to compute coefficients for.
 
         Returns
         -------
@@ -554,8 +573,14 @@ class DyConvolve:
     def lowpass(self, B: np.ndarray, Bset: Optional[csc_matrix] = None, order = 1) -> List[np.ndarray]:
         """
         Computes low-pass filtered scaling coefficients.
-        
-        Uses the analytical form: qI / (L + qI).
+
+        Applies the spectral filter:
+
+        .. math::
+
+            \\phi_q(\\mathbf{L}) = \\left( \\frac{q\\mathbf{I}}{\\mathbf{L} + q\\mathbf{I}} \\right)^n
+
+        where :math:`q` is the pre-defined pole and :math:`n` is the filter order.
 
         Parameters
         ----------
@@ -563,6 +588,8 @@ class DyConvolve:
             Input signal array (n_vertices, n_timesteps).
         Bset : csc_matrix, optional
             Sparse indicator vector for localized coefficient computation.
+        order : int, default: 1
+            Filter order :math:`n`.
 
         Returns
         -------
@@ -615,14 +642,20 @@ class DyConvolve:
         """
         Computes band-pass filtered wavelet coefficients.
 
-        Uses the analytical form: (4qL / (L + qI)^2)^order.
+        Applies the spectral wavelet kernel:
+
+        .. math::
+
+            \\Psi_q(\\mathbf{L}) = \\left( \\frac{4q\\mathbf{L}}{(\\mathbf{L} + q\\mathbf{I})^2} \\right)^n
+
+        where :math:`q` is the pre-defined pole and :math:`n` is the filter order.
 
         Parameters
         ----------
         B : np.ndarray
             Input signal array (n_vertices, n_timesteps).
         order : int, default: 1
-            The order of the filter (number of times the operator is applied).
+            Filter order :math:`n`.
 
         Returns
         -------
@@ -673,7 +706,13 @@ class DyConvolve:
         """
         Computes high-pass filtered coefficients.
 
-        Uses the analytical form: L / (L + qI).
+        Applies the spectral filter:
+
+        .. math::
+
+            \\mu_q(\\mathbf{L}) = \\frac{\\mathbf{L}}{\\mathbf{L} + q\\mathbf{I}}
+
+        where :math:`q` is the pre-defined pole.
 
         Parameters
         ----------

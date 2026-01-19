@@ -24,7 +24,7 @@ When working with a physical distance metric, we might want to weigh the branche
 
 .. math::
 
-    w_{ij} = \frac{1}{\ell_{ij}^2}
+    w_{k} = \frac{1}{\ell_{k}^2}
 
 This weighting is not arbitrary. By defining the weights as :math:`\ell^{-2}`, the eigenvalues of the graph Laplacian (:math:`\lambda`) correspond directly to the **squared wavenumber** (:math:`k^2`) of traveling waves on the grid.
 

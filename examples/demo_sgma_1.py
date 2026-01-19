@@ -47,7 +47,7 @@ modes = sgma.find_modes(M, top_n=TOP_N)
 print(modes)
 
 # For plotting, get magnitude spectrum and peak locations
-Mabs = np.abs(M)
+Mabs = np.sqrt(np.abs(M))
 peaks = sgma.find_peaks(Mabs, top_n=TOP_N, return_indices=True)
 
 fig, ax = plt.subplots(figsize=(7, 5))
