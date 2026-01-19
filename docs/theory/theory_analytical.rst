@@ -28,7 +28,7 @@ A convenient closed-form wavelet generating kernel that serves as an alternative
 
    \Psi_s(\mathbf{\Lambda}) = \frac{4s\mathbf{\Lambda}}{(s\mathbf{\Lambda}+I)^2}
 
-This filter qualifies as a wavelet generating kernel for the SGWT, since :math:`\Psi(0)=0` and the admissibility condition is satisfied. The admissibility constant of this band-pass filter is :math:`C_f=8/3`.
+This filter qualifies as a wavelet generating kernel for the SGWT, since :math:`\Psi(0)=0` and the admissibility condition is satisfied. The admissibility constant of this band-pass filter is :math:`C_{\Psi}=8/3`.
 
 .. math::
 

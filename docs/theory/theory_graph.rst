@@ -62,17 +62,17 @@ To derive the precise branch weights for the **Delay Graph Laplacian**, we must 
 
 **Lossless Propagation Delay**
 
-Using these parameters, we estimate the lossless propagation delay :math:`\tau_{ij}` for every branch. This represents the "electrical distance" a wave must travel:
+Using these parameters, we estimate the lossless propagation delay :math:`\theta_{ij}` for every branch. This represents the "electrical distance" a wave must travel:
 
 .. math::
 
-    \beta_{ij} =\omega_\text{base}\tau_{ij}= \text{Re}\left( \sqrt{Y_{ij}Z_{ij}} \right)
+    \theta_{ij} = \beta_{ij} \ell_{ij} =\omega\tau_{ij}= \text{Re}\left( \sqrt{Y_{ij}Z_{ij}} \right)
 
-This forms the definition of the **Delay Graph Laplacian**:
+The expression above works because the total line parameters of the line are given, rather than the per-meter values. This forms the definition of the **Delay Graph Laplacian**:
 
 .. math::
 
-    \mathbf{L}_{\tau} = \mathbf{A}^\top \text{diag}(\tau^{-2}) \mathbf{A}
+    \mathbf{L}_{\tau} = \mathbf{A}^\top \text{diag}(\theta^{-2}) \mathbf{A}
 
 Which has shown to be one of the most reliable branch weights in practice.
 
@@ -85,7 +85,7 @@ Depending on the physical phenomenon being analyzed, different weighting schemes
 **Reciprocal Squared Delay (Preferred):**
     
     .. math::
-       w_{ij} = \frac{1}{\tau_{ij}^2}
+       w_{ij} = \frac{1}{\theta_{ij}^2}
        
     Used for **wave propagation** analysis or dynamics. The determination for the value of :math:`\tau` in the previous section has proven practical for very large synthetic cases and results in a well-behaved network that outperformed other branch metrics in SGWT applications like modal analysis and FOSL.
 

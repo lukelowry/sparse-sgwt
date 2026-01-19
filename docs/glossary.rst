@@ -26,8 +26,8 @@ Glossary
 
    Rational Approximation
       Representing a filter function as a ratio of polynomials. Vector
-      Fitting produces pole-residue form :math:`H(\lambda) \approx d +
-      \sum_k \frac{r_k}{\lambda - q_k}`, enabling efficient linear solves.
+      Fitting produces pole-residue form :math:`g(\lambda) \approx d +
+      \sum_k \frac{r_k}{\lambda + q_k}`, enabling efficient linear solves.
 
    Residues
       Complex coefficients :math:`r_k` in a rational approximation. In
