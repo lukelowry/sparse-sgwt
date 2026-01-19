@@ -7,6 +7,8 @@ Stanford Bunny mesh and visualize the result.
 """
 from pathlib import Path
 
+import numpy as np
+
 # DOC_START_CODE_EXCLUDE_IMPORTS
 import sgwt
 
@@ -32,4 +34,7 @@ output_dir.mkdir(parents=True, exist_ok=True)
 plot_mesh_wavelet(
     y_bunny, "BUNNY", "",
     output_dir / "demo_mesh_wavelet_1.png",
+    mesh_rotation=(0, -90, 0),
+    zoom=1.3,
+    light_dir=np.array([0.3, 0.3, 1.0])
 )

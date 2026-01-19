@@ -18,7 +18,7 @@ The Stanford Bunny (35,947 vertices) serves as a standard benchmark in computer 
 Horse Model
 -----------
 
-The horse mesh (48,485 vertices) presents an elongated geometry with thin limbs and a complex torso. Using a higher filter order (50) at scale 60 yields a more sharply localized wavelet. The filter response, centered at vertex 40,000, demonstrates how wavelets adapt to the local surface geometry while respecting the mesh connectivity.
+The horse mesh (48,485 vertices) presents an elongated geometry with thin limbs and a complex torso. Using a higher filter order (50) at scale 60 yields a more sharply localized wavelet. The filter response, centered at vertex 28,000, demonstrates how wavelets adapt to the local surface geometry while respecting the mesh connectivity.
 
 .. image:: /_static/images/demo_mesh_wavelet_2.png
    :alt: Wavelet on Horse Mesh
@@ -31,4 +31,14 @@ The left hemisphere cortical surface (~150k vertices) represents a neuroimaging 
 
 .. image:: /_static/images/demo_mesh_wavelet_3.png
    :alt: Wavelet on Cortical Surface
+   :align: center
+
+Engine
+----------------
+
+This engine model has ~1.4 million verticies.
+
+
+.. image:: /_static/images/demo_mesh_wavelet_4.png
+   :alt: Wavelet on Engine
    :align: center

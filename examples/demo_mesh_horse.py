@@ -12,7 +12,7 @@ import numpy as np
 import sgwt
 
 L_horse = sgwt.MESH_HORSE
-horse_impulse_node = 21000
+horse_impulse_node = 28000
 horse_scale = 60
 
 x_horse = sgwt.impulse(L_horse, n=horse_impulse_node)
@@ -34,9 +34,9 @@ output_dir.mkdir(parents=True, exist_ok=True)
 plot_mesh_wavelet(
     y_horse, "HORSE", "",
     output_dir / "demo_mesh_wavelet_2.png",
-    mesh_rotation=(-90, 0, 0),
+    mesh_rotation=(-90, -90, 0),
     elev=15,
-    azims=[-120, 0, 120],
-    zoom=1.7,
-    light_dir=np.array([0.3, 0.8, 0.5]),  # Fixed light: front-left, from above
+    azims=[-180, 0, 100],
+    light_dir=np.array([0.3, 0.3, 1.0]),  
+    zoom=1.3
 )

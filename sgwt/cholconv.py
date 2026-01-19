@@ -433,21 +433,6 @@ class DyConvolve:
     poles : list[float] | VFKernel
         Predetermined set of poles (equivalent to 1/scale for analytical filters).
 
-    See Also
-    --------
-    Convolve : For graphs with constant topology.
-
-    Examples
-    --------
-    >>> from sgwt import DyConvolve, LAPLACIAN_TEXAS_DELAY
-    >>> import numpy as np
-    >>> L = LAPLACIAN_TEXAS_DELAY
-    >>> signal = np.random.randn(L.shape[0], 100)
-    >>> poles = [0.1, 1.0, 10.0]  # Pre-factor these shifted systems
-    >>> with DyConvolve(L, poles) as dconv:
-    ...     coeffs = dconv.lowpass(signal)
-    ...     dconv.addbranch(i=5, j=10, w=0.5)  # Topology change
-    ...     coeffs_new = dconv.lowpass(signal)
     """
 
     def __init__(self, L:csc_matrix, poles: Union[List[float], VFKernel]) -> None:
