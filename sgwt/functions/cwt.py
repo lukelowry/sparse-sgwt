@@ -8,6 +8,15 @@ def gaussian_wavelet(time, a=1, b=0, w0=1):
     Generates a complex-valued wavelet with Gaussian envelope and oscillatory
     carrier, normalized for continuous wavelet transform applications.
 
+    The analytical form is:
+
+    .. math::
+        \psi_{a,b}(t) = C \\cdot \\left( e^{i \omega_0 t'} - e^{-\omega_0^2 / 2} \\right) \\cdot e^{-(t')^2 / 2}
+
+    where :math:`t' = (t-b)/a` and the normalization constant is
+    :math:`C = (\\Delta t / a) \pi^{-1/4}`. The term :math:`e^{-\omega_0^2 / 2}`
+    ensures the wavelet has zero mean.
+
     Parameters
     ----------
     time : ndarray
