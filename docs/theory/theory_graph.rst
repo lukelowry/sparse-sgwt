@@ -39,7 +39,8 @@ Derivation of the Delay Weight
 To derive the precise branch weights for the **Delay Graph Laplacian**, we must calculate the effective parameters of transformers and transmission lines, accounting for the fact that real-world grid data often aggregates these values.
 
 **Effective Branch Shunt Admittance**
-   Shunt admittance is often stored as a nodal aggregate, the sum of the pi-model tranmission lines connected to each node. We define the effective branch shunt admittance :math:`Y^{sh}_{ij}` as the average of the nodal shunt admittance at the branch terminals:
+
+Shunt admittance is often stored as a nodal aggregate, the sum of the pi-model tranmission lines connected to each node. We define the effective branch shunt admittance :math:`Y^{sh}_{ij}` as the average of the nodal shunt admittance at the branch terminals:
 
    .. math::
 

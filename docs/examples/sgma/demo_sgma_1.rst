@@ -56,15 +56,15 @@ SGMA Parameters
 The analysis uses the following configuration:
 
 **Graph and Analysis Point:**
-  - Laplacian: ``DELAY_NEISO`` (39 buses)
+  - Laplacian: ``LENGTH_NEISO`` (39 buses)
   - Target bus: 12
   - Target time: :math:`\tau = 1.5` seconds
   - Bandpass order: :math:`K = 1`
 
 **Spatial Sampling:**
   - Number of scales: 150
-  - Scale range: :math:`s \in [(0.01)^2, (5)^2]` (geometrically spaced)
-  - Wavelength range: :math:`r = \sqrt{s} \in [0.01, 5.0]`
+  - Scale range: :math:`s \in [(0.1)^2, (100)^2]` (geometrically spaced)
+  - Wavelength range: :math:`r = \sqrt{s} \in [0.1, 100.0]`
 
 **Temporal Sampling:**
   - Number of frequencies: 200
@@ -88,13 +88,13 @@ The ``find_modes`` function extracts the top 3 peaks from the spectrum:
 
 .. code-block:: text
 
-   ------------------------------------------------------------
-     #   Freq (Hz)     Damping    Wavelength   Magnitude
-   ------------------------------------------------------------
-     1      0.5359      6.7074          0.46      0.0137
-     2      1.1369      3.3870          0.43      0.0129
-     3      0.3856      5.7364          0.04      0.0058
-   ------------------------------------------------------------
+------------------------------------------------------------
+  #   Freq (Hz)     Damping    Wavelength   Magnitude
+------------------------------------------------------------
+  1      0.4908      0.0000          4.91      0.0209
+  2      1.0768      0.3920          4.48      0.0201
+  3      1.9182      0.1638          4.27      0.0084
+------------------------------------------------------------
 
 Each mode is characterized by:
   - **Frequency (Hz)**: Oscillation rate extracted from the temporal frequency axis
