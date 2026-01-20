@@ -13,3 +13,5 @@ Reconstructs a smooth signal across the USA grid using only a small fraction (e.
 
 .. image:: /_static/images/inpainting_reconstruction.png
    :alt: Signal Inpainting Reconstruction Example
+   :align: center
+   :width: 80%

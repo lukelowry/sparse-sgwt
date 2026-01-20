@@ -13,3 +13,4 @@ Compares the execution time and performance between static (``Convolve``) and dy
 
 .. image:: /_static/images/demo_dynamic_time.png
    :alt: Static vs Dynamic Performance Comparison
+   :align: center

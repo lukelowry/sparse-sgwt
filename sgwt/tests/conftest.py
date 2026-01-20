@@ -159,3 +159,13 @@ def dyconvolve_context(texas_laplacian):
 # ---------------------------------------------------------------------------
 SCALES = [0.1, 1.0, 10.0]
 ORDERS = [1, 2, 3]
+
+
+# ---------------------------------------------------------------------------
+# pytest hooks for slow test marker
+# ---------------------------------------------------------------------------
+def pytest_configure(config):
+    """Configure pytest to recognize slow marker."""
+    config.addinivalue_line(
+        "markers", "slow: marks tests as slow (stress tests, large graphs)"
+    )

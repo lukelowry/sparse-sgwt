@@ -8,26 +8,19 @@ functions for polynomial or rational approximations.
 Low-Pass
 --------
 
-.. math::
-
-   \phi_s(\lambda) = \frac{1}{s\lambda + 1}
-
 .. autofunction:: sgwt.functions.lowpass
 
 High-Pass
 ---------
-
-.. math::
-
-   \mu_s(\lambda) = \frac{s\lambda}{s\lambda + 1}
 
 .. autofunction:: sgwt.functions.highpass
 
 Band-Pass
 ---------
 
-.. math::
-
-   \psi_s(\lambda) = \frac{4s\lambda}{(s\lambda+1)^2}
-
 .. autofunction:: sgwt.functions.bandpass
+
+Gaussian Wavelet
+---------
+
+.. autofunction:: sgwt.functions.gaussian_wavelet

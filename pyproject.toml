@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "sgwt"
-version = "0.3.5"
+version = "0.3.6"
 description = "Sparse Tools for the Spectral Graph Wavelet Transformation and Graph Convolution"
 readme = "README.rst"
 license = { file = "LICENSE.md" }
@@ -32,12 +32,13 @@ include-package-data = true
 packages = { find = {} }
 [tool.setuptools.package-data]
 "sgwt" = [
-    "library/dll/*.dll", 
+    "library/dll/*.dll",
     "library/KERNELS/*.json",
     "library/SIGNALS/*.mat",
     "library/IMPEDANCE/*.mat",
     "library/LENGTH/*.mat",
-    "library/DELAY/*.mat"
+    "library/DELAY/*.mat",
+    "library/MESH/*.ply"
 ]
 
 [project.optional-dependencies]
@@ -47,7 +48,8 @@ dev = [
 
 test = [
     "pytest",
-    "pytest-cov"
+    "pytest-cov",
+    "pytest-benchmark"
 ]
 
 docs = [
@@ -66,6 +68,7 @@ omit = [
     "sgwt/tests/*",
     "sgwt/tests/conftest.py",
     "sgwt/klu/*",
+    "benchmark.py"
 ]
 
 [tool.coverage.report]

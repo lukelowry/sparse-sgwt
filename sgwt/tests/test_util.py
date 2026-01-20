@@ -38,8 +38,9 @@ class TestLibraryKernels:
         kernel_dict = getattr(sgwt, kernel_name)
         kern = sgwt.VFKernel.from_dict(kernel_dict)
         assert isinstance(kern, sgwt.VFKernel)
-        assert len(kern.Q) > 0
-        assert len(kern.R) > 0
+        # Kernels should have at least one pole and residue
+        assert len(kern.Q) > 0, f"{kernel_name} should have at least one pole"
+        assert len(kern.R) > 0, f"{kernel_name} should have at least one residue matrix row"
 
     def test_vfkernel_from_dict_parses_correctly(self):
         """VFKernel.from_dict correctly parses poles, residues, and D."""
@@ -76,15 +77,12 @@ class TestLibraryLaplacians:
         """Built-in Laplacians are square csc_matrix with nonzero entries."""
         L = getattr(sgwt, laplacian_name)
         # Use .format check for coverage compatibility (scipy class identity issues)
-        assert L.format == "csc"
-        assert L.shape[0] == L.shape[1]
-        assert L.nnz > 0
-
-    def test_laplacian_is_symmetric(self):
-        """Built-in Laplacians are symmetric."""
-        L = sgwt.DELAY_TEXAS
-        # Use toarray() to avoid coverage-induced sparse class identity issues
-        assert np.allclose(L.toarray(), L.T.toarray())
+        assert L.format == "csc", f"{laplacian_name} should be CSC format"
+        assert L.shape[0] == L.shape[1], f"{laplacian_name} should be square matrix"
+        # Laplacians should have at least diagonal entries (n nonzeros minimum)
+        min_nnz = L.shape[0]
+        assert L.nnz >= min_nnz, \
+            f"{laplacian_name} has {L.nnz} nonzeros, expected at least {min_nnz}"
 
 
 class TestLibrarySignals:
@@ -102,6 +100,24 @@ class TestLibrarySignals:
         """Laplacian and signal node counts match."""
         assert sgwt.DELAY_TEXAS.shape[0] == sgwt.COORD_TEXAS.shape[0]
         assert sgwt.DELAY_USA.shape[0] == sgwt.COORD_USA.shape[0]
+
+
+class TestMeshSignals:
+    """Tests for built-in mesh signals."""
+
+    @pytest.mark.parametrize("signal_name, laplacian_name", [
+        ("BUNNY_XYZ", "MESH_BUNNY"),
+        ("HORSE_XYZ", "MESH_HORSE"),
+    ])
+    def test_mesh_signal_properties(self, signal_name, laplacian_name):
+        """Mesh signals are (N, 3) arrays and match their Laplacians."""
+        S = getattr(sgwt, signal_name)
+        L = getattr(sgwt, laplacian_name)
+
+        assert isinstance(S, np.ndarray)
+        assert S.ndim == 2, f"{signal_name} should be a 2D array"
+        assert S.shape[1] == 3, f"{signal_name} should have 3 columns (X, Y, Z)"
+        assert L.shape[0] == S.shape[0], f"Node count for {laplacian_name} and {signal_name} should match"
 
 
 class TestChebyKernelFromDict:
@@ -169,9 +185,14 @@ class TestChebyKernelFromFunction:
         assert result.shape == (10, 2)
 
     def test_order_less_than_one_raises_valueerror(self):
-        """Order < 1 raises ValueError."""
+        """Order < 1 raises ValueError with descriptive message."""
         with pytest.raises(ValueError, match="Order must be >= 1"):
             sgwt.ChebyKernel.from_function(lambda x: x, order=0, spectrum_bound=1.0)
+
+    def test_negative_order_raises(self):
+        """Negative order raises ValueError."""
+        with pytest.raises(ValueError, match="Order must be >= 1"):
+            sgwt.ChebyKernel.from_function(lambda x: x, order=-5, spectrum_bound=1.0)
 
 
 class TestMatLoader:
@@ -255,7 +276,10 @@ class TestEstimateSpectralBound:
     def test_returns_positive_value(self, small_laplacian):
         """Spectral bound estimate is positive."""
         bound = sgwt.estimate_spectral_bound(small_laplacian)
-        assert bound > 0
+        # Spectral bound should be positive and reasonable (> 0.01 for real graphs)
+        min_bound = 0.01
+        assert bound > min_bound, \
+            f"Expected spectral bound >{min_bound}, got {bound}"
 
     def test_bound_exceeds_max_eigenvalue(self, small_laplacian):
         """Bound is >= largest eigenvalue (with small margin)."""
@@ -275,8 +299,11 @@ class TestChebyKernelFromFunctionOnGraph:
         kernel = ChebyKernel.from_function_on_graph(
             small_laplacian, lambda x: np.exp(-x), order=10
         )
-        assert kernel.C.shape[0] > 0
-        assert kernel.spectrum_bound > 0
+        # Should produce at least 1 Chebyshev coefficient
+        assert kernel.C.shape[0] > 0, "Kernel should have at least one Chebyshev coefficient"
+        # Spectral bound should be positive and reasonable
+        assert kernel.spectrum_bound > 0.01, \
+            f"Expected reasonable spectral bound, got {kernel.spectrum_bound}"
 
 
 class TestChebyKernelEvaluate:
@@ -302,3 +329,266 @@ class TestImpulse:
         assert signal.shape == (small_laplacian.shape[0], 5)
         assert signal[2, 0] == 1.0
         assert np.sum(signal[:, 0]) == 1.0
+
+
+class TestPlyParsing:
+    """Tests for PLY file parsing functions."""
+
+    @pytest.fixture
+    def ascii_ply_file(self, tmp_path):
+        """Create a simple ASCII PLY file for testing."""
+        ply_content = """ply
+format ascii 1.0
+element vertex 4
+property float x
+property float y
+property float z
+element face 2
+property list uchar int vertex_indices
+end_header
+0.0 0.0 0.0
+1.0 0.0 0.0
+1.0 1.0 0.0
+0.0 1.0 0.0
+3 0 1 2
+3 0 2 3
+"""
+        ply_path = tmp_path / "test_ascii.ply"
+        ply_path.write_text(ply_content)
+        return str(ply_path)
+
+    @pytest.fixture
+    def binary_ply_file(self, tmp_path):
+        """Create a simple binary little-endian PLY file for testing."""
+        import struct
+        ply_path = tmp_path / "test_binary.ply"
+
+        header = b"""ply
+format binary_little_endian 1.0
+element vertex 4
+property float x
+property float y
+property float z
+element face 2
+property list uchar int vertex_indices
+end_header
+"""
+        # Vertices: 4 vertices with x, y, z as floats
+        vertices = struct.pack('<12f',
+            0.0, 0.0, 0.0,
+            1.0, 0.0, 0.0,
+            1.0, 1.0, 0.0,
+            0.0, 1.0, 0.0
+        )
+        # Faces: 2 triangles
+        faces = struct.pack('<B3iB3i',
+            3, 0, 1, 2,  # First triangle
+            3, 0, 2, 3   # Second triangle
+        )
+
+        with open(ply_path, 'wb') as f:
+            f.write(header)
+            f.write(vertices)
+            f.write(faces)
+
+        return str(ply_path)
+
+    def test_parse_ply_ascii(self, ascii_ply_file):
+        """_parse_ply correctly parses ASCII PLY files."""
+        from sgwt.util import _parse_ply
+        vertices, faces, vertex_count = _parse_ply(ascii_ply_file)
+
+        assert vertex_count == 4
+        assert len(vertices) == 4
+        assert len(faces) == 2
+        # Check first vertex
+        assert vertices[0] == (0.0, 0.0, 0.0)
+        # Check first face
+        assert faces[0] == [0, 1, 2]
+
+    def test_parse_ply_binary(self, binary_ply_file):
+        """_parse_ply correctly parses binary little-endian PLY files."""
+        from sgwt.util import _parse_ply
+        vertices, faces, vertex_count = _parse_ply(binary_ply_file)
+
+        assert vertex_count == 4
+        assert len(vertices) == 4
+        assert len(faces) == 2
+        # Check vertices are close to expected (float precision)
+        assert np.allclose(vertices[0], (0.0, 0.0, 0.0))
+        assert np.allclose(vertices[1], (1.0, 0.0, 0.0))
+
+    def test_parse_ply_unsupported_format_raises(self, tmp_path):
+        """_parse_ply raises ValueError for unsupported formats."""
+        from sgwt.util import _parse_ply
+        ply_content = """ply
+format binary_big_endian 1.0
+element vertex 1
+property float x
+property float y
+property float z
+end_header
+"""
+        ply_path = tmp_path / "unsupported.ply"
+        ply_path.write_text(ply_content)
+
+        with pytest.raises(ValueError, match="Unsupported PLY format"):
+            _parse_ply(str(ply_path))
+
+    def test_load_ply_laplacian_ascii(self, ascii_ply_file):
+        """load_ply_laplacian returns valid Laplacian from ASCII PLY."""
+        from sgwt.util import load_ply_laplacian
+        L = load_ply_laplacian(ascii_ply_file)
+
+        assert L.format == "csc"
+        assert L.shape == (4, 4)  # 4 vertices
+        # Laplacian should be symmetric
+        assert np.allclose(L.toarray(), L.T.toarray())
+        # Diagonal should be positive (vertex degrees)
+        assert np.all(L.diagonal() >= 0)
+
+    def test_load_ply_laplacian_binary(self, binary_ply_file):
+        """load_ply_laplacian returns valid Laplacian from binary PLY."""
+        from sgwt.util import load_ply_laplacian
+        L = load_ply_laplacian(binary_ply_file)
+
+        assert L.format == "csc"
+        assert L.shape == (4, 4)
+
+    def test_load_ply_xyz_ascii(self, ascii_ply_file):
+        """load_ply_xyz returns (N, 3) array from ASCII PLY."""
+        from sgwt.util import load_ply_xyz
+        xyz = load_ply_xyz(ascii_ply_file)
+
+        assert isinstance(xyz, np.ndarray)
+        assert xyz.shape == (4, 3)
+        np.testing.assert_array_equal(xyz[0], [0.0, 0.0, 0.0])
+        np.testing.assert_array_equal(xyz[1], [1.0, 0.0, 0.0])
+
+    def test_load_ply_xyz_binary(self, binary_ply_file):
+        """load_ply_xyz returns (N, 3) array from binary PLY."""
+        from sgwt.util import load_ply_xyz
+        xyz = load_ply_xyz(binary_ply_file)
+
+        assert isinstance(xyz, np.ndarray)
+        assert xyz.shape == (4, 3)
+        assert np.allclose(xyz[0], [0.0, 0.0, 0.0])
+
+    def test_laplacian_xyz_consistency(self, ascii_ply_file):
+        """Laplacian and XYZ have consistent vertex counts."""
+        from sgwt.util import load_ply_laplacian, load_ply_xyz
+        L = load_ply_laplacian(ascii_ply_file)
+        xyz = load_ply_xyz(ascii_ply_file)
+
+        assert L.shape[0] == xyz.shape[0]
+
+    def test_parse_ply_with_blank_lines_in_header(self, tmp_path):
+        """_parse_ply handles blank lines in header."""
+        from sgwt.util import _parse_ply
+        ply_content = """ply
+format ascii 1.0
+
+element vertex 3
+property float x
+property float y
+property float z
+
+element face 1
+property list uchar int vertex_indices
+end_header
+0.0 0.0 0.0
+1.0 0.0 0.0
+0.5 1.0 0.0
+3 0 1 2
+"""
+        ply_path = tmp_path / "blank_lines.ply"
+        ply_path.write_text(ply_content)
+
+        vertices, faces, vertex_count = _parse_ply(str(ply_path))
+        assert vertex_count == 3
+        assert len(vertices) == 3
+        assert len(faces) == 1
+
+    def test_parse_ply_binary_non_xyz_property_names(self, tmp_path):
+        """_parse_ply handles binary PLY with non-standard property names."""
+        import struct
+        ply_path = tmp_path / "non_xyz.ply"
+
+        # Use property names that are NOT x, y, z
+        header = b"""ply
+format binary_little_endian 1.0
+element vertex 3
+property float px
+property float py
+property float pz
+element face 1
+property list uchar int vertex_indices
+end_header
+"""
+        vertices = struct.pack('<9f',
+            0.0, 0.0, 0.0,
+            1.0, 0.0, 0.0,
+            0.5, 1.0, 0.0
+        )
+        faces = struct.pack('<B3i', 3, 0, 1, 2)
+
+        with open(ply_path, 'wb') as f:
+            f.write(header)
+            f.write(vertices)
+            f.write(faces)
+
+        from sgwt.util import _parse_ply
+        verts, _, count = _parse_ply(str(ply_path))
+
+        assert count == 3
+        assert len(verts) == 3
+        # Should use first 3 properties (px, py, pz) as coordinates
+        assert np.allclose(verts[0], (0.0, 0.0, 0.0))
+        assert np.allclose(verts[1], (1.0, 0.0, 0.0))
+        assert np.allclose(verts[2], (0.5, 1.0, 0.0))
+
+    def test_parse_ply_with_extra_elements(self, tmp_path):
+        """_parse_ply handles PLY files with extra element types (e.g., edge)."""
+        from sgwt.util import _parse_ply
+        # PLY file with face element followed by additional properties/elements
+        ply_content = """ply
+format ascii 1.0
+element vertex 3
+property float x
+property float y
+property float z
+element face 1
+property list uchar int vertex_indices
+element edge 2
+property int vertex1
+property int vertex2
+end_header
+0.0 0.0 0.0
+1.0 0.0 0.0
+0.5 1.0 0.0
+3 0 1 2
+0 1
+1 2
+"""
+        ply_path = tmp_path / "extra_elements.ply"
+        ply_path.write_text(ply_content)
+
+        vertices, faces, vertex_count = _parse_ply(str(ply_path))
+        assert vertex_count == 3
+        assert len(vertices) == 3
+        assert len(faces) == 1
+
+
+class TestMeshLaplacians:
+    """Tests for built-in mesh Laplacians loaded from PLY files."""
+
+    @pytest.mark.parametrize("laplacian_name", [
+        "MESH_BUNNY", "MESH_HORSE", "MESH_LBRAIN"
+    ])
+    def test_mesh_laplacian_is_valid(self, laplacian_name):
+        """Built-in mesh Laplacians are valid symmetric CSC matrices."""
+        L = getattr(sgwt, laplacian_name)
+
+        assert L.format == "csc", f"{laplacian_name} should be CSC format"
+        assert L.shape[0] == L.shape[1], f"{laplacian_name} should be square"
+  

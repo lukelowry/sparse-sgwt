@@ -1,16 +1,11 @@
-Data Library
-============
-
-The ``sgwt`` library includes a repository of built-in graph Laplacians, signals, and spectral kernels for testing and demonstration. These resources can be imported directly from the top-level package.
-
 Laplacians
 ----------
 
 The library includes Laplacians for various synthetic power grid networks. These are provided as ``scipy.sparse.csc_matrix`` objects. The naming convention is ``METRIC_REGION``.
 
-*   **DELAY**: Edge weights are based on phase distance (:math:`\theta^{-2}`).
-*   **LENGTH**: Edge weights are based on physical transmission line length (:math:`\ell^{-2}`).
-*   **IMPEDANCE**: Edge weights are based on electrical impedance (:math:`|Z|`).
+.. seealso::
+   :doc:`../theory/theory_graph`
+      For the mathematical derivation and physical interpretation of the **DELAY**, **LENGTH**, and **IMPEDANCE** weighting schemes.
 
 **Usage**
 
@@ -79,39 +74,98 @@ Pre-computed rational approximations for common spectral graph wavelets are avai
 Available Data Summary
 ----------------------
 
-The following table summarizes the available built-in datasets.
+The following table summarizes all available built-in datasets, including both power grid networks and 3D mesh models. The original mesh datasets can be found at the `Laplacian Library <https://github.com/lukelowry/laplib>`_.
 
 .. list-table::
-   :widths: 25 15 15 15 15
+   :widths: 20 12 18 12 25
    :header-rows: 1
 
-   * - Graph Name
-     - DELAY
-     - IMPEDANCE
-     - LENGTH
-     - COORDS
-   * - **TEXAS**
-     - Yes
-     - Yes
-     - Yes
-     - Yes
-   * - **USA**
-     - Yes
-     - Yes
-     - Yes
-     - Yes
-   * - **EASTWEST**
-     - Yes
-     - Yes
-     - Yes
-     - Yes
+   * - Dataset
+     - Vertices
+     - Edges
+     - Vertex Signals
+     - Edge Weights
+   * - **BUNNY**
+     - 35947
+     - 103731
+     - ``x``, ``y``, ``z``
+     -
+   * - **HORSE**
+     - 48485
+     - 145449
+     - ``x``, ``y``, ``z``
+     -
+   * - **LBRAIN**
+     - 144490
+     - 433464
+     - ``x``, ``y``, ``z``
+     -
+   * - **RBRAIN**
+     - 145071
+     - 435207
+     - ``x``, ``y``, ``z``
+     -
    * - **HAWAII**
-     - Yes
-     - Yes
-     - Yes
-     - Yes
+     - 46
+     - 67
+     - ``long``, ``lat``
+     - ``length``, ``impedance``, ``delay``
+   * - **TEXAS**
+     - 2000
+     - 2667
+     - ``long``, ``lat``
+     - ``length``, ``impedance``, ``delay``
+   * - **EASTWEST**
+     - 80000
+     - 95544
+     - ``long``, ``lat``
+     - ``length``, ``impedance``, ``delay``
+   * - **USA**
+     - 82000
+     - 98205
+     - ``long``, ``lat``
+     - ``length``, ``impedance``, ``delay``
    * - **WECC**
-     - Yes
-     - Yes
-     - Yes
-     - No
+     - 243
+     - 351
+     -
+     - ``length``, ``impedance``, ``delay``
+   * - **NEISO**
+     - 39
+     - 46
+     -
+     - ``length``, ``delay``
+
+Adding New Data
+---------------
+
+The library uses auto-discovery to find data files. To add new datasets, simply place files in the appropriate folder with the correct naming convention:
+
+**Laplacians** (stored as ``.mat`` files containing a sparse matrix):
+
+.. code-block:: text
+
+   sgwt/library/DELAY/{REGION}.mat      →  sgwt.DELAY_{REGION}
+   sgwt/library/IMPEDANCE/{REGION}.mat  →  sgwt.IMPEDANCE_{REGION}
+   sgwt/library/LENGTH/{REGION}.mat     →  sgwt.LENGTH_{REGION}
+
+**Signals** (stored as ``.mat`` files containing an array):
+
+.. code-block:: text
+
+   sgwt/library/SIGNALS/{REGION}.mat    →  sgwt.COORD_{REGION}
+
+**Meshes** (stored as ``.ply`` files):
+
+.. code-block:: text
+
+   sgwt/library/MESH/{NAME}.ply         →  sgwt.MESH_{NAME}  (Laplacian)
+                                        →  sgwt.{NAME}_XYZ   (coordinates)
+
+**Kernels** (stored as ``.json`` files):
+
+.. code-block:: text
+
+   sgwt/library/KERNELS/{NAME}.json     →  sgwt.{NAME}
+
+No code changes are required—new files are automatically discovered at runtime

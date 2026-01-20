@@ -13,3 +13,4 @@ Shows how to use Vector Fitting (VF) kernels to implement custom filter shapes, 
 
 .. image:: /_static/images/demo_vf_kernel.png
    :alt: Vector Fitting Kernel Example
+   :align: center

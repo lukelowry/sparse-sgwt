@@ -56,6 +56,21 @@ class TestConvolve:
             for r in results:
                 assert np.allclose(r, 0)
 
+    def test_empty_signal_raises_error(self, texas_laplacian):
+        """Empty signal (0 rows) raises ValueError."""
+        X_empty = np.empty((0, 1), dtype=float)
+        with sgwt.Convolve(texas_laplacian) as conv:
+            with pytest.raises((ValueError, IndexError)):
+                conv.lowpass(X_empty, SCALES)
+
+    def test_mismatched_dimensions_raises_error(self, texas_laplacian):
+        """Signal with mismatched dimensions raises ValueError."""
+        n = texas_laplacian.shape[0]
+        X_wrong_size = np.random.randn(n + 10, 1)  # Wrong number of nodes
+        with sgwt.Convolve(texas_laplacian) as conv:
+            with pytest.raises((ValueError, IndexError), match=".*"):
+                conv.lowpass(X_wrong_size, SCALES)
+
     @pytest.mark.parametrize("order", [1, 2])
     def test_bandpass_order_equivalence(self, texas_laplacian, texas_signal, order):
         """Bandpass order=N equals applying order=1 filter N times."""
@@ -74,10 +89,73 @@ class TestConvolve:
         with sgwt.Convolve(texas_laplacian) as conv:
             # First call with refactor=True to ensure factorization exists
             result_with = conv.lowpass(texas_signal, [scale], refactor=True)[0]
+
             # Second call with refactor=False reuses the factorization
             result_without = conv.lowpass(texas_signal, [scale], refactor=False)[0]
+
             # Results should be identical when using the same scale
+            # This tests that refactor=False doesn't break anything
             np.testing.assert_allclose(result_with, result_without, atol=1e-10)
+
+    def test_multiple_scales_work_correctly(self, texas_laplacian, texas_signal):
+        """Convolving with multiple different scales produces different results."""
+        scale1, scale2 = SCALES[0], SCALES[1]
+        with sgwt.Convolve(texas_laplacian) as conv:
+            # Convolution with scale1
+            result1 = conv.lowpass(texas_signal, [scale1])[0]
+
+            # Convolution with different scale2
+            result2 = conv.lowpass(texas_signal, [scale2])[0]
+
+            # Results should be different for different scales
+            diff = np.abs(result1 - result2)
+            min_expected_diff = 1e-6
+            assert np.max(diff) > min_expected_diff, \
+                f"Different scales should produce different results (max diff={np.max(diff):.2e})"
+
+    def test_complex_signal_handling(self, texas_laplacian, texas_signal):
+        """Complex signals are processed by splitting real/imag parts."""
+        # Create a complex signal: x + i*x
+        complex_signal = texas_signal + 1j * texas_signal
+        scale = SCALES[0]
+        
+        with sgwt.Convolve(texas_laplacian) as conv:
+            # Process complex signal
+            results_complex = conv.lowpass(complex_signal, [scale])[0]
+            
+            # Process real part manually for verification
+            results_real = conv.lowpass(texas_signal, [scale])[0]
+            
+            # Check linearity: L(x + iy) = L(x) + iL(y)
+            expected = results_real + 1j * results_real
+            np.testing.assert_allclose(results_complex, expected, atol=1e-10)
+            assert np.iscomplexobj(results_complex)
+
+    def test_convolve_complex_returns_array(self, texas_laplacian, texas_signal, library_kernel):
+        """Convolve with complex signal returns ndarray (covers else branch in _process_signal)."""
+        complex_signal = texas_signal + 1j * texas_signal
+        
+        with sgwt.Convolve(texas_laplacian) as conv:
+            # convolve returns np.ndarray, not list, triggering the 'else' block
+            result = conv.convolve(complex_signal, library_kernel)
+            assert isinstance(result, np.ndarray)
+            assert np.iscomplexobj(result)
+            
+            # Verify linearity
+            real_res = conv.convolve(texas_signal, library_kernel)
+            expected = real_res + 1j * real_res
+            np.testing.assert_allclose(result, expected, atol=1e-10)
+
+    def test_c_contiguous_input_conversion(self, texas_laplacian, texas_signal):
+        """C-contiguous input is converted to Fortran (covers B conversion in _process_signal)."""
+        # Tile signal to ensure >1 columns so C and F layouts are distinct
+        c_signal = np.tile(texas_signal, (1, 2)).copy(order='C')
+        assert not c_signal.flags['F_CONTIGUOUS']
+        
+        with sgwt.Convolve(texas_laplacian) as conv:
+            # This calls _process_signal -> lowpass_impl
+            res = conv.lowpass(c_signal, [1.0])
+            assert len(res) == 1
 
 
 class TestConvolveVFKernel:
@@ -98,16 +176,16 @@ class TestConvolveVFKernel:
             np.testing.assert_allclose(res_dict, res_obj)
 
     def test_invalid_kernel_raises_typeerror(self, texas_laplacian, texas_signal):
-        """Invalid kernel type raises TypeError."""
+        """Invalid kernel type raises TypeError with helpful message."""
         with sgwt.Convolve(texas_laplacian) as conv:
-            with pytest.raises(TypeError):
+            with pytest.raises(TypeError, match=".*Kernel.*"):
                 conv.convolve(texas_signal, "not a kernel")
 
     def test_empty_kernel_raises_valueerror(self, texas_laplacian, texas_signal):
-        """Empty VFKernel raises ValueError."""
+        """Empty VFKernel raises ValueError with descriptive message."""
         empty_kernel = sgwt.VFKernel(Q=None, R=None, D=None)
         with sgwt.Convolve(texas_laplacian) as conv:
-            with pytest.raises(ValueError):
+            with pytest.raises(ValueError, match=".*residues.*poles.*"):
                 conv.convolve(texas_signal, empty_kernel)
 
     def test_vfkernel_without_direct_term(self, texas_laplacian, texas_signal):
@@ -217,7 +295,11 @@ class TestDyConvolveTopology:
             assert ok, "addbranch should succeed"
             lp_after = conv.lowpass(texas_signal)
             diff = np.abs(lp_before[0] - lp_after[0])
-            assert np.max(diff) > 0, "Topology update should affect response"
+            # Topology update should cause measurable change (> 1e-6)
+            min_change = 1e-6
+            max_diff = np.max(diff)
+            assert max_diff > min_change, \
+                f"Topology update should significantly affect response (max diff={max_diff:.2e}, expected >{min_change:.2e})"
 
     def test_multiple_branch_updates(self, texas_laplacian, texas_signal):
         """Multiple sequential branch additions work."""

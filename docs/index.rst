@@ -1,39 +1,17 @@
+Overview
+========
+
 .. include:: ../README.rst
+   :start-after: ====================================
 
 .. toctree::
+   :hidden:
    :maxdepth: 2
-   :caption: Getting Started
+   :caption: Contents
 
-   intro/installation
-   intro/usage
-   intro/theory
-
-
-.. toctree::
-   :maxdepth: 2
-   :caption: Examples
-
-   examples/static
-   examples/dynamic
-   examples/cheby
-
-
-.. toctree::
-   :maxdepth: 2
-   :caption: Resources
-
-   library/json
-   library/data
-
-.. toctree::
-   :maxdepth: 2
-   :caption: API Reference
-
-   api/api
-
-.. toctree::
-   :maxdepth: 2
-   :caption: Development
-
-   dev/tests
-   dev/changelog
+   usage/index
+   theory/index
+   examples/index
+   library/index
+   api/index
+   dev/index

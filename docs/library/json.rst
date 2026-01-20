@@ -1,10 +1,7 @@
-Kernel JSON
+Kernel JSON Structure
 ==================
 
 The library supports loading spectral kernels defined by rational approximations (Vector Fitting) stored in JSON format. These files are parsed into :class:`~sgwt.VFKernel` objects for use in convolution.
-
-JSON Structure
---------------
 
 The JSON file represents a rational expansion of the filter :math:`\mathbf{g}(\lambda)` in the spectral domain, where :math:`\lambda` represents a graph Laplacian eigenvalue. The expansion takes the form:
 
@@ -57,5 +54,5 @@ Below is a truncated example from the built-in ``MODIFIED_MORLET.json`` file.
     }
 
 .. seealso::
-   :doc:`../intro/usage/kernel_functions`
+   :doc:`../usage/kernel_functions`
       For an example of how to load and use a custom kernel in a convolution.

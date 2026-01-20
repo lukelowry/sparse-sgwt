@@ -13,3 +13,4 @@ Simulates an online processor handling a continuous stream of data and topology 
 
 .. image:: /_static/images/demo_dynamic_stream.png
    :alt: Dynamic Stream Processing Example
+   :align: center
