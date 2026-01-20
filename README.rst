@@ -1,24 +1,24 @@
-Sparse SGWT
+Sparse Graph Convolution
 ====================================
+
+.. |pypi| image:: https://img.shields.io/pypi/v/sgwt.svg
+   :target: https://pypi.org/project/sgwt/
+   :alt: PyPI Version
+
+.. |python| image:: https://img.shields.io/badge/python-3.7%20%7C%203.8%20%7C%203.9%20%7C%203.10%20%7C%203.11-blue.svg
+   :target: https://pypi.org/project/sgwt/
+   :alt: Python Version
+
+.. |license| image:: https://img.shields.io/badge/License-GPLv3-blue.svg
+   :target: ./LICENSE.md
+   :alt: License
+
+.. |coverage| image:: https://img.shields.io/badge/coverage-100%25-brightgreen.svg
+   :alt: Coverage
 
 .. only:: not latex
 
-    |pypi| |python| |license| |coverage|
-
-    .. |pypi| image:: https://img.shields.io/pypi/v/sgwt.svg
-        :target: https://pypi.org/project/sgwt/
-        :alt: PyPI Version
-
-    .. |python| image:: https://img.shields.io/badge/python-3.7%20%7C%203.8%20%7C%203.9%20%7C%203.10%20%7C%203.11-blue.svg
-        :target: https://pypi.org/project/sgwt/
-        :alt: Python Version
-
-    .. |license| image:: https://img.shields.io/badge/License-GPLv3-blue.svg
-        :target: ./LICENSE.md
-        :alt: License
-
-    .. |coverage| image:: https://img.shields.io/badge/coverage-100%25-brightgreen.svg
-        :alt: Coverage
+   |pypi| |python| |license| |coverage|
 
 A high-performance Python library for sparse Graph Signal Processing (GSP) and Spectral Graph Wavelet Transforms (SGWT). This package leverages the ``CHOLMOD`` library for efficient sparse direct solvers, providing significant speedups over traditional dense or iterative methods for large-scale graph convolution.
 
