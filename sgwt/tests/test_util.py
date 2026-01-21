@@ -591,4 +591,61 @@ class TestMeshLaplacians:
 
         assert L.format == "csc", f"{laplacian_name} should be CSC format"
         assert L.shape[0] == L.shape[1], f"{laplacian_name} should be square"
+
+
+class TestModuleGetattr:
+    """Tests for module __getattr__ function."""
+
+    def test_invalid_attribute_raises(self):
+        """Accessing non-existent attribute raises AttributeError."""
+        import sgwt.util
+        with pytest.raises(AttributeError, match="has no attribute"):
+            _ = sgwt.util.NONEXISTENT_RESOURCE_NAME
+
+
+class TestChebyKernelCoverage:
+    """Additional tests for ChebyKernel edge cases."""
+
+    def test_from_function_all_negligible_coefficients(self):
+        """Fitting a function where all higher-order coefficients are negligible."""
+        # A constant function should result in only the constant term being kept
+        kern = sgwt.ChebyKernel.from_function(
+            lambda x: np.full_like(x, 1e-20),  # Nearly zero constant
+            order=10,
+            spectrum_bound=1.0
+        )
+        # Should keep at least the constant term
+        assert kern.C.shape[0] >= 1
+
+    def test_from_function_linear_sampling(self):
+        """Test from_function with linear sampling strategy."""
+        kern = sgwt.ChebyKernel.from_function(
+            lambda x: np.exp(-x),
+            order=5,
+            spectrum_bound=2.0,
+            sampling='linear'
+        )
+        assert kern.C.shape[0] > 0
+
+
+class TestDiscoverResourcesEdgeCases:
+    """Tests for resource discovery edge cases."""
+
+    def test_discover_resources_handles_missing_folder(self):
+        """_discover_resources handles non-existent folders gracefully."""
+        from unittest.mock import patch, MagicMock
+        from sgwt.util import _discover_resources, _FOLDER_CONFIGS
+
+        # Create a mock folder that raises FileNotFoundError on iterdir
+        mock_folder = MagicMock()
+        mock_folder.iterdir.side_effect = FileNotFoundError("folder not found")
+
+        # Patch files to return mock library
+        mock_library = MagicMock()
+        mock_library.__truediv__ = MagicMock(return_value=mock_folder)
+
+        with patch('sgwt.util.files', return_value=mock_library):
+            # Should not raise, just return empty or partial registry
+            registry = _discover_resources()
+            assert isinstance(registry, dict)
   

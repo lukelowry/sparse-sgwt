@@ -103,6 +103,18 @@ def large_path_laplacian():
 
 
 @pytest.fixture(scope='module')
+def xlarge_path_laplacian():
+    """Extra-large path graph (10000 nodes) for benchmarks."""
+    return create_path_graph_laplacian(10000)
+
+
+@pytest.fixture(scope='module')
+def xxlarge_path_laplacian():
+    """Extra-extra-large path graph (50000 nodes) for benchmarks."""
+    return create_path_graph_laplacian(50000)
+
+
+@pytest.fixture(scope='module')
 def texas_laplacian():
     """Load DELAY_TEXAS Laplacian from library."""
     return sgwt.DELAY_TEXAS
@@ -143,6 +155,8 @@ GRAPH_DEFINITIONS = [
     ("texas_laplacian", "Texas(2k)", False),
     ("hawaii_laplacian", "Hawaii(37)", False),
     ("wecc_laplacian", "WECC(240)", True),
+    ("xlarge_path_laplacian", "10k", True),
+    ("xxlarge_path_laplacian", "50k", True),
     ("eastwest_laplacian", "EastWest(65k)", True),
     ("usa_laplacian", "USA(82k)", True),
 ]

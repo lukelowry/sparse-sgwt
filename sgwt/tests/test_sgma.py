@@ -505,3 +505,139 @@ class TestFindModes:
 
         # All damping values should be finite
         assert np.all(np.isfinite(modes.damping))
+
+
+class TestSGMACoverage:
+    """Additional tests to cover remaining branches."""
+
+    @pytest.fixture
+    def sgma_engine(self, small_laplacian):
+        """Fixture to create an SGMA instance."""
+        scales = np.geomspace(0.1, 10.0, 5)
+        freqs = np.linspace(0.1, 1.0, 5)
+        engine = SGMA(small_laplacian, scales=scales, freqs=freqs)
+        yield engine
+        try:
+            engine.close()
+        except Exception:
+            pass
+
+    def test_find_peaks_return_indices(self, sgma_engine, random_signal):
+        """Test find_peaks with return_indices=True."""
+        n_time = random_signal.shape[1]
+        t = np.linspace(0, 5, n_time)
+        time_target = 2.5
+
+        spectrum = sgma_engine.spectrum(random_signal, t, bus=0, time=time_target)
+        peaks = sgma_engine.find_peaks(spectrum, top_n=3, min_dist=1, return_indices=True)
+
+        # Should have ScaleIdx and FreqIdx keys
+        assert 'ScaleIdx' in peaks
+        assert 'FreqIdx' in peaks
+        # Indices should be integers
+        if peaks['ScaleIdx'].size > 0:
+            assert peaks['ScaleIdx'].dtype in [np.int32, np.int64, np.intp]
+            assert peaks['FreqIdx'].dtype in [np.int32, np.int64, np.intp]
+
+    def test_find_peaks_return_indices_empty(self, sgma_engine):
+        """Test find_peaks with return_indices=True on empty spectrum."""
+        Y_flat = np.zeros((5, 5))
+        peaks = sgma_engine.find_peaks(Y_flat, return_indices=True)
+
+        assert 'ScaleIdx' in peaks
+        assert 'FreqIdx' in peaks
+        assert peaks['ScaleIdx'].size == 0
+        assert peaks['FreqIdx'].size == 0
+
+    def test_analyze_many_default_buses(self, sgma_engine, random_signal):
+        """Test analyze_many with buses=None (default to all buses)."""
+        n_time = random_signal.shape[1]
+        t = np.linspace(0, 5, n_time)
+        time_target = 2.5
+
+        # buses=None should default to all buses
+        result = sgma_engine.analyze_many(
+            random_signal, t, time=time_target, buses=None, verbose=False, min_dist=1
+        )
+
+        assert hasattr(result, 'peaks')
+        assert hasattr(result, 'clusters')
+
+    def test_analyze_many_verbose_progress(self):
+        """Test analyze_many verbose progress output with many buses."""
+        from scipy.sparse import diags
+
+        # Create a larger Laplacian with 60 nodes to trigger verbose progress
+        n_nodes = 60
+        L = diags([2.0, -1.0, -1.0], [0, 1, -1], shape=(n_nodes, n_nodes), format='csc')
+        L = L.tolil()
+        L[0, 0] = 1.0
+        L[n_nodes - 1, n_nodes - 1] = 1.0
+        L = L.tocsc()
+
+        scales = np.geomspace(0.1, 10.0, 3)
+        freqs = np.linspace(0.1, 1.0, 3)
+        engine = SGMA(L, scales=scales, freqs=freqs)
+
+        try:
+            n_time = 10
+            t = np.linspace(0, 5, n_time)
+            rng = np.random.default_rng(42)
+            V = rng.standard_normal((n_nodes, n_time))
+            time_target = 2.5
+
+            # This should print progress at bus 50 (when i+1 == 50)
+            result = engine.analyze_many(
+                V, t, time=time_target, buses=list(range(n_nodes)),
+                verbose=True, min_dist=1
+            )
+            assert hasattr(result, 'peaks')
+        finally:
+            engine.close()
+
+    def test_sgma_del_method(self, small_laplacian):
+        """Test that __del__ properly cleans up resources."""
+        scales = np.geomspace(0.1, 10.0, 3)
+        freqs = np.linspace(0.1, 1.0, 3)
+        engine = SGMA(small_laplacian, scales=scales, freqs=freqs)
+
+        # Initialize the convolution context to create resources
+        _ = engine._get_conv()
+        assert engine._conv is not None
+
+        # Manually call __del__ to cover the destructor
+        engine.__del__()
+
+        # After __del__, resources should be cleaned up
+        assert engine._conv is None
+
+    def test_find_modes_singular_phase_gradient(self, small_laplacian):
+        """Test find_modes with singular phase gradient triggers curvature fallback."""
+        scales = np.geomspace(0.1, 10.0, 10)
+        freqs = np.linspace(0.1, 2.0, 20)
+        engine = SGMA(small_laplacian, scales=scales, freqs=freqs)
+
+        try:
+            # Create a synthetic complex spectrum with constant phase (zero phase gradient)
+            n_scales, n_freqs = 10, 20
+            spectrum = np.ones((n_scales, n_freqs), dtype=complex) * 0.1
+
+            # Add a peak with constant phase (no phase variation) to trigger singular path
+            peak_scale, peak_freq = 5, 10
+            # Use a real positive value (phase = 0) across frequencies near the peak
+            # This makes the phase gradient effectively zero
+            for j in range(n_freqs):
+                spectrum[peak_scale, j] = 5.0 + 0j  # Real positive, constant phase = 0
+
+            # Make the peak stand out
+            spectrum[peak_scale, peak_freq] = 10.0 + 0j
+
+            modes = engine.find_modes(spectrum, top_n=1, min_dist=1)
+
+            # Should still return valid results using the curvature fallback
+            assert modes.n_modes >= 0
+            if modes.n_modes > 0:
+                # Damping should be finite (fallback should handle the singular case)
+                assert np.all(np.isfinite(modes.damping))
+        finally:
+            engine.close()
