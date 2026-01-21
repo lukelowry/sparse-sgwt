@@ -37,44 +37,39 @@ class _FolderConfig:
 @dataclass
 class ChebyKernel:
     """Stores Chebyshev polynomial approximations for one or more kernels."""
-
     C: np.ndarray
     """Coefficient matrix of shape (order + 1, n_dims)."""
-
     spectrum_bound: float
     """Shared upper spectrum bound for all kernels."""
-
+    
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> 'ChebyKernel':
-        """Loads kernel data from a dictionary.
-
-        Parameters
-        ----------
-        data : dict
-            Dictionary with a "spectrum_bound" key and an "approximations"
-            key containing a list of `{"coeffs": [...]}` objects.
-
-        Returns
-        -------
-        ChebyKernel
-            A new instance of the ChebyKernel class.
-        """
+        """Loads kernel data from a dictionary."""
         approxs = data.get('approximations', [])
         bound = data.get('spectrum_bound', 0.0)
-
         if not approxs:
             return cls(C=np.empty((0, 0)), spectrum_bound=bound)
-
         coeffs = [np.asarray(a.get('coeffs', [])) for a in approxs]
         if any(len(c) != len(coeffs[0]) for c in coeffs):
             raise ValueError("All 'coeffs' arrays must have the same length.")
-
         return cls(C=np.stack(coeffs, axis=1), spectrum_bound=bound)
-
+    
     @classmethod
-    def from_function(cls, f: Callable[[np.ndarray], np.ndarray], order: int, spectrum_bound: float, n_samples: int = 10000, sampling: str = 'quadratic', min_lambda: float = 0.0) -> 'ChebyKernel':
+    def from_function(
+        cls,
+        f: Callable[[np.ndarray], np.ndarray],
+        order: int,
+        spectrum_bound: float,
+        n_samples: int = None,
+        sampling: str = 'chebyshev',
+        min_lambda: float = 0.0,
+        rtol: float = 1e-12,
+        adaptive: bool = False,
+        max_order: int = 500,
+        target_error: float = 1e-10
+    ) -> 'ChebyKernel':
         """Creates a ChebyKernel by fitting a vectorized function.
-
+        
         Parameters
         ----------
         f : Callable[[np.ndarray], np.ndarray]
@@ -83,95 +78,136 @@ class ChebyKernel:
             Order of the Chebyshev polynomial to fit.
         spectrum_bound : float
             Upper bound of the function's domain.
-        n_samples : int, default 10000
-            Number of points to sample.
-        sampling : str, default 'quadratic'
-            Sampling strategy: 'linear' or 'quadratic'. Quadratic sampling
-            (t^2) clusters points near 0 to better capture sharp filter features.
+        n_samples : int, optional
+            Number of sample points (only used for non-Chebyshev sampling).
+        sampling : str, default 'chebyshev'
+            Sampling strategy: 'chebyshev' (optimal), 'linear', 'quadratic', 'logarithmic'.
         min_lambda : float, default 0.0
-            The lower bound of the sampling range.
-
-        Returns
-        -------
-        ChebyKernel
-            A new instance of the ChebyKernel class with the fitted coefficients.
+            Lower bound of the sampling range.
+        rtol : float, default 1e-12
+            Relative tolerance for truncating negligible coefficients.
+        adaptive : bool, default False
+            If True, automatically determines optimal order to achieve target_error.
+        max_order : int, default 500
+            Maximum order for adaptive mode.
+        target_error : float, default 1e-10
+            Target approximation error for adaptive mode.
         """
         if order < 1:
             raise ValueError("Order must be >= 1")
-
-        t = np.linspace(0, 1, n_samples)
-        sample_x = min_lambda + (spectrum_bound - min_lambda) * (t**2 if sampling == 'quadratic' else t)
-
-        f_values = f(sample_x)
-        x_for_fit = (2.0 / spectrum_bound) * sample_x - 1.0  # Map [0, bound] to [-1, 1]
-        coeffs = np.polynomial.chebyshev.chebfit(x_for_fit, f_values, order)
-
-        if coeffs.ndim == 1:
-            coeffs = coeffs[:, np.newaxis]
-
-        # Truncate negligible higher-order coefficients to optimize convolution
-        # Find the highest degree that has a non-negligible coefficient in any dimension
-        abs_coeffs = np.abs(coeffs)
-        row_max = np.max(abs_coeffs, axis=1)
-        nonzero_indices = np.where(row_max > 1e-15)[0]
         
-        if nonzero_indices.size > 0:
-            coeffs = coeffs[:np.max(nonzero_indices) + 1, :]
-        else:
-            coeffs = coeffs[:1, :] # Keep at least the constant term
-
+        if adaptive:
+            return cls._adaptive_fit(f, order, spectrum_bound, min_lambda, 
+                                     sampling, rtol, max_order, target_error)
+        
+        coeffs = cls._compute_coefficients(f, order, spectrum_bound, min_lambda, 
+                                           n_samples, sampling)
+        coeffs = cls._ensure_2d(coeffs)
+        coeffs = cls._truncate(coeffs, rtol)
+        
         return cls(C=coeffs, spectrum_bound=spectrum_bound)
-
+    
     @classmethod
-    def from_function_on_graph(cls, L: csc_matrix, f: Callable[[np.ndarray], np.ndarray], order: int, **kwargs) -> 'ChebyKernel':
-        """
-        Creates a ChebyKernel by fitting a function to a graph's spectrum.
+    def _compute_coefficients(cls, f, order, spectrum_bound, min_lambda, n_samples, sampling):
+        """Compute Chebyshev coefficients using optimal or fallback method."""
+        lambda_range = spectrum_bound - min_lambda
+        lambda_mid = (spectrum_bound + min_lambda) / 2.0
+        
+        if sampling == 'chebyshev':
+            # Chebyshev-Gauss-Lobatto nodes: optimal for polynomial interpolation
+            n = order + 1
+            k = np.arange(n)
+            x_cheb = np.cos(np.pi * k / order)  # Nodes in [-1, 1]
+            sample_x = lambda_mid + (lambda_range / 2.0) * x_cheb
+            f_values = cls._ensure_2d(f(sample_x))
+            
+            # Compute coefficients via discrete orthogonality (DCT-like)
+            coeffs = np.zeros((n, f_values.shape[1]))
+            w = np.ones(n); w[0] = w[-1] = 0.5  # Endpoint weights
+            
+            for j in range(n):
+                T_j = np.cos(j * np.pi * k / order)
+                scale = 2.0 / order if 0 < j < order else 1.0 / order
+                coeffs[j] = scale * np.sum(w[:, None] * f_values * T_j[:, None], axis=0)
+            
+            return coeffs
+        
+        # Fallback: least-squares fitting for other sampling strategies
+        n_samples = n_samples or max(4 * (order + 1), 1000)
+        t = np.linspace(0, 1, n_samples)
+        
+        if sampling == 'quadratic':
+            sample_x = min_lambda + lambda_range * (t ** 2)
+        elif sampling == 'logarithmic':
+            eps = max(min_lambda * 0.001, 1e-10)
+            sample_x = np.exp(np.log(min_lambda + eps) + t * np.log(spectrum_bound / (min_lambda + eps)))
+        else:  # linear
+            sample_x = min_lambda + lambda_range * t
+        
+        x_scaled = 2.0 * (sample_x - min_lambda) / lambda_range - 1.0
+        
+        # Chebyshev-weighted least squares
+        weights = 1.0 / np.sqrt(1.0 - np.clip(x_scaled ** 2, 0, 0.9999))
+        return np.polynomial.chebyshev.chebfit(x_scaled, f(sample_x), order, w=weights)
+    
+    @classmethod
+    def _adaptive_fit(cls, f, start_order, spectrum_bound, min_lambda,
+                      sampling, rtol, max_order, target_error):
+        """Adaptively determine optimal polynomial order."""
+        test_x = np.linspace(min_lambda, spectrum_bound, 1000)
+        f_exact = cls._ensure_2d(f(test_x))
+        order = max(start_order, 8)
 
-        This is a convenience method that automatically estimates the spectral
-        bound (`lambda_max`) of the graph Laplacian `L` before fitting.
+        while True:
+            coeffs = cls._ensure_2d(
+                cls._compute_coefficients(f, order, spectrum_bound, min_lambda, None, sampling)
+            )
 
-        Parameters
-        ----------
-        L : csc_matrix
-            The Graph Laplacian.
-        f : Callable[[np.ndarray], np.ndarray]
-            The vectorized function to approximate.
-        order : int
-            Order of the Chebyshev polynomial to fit.
-        **kwargs
-            Additional arguments passed to `ChebyKernel.from_function`.
+            # Evaluate and compute relative error
+            x_scaled = 2.0 * test_x / spectrum_bound - 1.0
+            f_approx = np.polynomial.chebyshev.chebval(x_scaled, coeffs)
+            f_approx = f_approx.T if f_approx.ndim > 1 else f_approx[:, None]
 
-        Returns
-        -------
-        ChebyKernel
-            A new instance with the fitted coefficients.
-        """
-        spectrum_bound = estimate_spectral_bound(L)
-        return cls.from_function(f, order, spectrum_bound, **kwargs)
+            rel_error = np.max(np.abs(f_exact - f_approx) / np.maximum(np.abs(f_exact), 1e-15))
 
+            if rel_error <= target_error or order >= max_order:
+                break
+            order = min(int(order * 1.5) + 1, max_order)
+
+        return cls(C=cls._truncate(coeffs, rtol), spectrum_bound=spectrum_bound)
+    
+    @classmethod
+    def _ensure_2d(cls, arr):
+        """Ensure array is 2D with shape (n, dims)."""
+        arr = np.atleast_1d(arr)
+        return arr[:, None] if arr.ndim == 1 else arr
+    
+    @classmethod
+    def _truncate(cls, coeffs, rtol):
+        """Truncate negligible higher-order coefficients."""
+        threshold = rtol * np.max(np.abs(coeffs))
+        row_max = np.max(np.abs(coeffs), axis=1)
+        significant = np.where(row_max > threshold)[0]
+        last_idx = significant[-1] + 1 if significant.size > 0 else 1
+        return coeffs[:last_idx]
+    
+    @classmethod
+    def from_function_on_graph(cls, L: csc_matrix, f: Callable[[np.ndarray], np.ndarray], 
+                               order: int, **kwargs) -> 'ChebyKernel':
+        """Creates a ChebyKernel fitted to a graph's spectrum."""
+        return cls.from_function(f, order, estimate_spectral_bound(L), **kwargs)
+    
     def _scale_x(self, x: np.ndarray) -> np.ndarray:
-        """Maps points from [0, spectrum_bound] to the Chebyshev domain [-1, 1]."""
+        """Maps points from [0, spectrum_bound] to Chebyshev domain [-1, 1]."""
         return (2.0 / self.spectrum_bound) * x - 1.0
-
+    
     def evaluate(self, x: np.ndarray) -> np.ndarray:
-        """Evaluates the Chebyshev approximation for this kernel.
-
-        Parameters
-        ----------
-        x : np.ndarray
-            Points in the domain [0, spectrum_bound] to evaluate.
-
-        Returns
-        -------
-        np.ndarray
-            Evaluated function values at points in `x`.
-        """
+        """Evaluates the Chebyshev approximation at given points."""
         if self.C.size == 0:
             return np.empty((len(x), 0))
-
         y = np.polynomial.chebyshev.chebval(self._scale_x(x), self.C)
         return y.T if y.ndim > 1 else y
-
+    
 def estimate_spectral_bound(L: csc_matrix) -> float:
     """
     Estimates the largest eigenvalue (spectral bound) of a matrix.
@@ -576,6 +612,49 @@ def _ensure_registry() -> Dict[str, Callable[[], Any]]:
     return _LAZY_REGISTRY
 
 
+def list_graphs() -> None:
+    """
+    Prints a table of all available graph Laplacians in the library.
+    
+    Displays the graph name, number of vertices, and number of edges.
+    """
+    registry = _ensure_registry()
+    
+    # Filter for graph keys based on known prefixes
+    graph_prefixes = ("DELAY_", "IMPEDANCE_", "LENGTH_", "MESH_")
+    graph_keys = [k for k in registry.keys() if k.startswith(graph_prefixes)]
+    
+    if not graph_keys:
+        print("No graphs found in the library.")
+        return
+
+    # Header
+    print(f"{'Graph Name':<30} {'Vertices':<10} {'Edges':<10}")
+    print("-" * 52)
+    
+    for key in sorted(graph_keys):
+        try:
+            # Load the graph
+            L = registry[key]()
+            
+            # Check if it looks like a sparse matrix
+            if hasattr(L, 'shape') and hasattr(L, 'nnz'):
+                n_vertices = L.shape[0]
+                
+                # Calculate edges: (nnz - non_zero_diagonal_elements) / 2
+                # This handles cases with isolated nodes (0 on diagonal)
+                if hasattr(L, 'diagonal'):
+                    diag_nnz = np.count_nonzero(L.diagonal())
+                    n_edges = (L.nnz - diag_nnz) // 2
+                else:
+                    # Fallback
+                    n_edges = (L.nnz - n_vertices) // 2
+
+                print(f"{key:<30} {n_vertices:<10} {n_edges:<10}")
+        except Exception:
+            continue
+
+
 def __getattr__(name: str) -> Any:
     registry = _ensure_registry()
     if name in registry:
@@ -587,4 +666,4 @@ def __dir__() -> List[str]:
     return list(globals().keys()) + list(_ensure_registry().keys())
 
 
-__all__ = ["ChebyKernel", "VFKernel", "impulse", "get_cholmod_dll", "get_klu_dll", "estimate_spectral_bound", "load_ply_laplacian", "load_ply_xyz"]
+__all__ = ["ChebyKernel", "VFKernel", "impulse", "get_cholmod_dll", "get_klu_dll", "estimate_spectral_bound", "load_ply_laplacian", "load_ply_xyz", "list_graphs"]

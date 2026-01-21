@@ -43,43 +43,44 @@ TEST_PATTERNS = {
 }
 
 # ---------------------------------------------------------------------------
-# Graph Constants
+# Graph Constants - Dynamic Loading
 # ---------------------------------------------------------------------------
-GRAPH_SIZES = {
-    "medium_path_laplacian": 100,
-    "large_path_laplacian": 1000,
-    "xlarge_path_laplacian": 10000,
-    "xxlarge_path_laplacian": 50000,
-    "texas_laplacian": 2000,
-    "hawaii_laplacian": 37,
-    "wecc_laplacian": 240,
-    "eastwest_laplacian": 65000,
-    "usa_laplacian": 82223,
-}
+def get_graph_stats_from_laplacian(graph_name):
+    """
+    Dynamically retrieve node and edge count from a Laplacian fixture.
 
-GRAPH_EDGES = {
-    "medium_path_laplacian": 99,
-    "large_path_laplacian": 999,
-    "xlarge_path_laplacian": 9999,
-    "xxlarge_path_laplacian": 49999,
-    "texas_laplacian": 3667,
-    "hawaii_laplacian": 90,
-    "wecc_laplacian": 472,
-    "eastwest_laplacian": 135544,
-    "usa_laplacian": 139205,
-}
+    Parameters
+    ----------
+    graph_name : str
+        Fixture name (e.g., 'texas_laplacian')
 
-GRAPH_LABELS = {
-    37: "Hawaii",
-    100: "Path-100",
-    240: "WECC",
-    1000: "Path-1k",
-    2000: "Texas",
-    10000: "Path-10k",
-    50000: "Path-50k",
-    65000: "EastWest",
-    82223: "USA",
-}
+    Returns
+    -------
+    dict or None
+        Dictionary with keys: 'nodes', 'edges', 'label', or None if not found
+    """
+    import sgwt
+
+    # Map fixture names to sgwt constants
+    FIXTURE_TO_CONSTANT = {
+        'texas_laplacian': sgwt.DELAY_TEXAS,
+        'hawaii_laplacian': sgwt.DELAY_HAWAII,
+        'wecc_laplacian': sgwt.DELAY_WECC,
+        'eastwest_laplacian': sgwt.DELAY_EASTWEST,
+        'usa_laplacian': sgwt.DELAY_USA,
+    }
+
+    if graph_name not in FIXTURE_TO_CONSTANT:
+        return None
+
+    L = FIXTURE_TO_CONSTANT[graph_name]
+    n_nodes = L.shape[0]
+    n_edges = (L.nnz - np.count_nonzero(L.diagonal())) // 2
+
+    # Generate label from fixture name
+    label = graph_name.replace('_laplacian', '').replace('_', ' ').title()
+
+    return {'nodes': n_nodes, 'edges': n_edges, 'label': label}
 
 # ---------------------------------------------------------------------------
 # Plot Style Constants
@@ -142,13 +143,15 @@ def load_category(category):
 # Graph Lookup Functions
 # ---------------------------------------------------------------------------
 def get_graph_size(graph_name):
-    """Map graph fixture name to node count."""
-    return GRAPH_SIZES.get(graph_name)
+    """Map graph fixture name to node count (dynamic)."""
+    stats = get_graph_stats_from_laplacian(graph_name)
+    return stats['nodes'] if stats else None
 
 
 def get_graph_edges(graph_name):
-    """Map graph fixture name to edge count."""
-    return GRAPH_EDGES.get(graph_name)
+    """Map graph fixture name to edge count (dynamic)."""
+    stats = get_graph_stats_from_laplacian(graph_name)
+    return stats['edges'] if stats else None
 
 
 # ---------------------------------------------------------------------------
