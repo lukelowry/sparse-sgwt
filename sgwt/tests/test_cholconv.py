@@ -157,6 +157,25 @@ class TestConvolve:
             res = conv.lowpass(c_signal, [1.0])
             assert len(res) == 1
 
+    def test_float32_input_converted(self, texas_laplacian, texas_signal):
+        """Float32 input is converted to float64 and processed correctly."""
+        X_32 = texas_signal.astype(np.float32)
+        with sgwt.Convolve(texas_laplacian) as conv:
+            # Should not raise error
+            res = conv.lowpass(X_32, SCALES)
+            assert len(res) == len(SCALES)
+            # Result should be close to float64 result
+            res_64 = conv.lowpass(texas_signal, SCALES)
+            np.testing.assert_allclose(res[0], res_64[0], atol=1e-5)
+
+    def test_int_input_converted(self, texas_laplacian, texas_signal):
+        """Integer input is converted to float64 and processed correctly."""
+        # Create integer signal (rounded)
+        X_int = np.round(texas_signal).astype(np.int32)
+        with sgwt.Convolve(texas_laplacian) as conv:
+            res = conv.lowpass(X_int, SCALES)
+            assert len(res) == len(SCALES)
+
 
 class TestConvolveVFKernel:
     """Tests for VFKernel convolution in Convolve context."""
@@ -281,6 +300,14 @@ class TestDyConvolve:
             np.testing.assert_allclose(dy_r, st_r, atol=1e-10)
         for dy_r, st_r in zip(dy_hp, st_hp):
             np.testing.assert_allclose(dy_r, st_r, atol=1e-10)
+
+    def test_float32_input_converted(self, texas_laplacian, texas_signal):
+        """Float32 input is converted to float64 in DyConvolve."""
+        X_32 = texas_signal.astype(np.float32)
+        poles = [1.0 / s for s in SCALES]
+        with sgwt.DyConvolve(texas_laplacian, poles) as conv:
+            res = conv.lowpass(X_32)
+            assert len(res) == len(poles)
 
 
 class TestDyConvolveTopology:

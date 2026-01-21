@@ -48,8 +48,8 @@ def _process_signal(func, B: np.ndarray, *args, **kwargs) -> Union[List[np.ndarr
     """
     if np.iscomplexobj(B):
         # Recurse for real and imaginary parts
-        real_part = func(np.asfortranarray(B.real), *args, **kwargs)
-        imag_part = func(np.asfortranarray(B.imag), *args, **kwargs)
+        real_part = func(B.real.astype(np.float64, order='F', copy=False), *args, **kwargs)
+        imag_part = func(B.imag.astype(np.float64, order='F', copy=False), *args, **kwargs)
         
         # Recombine results based on return type
         if isinstance(real_part, list):
@@ -57,9 +57,9 @@ def _process_signal(func, B: np.ndarray, *args, **kwargs) -> Union[List[np.ndarr
         else:  # Assumes np.ndarray for convolve
             return real_part + 1j * imag_part
 
-    # Ensure Fortran contiguous array for non-complex inputs
-    if not B.flags['F_CONTIGUOUS']:
-        B = np.asfortranarray(B)
+    # Ensure float64 and Fortran contiguous for non-complex inputs
+    if B.dtype != np.float64 or not B.flags['F_CONTIGUOUS']:
+        B = B.astype(np.float64, order='F', copy=False)
     
     return func(B, *args, **kwargs)
 
