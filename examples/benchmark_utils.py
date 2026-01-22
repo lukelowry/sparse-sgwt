@@ -66,6 +66,7 @@ def get_graph_stats_from_laplacian(graph_name):
         'texas_laplacian': sgwt.DELAY_TEXAS,
         'hawaii_laplacian': sgwt.DELAY_HAWAII,
         'wecc_laplacian': sgwt.DELAY_WECC,
+        'east_laplacian': sgwt.DELAY_EAST,
         'eastwest_laplacian': sgwt.DELAY_EASTWEST,
         'usa_laplacian': sgwt.DELAY_USA,
     }
@@ -405,3 +406,146 @@ def ensure_data_loaded(category):
 
 # Backwards compatibility alias
 extract_parameter_scaling = extract_scaling_data
+
+
+# ---------------------------------------------------------------------------
+# Printing Utilities
+# ---------------------------------------------------------------------------
+def print_benchmark_summary(data, param_name="Parameter", x_formatter=None):
+    """
+    Print a tabular summary of benchmark results.
+    
+    Splits results into separate tables by filter type (Lowpass, Bandpass, Highpass)
+    to avoid overly wide output.
+
+    Parameters
+    ----------
+    data : dict
+        Data structure returned by extract_scaling_data.
+        Format: { 'Label': {'x': [...], 'y': [...], ...} }
+    param_name : str
+        Label for the independent variable (x-axis).
+    x_formatter : callable, optional
+        Function to format the x-axis value.
+    """
+    if not data:
+        print("No data to display.")
+        return
+
+    # Collect all unique x values
+    all_x = set()
+    for label, series in data.items():
+        all_x.update(series['x'])
+
+    sorted_x = sorted(list(all_x))
+    
+    # Define groups to split the table
+    filter_types = ['Lowpass', 'Bandpass', 'Highpass']
+    groups = {}
+    remaining_keys = set(data.keys())
+
+    for ftype in filter_types:
+        # Find keys containing this filter type
+        matching = [k for k in remaining_keys if ftype in k]
+        if matching:
+            groups[ftype] = sorted(matching)
+            for k in matching:
+                remaining_keys.remove(k)
+    
+    # Add any remaining keys as 'General' or if no standard filters found
+    if remaining_keys:
+        groups['General'] = sorted(list(remaining_keys))
+
+    # Determine column widths
+    col_width = 18
+    param_width = 20
+
+    for group_name, labels in groups.items():
+        print(f"\nBenchmark Results: {group_name}")
+        
+        # Create shortened headers by removing the group name (e.g. "Static Lowpass" -> "Static")
+        headers = []
+        for l in labels:
+            if group_name != 'General' and group_name in l:
+                h = l.replace(group_name, '').strip()
+                headers.append(h if h else l)
+            else:
+                headers.append(l)
+
+        # Header
+        header_str = f"{param_name:<{param_width}} | " + " | ".join(f"{h:<{col_width}}" for h in headers)
+        separator = "-" * len(header_str)
+
+        print(separator)
+        print(header_str)
+        print(separator)
+
+        # Rows
+        for x_val in sorted_x:
+            # Format x value
+            if x_formatter:
+                x_str = f"{x_formatter(x_val):<{param_width}}"
+            else:
+                if isinstance(x_val, (int, np.integer)) or (isinstance(x_val, float) and x_val.is_integer()):
+                     x_str = f"{int(x_val):<{param_width}}"
+                else:
+                     x_str = f"{x_val:<{param_width}.4g}"
+
+            row = f"{x_str} | "
+            for label in labels:
+                series = data[label]
+                # Try exact match first
+                try:
+                    idx = series['x'].index(x_val)
+                    y_val = series['y'][idx]
+                    val_str = f"{y_val * 1000:.3f} ms"
+                    row += f"{val_str:<{col_width}} | "
+                except ValueError:
+                    # Try close match for floats
+                    found = False
+                    for i, sx in enumerate(series['x']):
+                        if np.isclose(sx, x_val):
+                            y_val = series['y'][i]
+                            val_str = f"{y_val * 1000:.3f} ms"
+                            row += f"{val_str:<{col_width}} | "
+                            found = True
+                            break
+                    if not found:
+                        row += f"{'-':<{col_width}} | "
+            print(row)
+        print(separator)
+    print("")
+
+
+def print_graph_benchmark_summary(static_data, dynamic_data):
+    """Print summary for graph size scaling benchmark."""
+    combined_data = {}
+
+    for method, sizes_dict in static_data.items():
+        label = f"Static {method.title()}"
+        x = sorted(sizes_dict.keys())
+        y = [np.mean(sizes_dict[s]) for s in x]
+        combined_data[label] = {'x': x, 'y': y}
+
+    for method, sizes_dict in dynamic_data.items():
+        label = f"Dynamic {method.title()}"
+        x = sorted(sizes_dict.keys())
+        y = [np.mean(sizes_dict[s]) for s in x]
+        combined_data[label] = {'x': x, 'y': y}
+
+    # Build map edges -> nodes for display
+    edge_to_node = {}
+    graph_fixtures = [
+        'hawaii_laplacian', 'wecc_laplacian', 'texas_laplacian', 
+        'east_laplacian', 'eastwest_laplacian', 'usa_laplacian'
+    ]
+    for g in graph_fixtures:
+        stats = get_graph_stats_from_laplacian(g)
+        if stats:
+            edge_to_node[stats['edges']] = stats['nodes']
+
+    def format_x(edges):
+        nodes = edge_to_node.get(edges, "-")
+        return f"{nodes:<7} | {int(edges):<7}"
+
+    print_benchmark_summary(combined_data, param_name="Nodes   | Edges  ", x_formatter=format_x)

@@ -94,6 +94,12 @@ def eastwest_laplacian():
     return sgwt.DELAY_EASTWEST
 
 
+@pytest.fixture(scope='module')
+def east_laplacian():
+    """Load DELAY_EAST Laplacian from library."""
+    return sgwt.DELAY_EAST
+
+
 # ---------------------------------------------------------------------------
 # Scaling & Performance Tests (Parametrized)
 # ---------------------------------------------------------------------------
@@ -104,6 +110,7 @@ GRAPH_DEFINITIONS = [
     ("hawaii_laplacian", "Hawaii(37)", False),
     ("wecc_laplacian", "WECC(240)", False),
     ("texas_laplacian", "Texas(2k)", False),
+    ("east_laplacian", "East", True),
     ("eastwest_laplacian", "EastWest(65k)", True),
     ("usa_laplacian", "USA(82k)", True),
 ]

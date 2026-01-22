@@ -13,7 +13,8 @@ import matplotlib.pyplot as plt
 
 from benchmark_utils import (
     COLORS, MARKERS, FILTER_TYPES,
-    setup_style, save_figure, ensure_data_loaded, extract_graph_scaling
+    setup_style, save_figure, ensure_data_loaded, extract_graph_scaling,
+    print_graph_benchmark_summary
 )
 
 # DOC_START_CODE_EXCLUDE_IMPORTS
@@ -58,6 +59,8 @@ if __name__ == '__main__':
     fig, ax = plt.subplots(figsize=(7, 5))
     plot_graph_scaling(ax, static_data, dynamic_data)
     plt.tight_layout()
+
+    print_graph_benchmark_summary(static_data, dynamic_data)
 
     save_figure(fig, 'demo_benchmark_a.png')
     plt.show()

@@ -12,7 +12,8 @@ import matplotlib.pyplot as plt
 
 from benchmark_utils import (
     COLORS, MARKERS, SOLVERS,
-    setup_style, save_figure, ensure_data_loaded, extract_scaling_data
+    setup_style, save_figure, ensure_data_loaded, extract_scaling_data,
+    print_benchmark_summary
 )
 
 # DOC_START_CODE_EXCLUDE_IMPORTS
@@ -60,6 +61,8 @@ if __name__ == '__main__':
     fig, ax = plt.subplots(figsize=(7, 5))
     plot_bandpass_order_scaling(ax, order_data)
     plt.tight_layout()
+
+    print_benchmark_summary(order_data, param_name="Order (K)")
 
     save_figure(fig, 'demo_benchmark_d.png')
     plt.show()

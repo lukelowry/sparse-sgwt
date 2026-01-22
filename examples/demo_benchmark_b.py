@@ -11,7 +11,8 @@ import matplotlib.pyplot as plt
 
 from benchmark_utils import (
     setup_style, save_figure, ensure_data_loaded,
-    extract_scaling_data, plot_scaling_comparison
+    extract_scaling_data, plot_scaling_comparison,
+    print_benchmark_summary
 )
 
 # DOC_START_CODE_EXCLUDE_IMPORTS
@@ -38,6 +39,8 @@ if __name__ == '__main__':
     fig, ax = plt.subplots(figsize=(7, 5))
     plot_signal_scaling(ax, signal_data)
     plt.tight_layout()
+
+    print_benchmark_summary(signal_data, param_name="Signals (M)")
 
     save_figure(fig, 'demo_benchmark_b.png')
     plt.show()
