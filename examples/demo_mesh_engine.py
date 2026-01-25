@@ -19,7 +19,7 @@ print('Engine verticies', L_horse.shape[0])
 
 x_horse = sgwt.impulse(L_horse, n=horse_impulse_node)
 with sgwt.Convolve(L_horse) as conv:
-    y_horse = conv.bandpass(x_horse, [horse_scale], order=40)[0]
+    y_horse = conv.bandpass(x_horse, horse_scale, order=40)
 # DOC_END_CODE_EXCLUDE_PLOT
 
 print("GSP Done! Begin Rendering")

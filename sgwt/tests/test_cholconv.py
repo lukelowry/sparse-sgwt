@@ -38,12 +38,13 @@ class TestConvolve:
             results = conv.highpass(texas_signal, SCALES)
             assert len(results) == len(SCALES)
 
-    def test_lowpass_with_bset_subset(self, texas_laplacian, texas_signal):
+    def test_lowpass_with_bset_subset(self, texas_laplacian):
         """Lowpass with Bset sparse subset runs correctly."""
         bset = csc_matrix(
             (np.ones(1), ([100], [0])), shape=(texas_laplacian.shape[0], 1)
         )
-        X_single = texas_signal[:, :1].copy(order='F')
+        # Bset requires 2D signal with single column
+        X_single = sgwt.impulse(texas_laplacian, n=100, n_timesteps=1).reshape(-1, 1).copy(order='F')
         with sgwt.Convolve(texas_laplacian) as conv:
             results = conv.lowpass(X_single, SCALES, Bset=bset)
             assert len(results) == len(SCALES)
@@ -148,10 +149,10 @@ class TestConvolve:
 
     def test_c_contiguous_input_conversion(self, texas_laplacian, texas_signal):
         """C-contiguous input is converted to Fortran (covers B conversion in _process_signal)."""
-        # Tile signal to ensure >1 columns so C and F layouts are distinct
-        c_signal = np.tile(texas_signal, (1, 2)).copy(order='C')
+        # Create 2D signal with >1 columns so C and F layouts are distinct
+        c_signal = np.column_stack([texas_signal, texas_signal]).copy(order='C')
         assert not c_signal.flags['F_CONTIGUOUS']
-        
+
         with sgwt.Convolve(texas_laplacian) as conv:
             # This calls _process_signal -> lowpass_impl
             res = conv.lowpass(c_signal, [1.0])
@@ -306,8 +307,9 @@ class TestConvolveVFKernel:
         )
         with sgwt.Convolve(texas_laplacian) as conv:
             result = conv.convolve(texas_signal, kernel)
-            lp = conv.lowpass(texas_signal, [1.0])[0]
-            expected = lp[:, :, None] + texas_signal[:, :, None] * 5.0
+            lp = conv.lowpass(texas_signal, 1.0)
+            # With 1D signal: result is (n_vertices, nDim), lp is (n_vertices,)
+            expected = lp[:, None] + texas_signal[:, None] * 5.0
             np.testing.assert_allclose(result, expected)
 
     def test_multidim_direct_term_broadcasts(self, texas_laplacian, texas_signal):
@@ -319,9 +321,10 @@ class TestConvolveVFKernel:
         )
         with sgwt.Convolve(texas_laplacian) as conv:
             result = conv.convolve(texas_signal, kernel)
-            lp = conv.lowpass(texas_signal, [1.0])[0]
-            np.testing.assert_allclose(result[:, :, 0], lp + texas_signal * 5.0)
-            np.testing.assert_allclose(result[:, :, 1], 2.0 * lp + texas_signal * 10.0)
+            lp = conv.lowpass(texas_signal, 1.0)
+            # With 1D signal: result is (n_vertices, nDim), lp is (n_vertices,)
+            np.testing.assert_allclose(result[:, 0], lp + texas_signal * 5.0)
+            np.testing.assert_allclose(result[:, 1], 2.0 * lp + texas_signal * 10.0)
 
 
 class TestDyConvolve:
@@ -348,7 +351,8 @@ class TestDyConvolve:
         with sgwt.DyConvolve(texas_laplacian, kernel) as conv:
             result = conv.convolve(texas_signal)
             lp = conv.lowpass(texas_signal)[0]
-            expected = lp[:, :, None] + texas_signal[:, :, None] * 10.0
+            # With 1D signal: result is (n_vertices, nDim), lp is (n_vertices,)
+            expected = lp[:, None] + texas_signal[:, None] * 10.0
             np.testing.assert_allclose(result, expected)
 
     def test_consistency_with_static_convolve(self, texas_laplacian, texas_signal, library_kernel):
@@ -480,8 +484,16 @@ class TestDyConvolveTopology:
 class TestImpulse:
     """Tests for impulse signal generator utility."""
 
+    def test_impulse_default_1d(self, texas_laplacian):
+        """Default impulse (n_timesteps=1) returns 1D array."""
+        imp = sgwt.impulse(texas_laplacian, n=5)
+        assert imp.ndim == 1
+        assert imp.shape == (texas_laplacian.shape[0],)
+        assert imp[5] == 1.0
+        assert np.sum(imp) == 1.0
+
     def test_impulse_shape_and_values(self, texas_laplacian):
-        """Impulse has correct shape and single nonzero entry."""
+        """Impulse with n_timesteps>1 has correct 2D shape."""
         imp = sgwt.impulse(texas_laplacian, n=5, n_timesteps=2)
         assert imp.shape == (texas_laplacian.shape[0], 2)
         assert imp[5, 0] == 1.0

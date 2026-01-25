@@ -15,7 +15,7 @@ def get_saliency_signal(conv, coords, scale, percentile=75, power=1.5):
     """
     # 1. Compute Wavelet coefficients for the XYZ geometry
     # This returns a vector (dx, dy, dz) representing geometric variation
-    wavelets = conv.bandpass(coords, scales=[scale])[0]
+    wavelets = conv.bandpass(coords, scale)
     
     # 2. Compute magnitude (L2 norm)
     sig = np.linalg.norm(wavelets, axis=1)

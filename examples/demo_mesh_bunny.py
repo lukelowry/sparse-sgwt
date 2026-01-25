@@ -18,7 +18,7 @@ bunny_scale = 200
 
 x_bunny = sgwt.impulse(L_bunny, n=bunny_impulse_node)
 with sgwt.Convolve(L_bunny) as conv:
-    y_bunny = conv.bandpass(x_bunny, [bunny_scale], order=4)[0]
+    y_bunny = conv.bandpass(x_bunny, bunny_scale, order=4)
 # DOC_END_CODE_EXCLUDE_PLOT
 
 print("GSP Done! Begin Rendering")

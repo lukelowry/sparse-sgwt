@@ -16,7 +16,7 @@ brain_scale = 200
 
 x_brain = sgwt.impulse(L_brain, n=brain_impulse_node)
 with sgwt.Convolve(L_brain) as conv:
-    y_brain = conv.bandpass(x_brain, [brain_scale], order=40)[0]
+    y_brain = conv.bandpass(x_brain, brain_scale, order=40)
 # DOC_END_CODE_EXCLUDE_PLOT
 
 print("GSP Done! Begin Rendering")

@@ -10,10 +10,10 @@ X = impulse(L, n=75000)
 s = [.5, 10, 100]
 
 with Convolve(L) as conv:
-    Y = conv.lowpass(X, s, order=8)[0]
+    Y = conv.lowpass(X, s, order=8)
 # DOC_END_CODE_EXCLUDE_PLOT
 from demo_plot import plot_signal
-plot_signal(Y[:,0], C, 'managua')
+plot_signal(Y[0], C, 'managua')
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
 project_root = os.path.abspath(os.path.join(script_dir, '..'))

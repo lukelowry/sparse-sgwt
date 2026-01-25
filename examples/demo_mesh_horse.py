@@ -17,7 +17,7 @@ horse_scale = 60
 
 x_horse = sgwt.impulse(L_horse, n=horse_impulse_node)
 with sgwt.Convolve(L_horse) as conv:
-    y_horse = conv.bandpass(x_horse, [horse_scale], order=50)[0]
+    y_horse = conv.bandpass(x_horse, horse_scale, order=50)
 # DOC_END_CODE_EXCLUDE_PLOT
 
 print("GSP Done! Begin Rendering")

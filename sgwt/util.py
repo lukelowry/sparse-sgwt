@@ -286,10 +286,15 @@ def impulse(lap: csc_matrix, n: int = 0, n_timesteps: int = 1) -> np.ndarray:
     Returns
     -------
     np.ndarray
-        (n_vertices, n_timesteps) array with 1.0 at index n and 0.0 elsewhere, in Fortran order.
+        1D array (n_vertices,) if n_timesteps=1, otherwise 2D array
+        (n_vertices, n_timesteps) with 1.0 at index n and 0.0 elsewhere.
     """
-    b: np.ndarray = np.zeros((lap.shape[0], n_timesteps), order='F')
-    b[n] = 1
+    if n_timesteps == 1:
+        b: np.ndarray = np.zeros(lap.shape[0])
+        b[n] = 1.0
+    else:
+        b = np.zeros((lap.shape[0], n_timesteps), order='F')
+        b[n] = 1.0
 
     return b
 

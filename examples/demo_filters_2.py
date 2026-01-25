@@ -8,13 +8,13 @@ from sgwt import COORD_EASTWEST as C
 
 X = impulse(L, n=65000)
 X -= impulse(L, n=35000)
-s = [3e0]
+s = 3e0
 
 with Convolve(L) as conv:
-    BP = conv.bandpass(X, s, order=3)[0]
+    BP = conv.bandpass(X, s, order=3)
 # DOC_END_CODE_EXCLUDE_PLOT
 from demo_plot import plot_signal
-plot_signal(BP[:,0], C, 'coolwarm')
+plot_signal(BP, C, 'coolwarm')
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
 project_root = os.path.abspath(os.path.join(script_dir, '..'))
