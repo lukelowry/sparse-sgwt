@@ -21,22 +21,26 @@ from ctypes import byref, POINTER
 from typing import Union, Optional, Type, List
 from types import TracebackType
 
-def _process_signal(func, B: np.ndarray, *args, **kwargs) -> Union[List[np.ndarray], np.ndarray]:
+def _process_signal(func, B: np.ndarray, scales=None, *args, **kwargs) -> Union[List[np.ndarray], np.ndarray]:
     """
-    Private helper to handle complex and non-contiguous inputs.
+    Private helper to handle complex, non-contiguous, 1D inputs, and scalar scales.
 
     This method serves as a wrapper for the core convolution logic. It detects
     if the input signal `B` is complex. If so, it recursively calls the
     wrapped function (`func`) on the real and imaginary parts and then
     recombines the results. For real inputs, it ensures the data is in
-    Fortran-contiguous order before passing it to `func`.
+    Fortran-contiguous order before passing it to `func`. Also handles 1D
+    input signals by reshaping to 2D and squeezing the result back. If a
+    scalar scale is passed, returns a single array instead of a list.
 
     Parameters
     ----------
     func : callable
         The core implementation function (e.g., `_convolve_impl`) to call.
     B : np.ndarray
-        The input signal array.
+        The input signal array. Can be 1D (n_vertices,) or 2D (n_vertices, n_timesteps).
+    scales : float | list[float] | None
+        Scale(s) for filtering. If scalar, result list is unwrapped to single array.
     *args, **kwargs :
         Additional arguments to pass to `func`.
 
@@ -44,24 +48,48 @@ def _process_signal(func, B: np.ndarray, *args, **kwargs) -> Union[List[np.ndarr
     -------
     Union[List[np.ndarray], np.ndarray]
         The processed signal, either as a complex result or the result for a
-        real-valued input.
+        real-valued input. If input was 1D, the result is squeezed accordingly.
+        If scales was a scalar, returns single array instead of list.
     """
+    # Handle 1D input by reshaping to 2D
+    was_1d = B.ndim == 1
+    if was_1d:
+        B = B.reshape(-1, 1)
+
+    # Handle scalar scale
+    scalar_scale = scales is not None and isinstance(scales, (int, float))
+    if scalar_scale:
+        scales = [float(scales)]
+
     if np.iscomplexobj(B):
         # Recurse for real and imaginary parts
-        real_part = func(B.real.astype(np.float64, order='F', copy=False), *args, **kwargs)
-        imag_part = func(B.imag.astype(np.float64, order='F', copy=False), *args, **kwargs)
-        
+        real_part = func(B.real.astype(np.float64, order='F', copy=False), scales, *args, **kwargs) if scales is not None else func(B.real.astype(np.float64, order='F', copy=False), *args, **kwargs)
+        imag_part = func(B.imag.astype(np.float64, order='F', copy=False), scales, *args, **kwargs) if scales is not None else func(B.imag.astype(np.float64, order='F', copy=False), *args, **kwargs)
+
         # Recombine results based on return type
         if isinstance(real_part, list):
-            return [r + 1j * i for r, i in zip(real_part, imag_part)]
+            result = [r + 1j * i for r, i in zip(real_part, imag_part)]
         else:  # Assumes np.ndarray for convolve
-            return real_part + 1j * imag_part
+            result = real_part + 1j * imag_part
+    else:
+        # Ensure float64 and Fortran contiguous for non-complex inputs
+        if B.dtype != np.float64 or not B.flags['F_CONTIGUOUS']:
+            B = B.astype(np.float64, order='F', copy=False)
 
-    # Ensure float64 and Fortran contiguous for non-complex inputs
-    if B.dtype != np.float64 or not B.flags['F_CONTIGUOUS']:
-        B = B.astype(np.float64, order='F', copy=False)
-    
-    return func(B, *args, **kwargs)
+        result = func(B, scales, *args, **kwargs) if scales is not None else func(B, *args, **kwargs)
+
+    # Squeeze back to 1D if input was 1D
+    if was_1d:
+        if isinstance(result, list):
+            result = [np.squeeze(r, axis=1) for r in result]
+        else:
+            result = np.squeeze(result, axis=1)
+
+    # Unwrap list to single array if scalar scale was passed
+    if scalar_scale and isinstance(result, list):
+        result = result[0]
+
+    return result
 
 class Convolve:
     """
@@ -139,22 +167,23 @@ class Convolve:
         return self.convolve(B, K) 
     
     def convolve(self, B: np.ndarray, K: Union[VFKernel, dict]) -> np.ndarray:
-        """ 
+        """
         Performs graph convolution using a specified kernel.
 
         Parameters
         ----------
         B : np.ndarray
-            Input signal array (n_vertices, n_timesteps) with column-major ordering (F).
+            Input signal array. Can be 1D (n_vertices,) or 2D (n_vertices, n_timesteps).
         K : VFKernel | dict
             Kernel function (Vector Fitting model) to apply.
 
         Returns
         -------
         np.ndarray
-            Convolved signal (n_vertices, n_timesteps, nDim).
+            Convolved signal. Shape depends on input: (n_vertices, nDim) for 1D input,
+            (n_vertices, n_timesteps, nDim) for 2D input.
         """
-        return _process_signal(self._convolve_impl, B, K)
+        return _process_signal(self._convolve_impl, B, None, K)
 
     def _convolve_impl(self, B: np.ndarray, K: Union[VFKernel, dict]) -> np.ndarray:
 
@@ -200,7 +229,7 @@ class Convolve:
 
         return W
     
-    def lowpass(self, B: np.ndarray, scales: List[float] = [1], Bset: Optional[csc_matrix] = None, refactor: bool = True, order = 1) -> List[np.ndarray]:
+    def lowpass(self, B: np.ndarray, scales: Union[float, List[float]] = [1], Bset: Optional[csc_matrix] = None, refactor: bool = True, order = 1) -> Union[np.ndarray, List[np.ndarray]]:
         """
         Computes low-pass filtered scaling coefficients at specified scales.
 
@@ -215,9 +244,10 @@ class Convolve:
         Parameters
         ----------
         B : np.ndarray
-            Input signal array (n_vertices, n_timesteps).
-        scales : list[float], default: [1]
-            List of scales :math:`s` to compute coefficients for.
+            Input signal array. Can be 1D (n_vertices,) or 2D (n_vertices, n_timesteps).
+        scales : float | list[float], default: [1]
+            Scale or list of scales :math:`s` to compute coefficients for.
+            If a scalar is passed, returns a single array instead of a list.
         Bset : csc_matrix, optional
             Sparse indicator vector for localized coefficient computation.
         refactor : bool, default: True
@@ -227,8 +257,9 @@ class Convolve:
 
         Returns
         -------
-        list[np.ndarray]
-            Filtered signals for each scale.
+        np.ndarray | list[np.ndarray]
+            Filtered signal(s). Returns a single array if ``scales`` is a scalar,
+            otherwise a list of arrays for each scale.
         """
         return _process_signal(self._lowpass_impl, B, scales, Bset, refactor, order)
 
@@ -277,7 +308,7 @@ class Convolve:
             )
         return W
 
-    def bandpass(self, B: np.ndarray, scales: List[float] = [1], order: int = 1) -> List[np.ndarray]:
+    def bandpass(self, B: np.ndarray, scales: Union[float, List[float]] = [1], order: int = 1) -> Union[np.ndarray, List[np.ndarray]]:
         """
         Computes band-pass filtered wavelet coefficients at specified scales.
 
@@ -293,16 +324,18 @@ class Convolve:
         Parameters
         ----------
         B : np.ndarray
-            Input signal array (n_vertices, n_timesteps).
-        scales : list[float], default: [1]
-            List of scales :math:`s` to compute coefficients for.
+            Input signal array. Can be 1D (n_vertices,) or 2D (n_vertices, n_timesteps).
+        scales : float | list[float], default: [1]
+            Scale or list of scales :math:`s` to compute coefficients for.
+            If a scalar is passed, returns a single array instead of a list.
         order : int, default: 1
             Filter order :math:`n`.
 
         Returns
         -------
-        list[np.ndarray]
-            Filtered signals for each scale.
+        np.ndarray | list[np.ndarray]
+            Filtered signal(s). Returns a single array if ``scales`` is a scalar,
+            otherwise a list of arrays for each scale.
         """
         return _process_signal(self._bandpass_impl, B, scales, order)
 
@@ -350,7 +383,7 @@ class Convolve:
 
         return W
 
-    def highpass(self, B: np.ndarray, scales: List[float] = [1]) -> List[np.ndarray]:
+    def highpass(self, B: np.ndarray, scales: Union[float, List[float]] = [1]) -> Union[np.ndarray, List[np.ndarray]]:
         """
         Computes high-pass filtered coefficients at specified scales.
 
@@ -365,14 +398,16 @@ class Convolve:
         Parameters
         ----------
         B : np.ndarray
-            Input signal array (n_vertices, n_timesteps).
-        scales : list[float], default: [1]
-            List of scales :math:`s` to compute coefficients for.
+            Input signal array. Can be 1D (n_vertices,) or 2D (n_vertices, n_timesteps).
+        scales : float | list[float], default: [1]
+            Scale or list of scales :math:`s` to compute coefficients for.
+            If a scalar is passed, returns a single array instead of a list.
 
         Returns
         -------
-        list[np.ndarray]
-            Filtered signals for each scale.
+        np.ndarray | list[np.ndarray]
+            Filtered signal(s). Returns a single array if ``scales`` is a scalar,
+            otherwise a list of arrays for each scale.
         """
         return _process_signal(self._highpass_impl, B, scales)
       
@@ -519,14 +554,15 @@ class DyConvolve:
         Parameters
         ----------
         B : np.ndarray
-            Input signal array (n_vertices, n_timesteps) with column-major ordering (F).
+            Input signal array. Can be 1D (n_vertices,) or 2D (n_vertices, n_timesteps).
 
         Returns
         -------
         np.ndarray
-            Convolved signal (n_vertices, n_timesteps, nDim).
+            Convolved signal. Shape depends on input: (n_vertices, nDim) for 1D input,
+            (n_vertices, n_timesteps, nDim) for 2D input.
         """
-        return _process_signal(self._convolve_impl, B)
+        return _process_signal(self._convolve_impl, B, None)
 
     def _convolve_impl(self, B: np.ndarray) -> np.ndarray:
 
@@ -570,7 +606,7 @@ class DyConvolve:
         Parameters
         ----------
         B : np.ndarray
-            Input signal array (n_vertices, n_timesteps).
+            Input signal array. Can be 1D (n_vertices,) or 2D (n_vertices, n_timesteps).
         Bset : csc_matrix, optional
             Sparse indicator vector for localized coefficient computation.
         order : int, default: 1
@@ -581,7 +617,7 @@ class DyConvolve:
         list[np.ndarray]
             Filtered signals for each pre-defined pole.
         """
-        return _process_signal(self._lowpass_impl, B, Bset, order)
+        return _process_signal(self._lowpass_impl, B, None, Bset, order)
 
     def _lowpass_impl(self, B: np.ndarray, Bset: Optional[csc_matrix] = None, order = 1) -> List[np.ndarray]:
 
@@ -638,7 +674,7 @@ class DyConvolve:
         Parameters
         ----------
         B : np.ndarray
-            Input signal array (n_vertices, n_timesteps).
+            Input signal array. Can be 1D (n_vertices,) or 2D (n_vertices, n_timesteps).
         order : int, default: 1
             Filter order :math:`n`.
 
@@ -647,7 +683,7 @@ class DyConvolve:
         list[np.ndarray]
             Filtered signals for each pre-defined pole.
         """
-        return _process_signal(self._bandpass_impl, B, order)
+        return _process_signal(self._bandpass_impl, B, None, order)
 
     def _bandpass_impl(self, B: np.ndarray, order: int = 1) -> List[np.ndarray]:
 
@@ -702,14 +738,14 @@ class DyConvolve:
         Parameters
         ----------
         B : np.ndarray
-            Input signal array (n_vertices, n_timesteps).
+            Input signal array. Can be 1D (n_vertices,) or 2D (n_vertices, n_timesteps).
 
         Returns
         -------
         list[np.ndarray]
             Filtered signals for each pre-defined pole.
         """
-        return _process_signal(self._highpass_impl, B)
+        return _process_signal(self._highpass_impl, B, None)
       
     def _highpass_impl(self, B: np.ndarray) -> List[np.ndarray]:
       
