@@ -7,7 +7,7 @@ from sgwt import DELAY_TEXAS as L
 from sgwt import COORD_TEXAS as C
 
 X = impulse(L, n=600)
-s = [1e-1]
+s = 1e-1
 
 with Convolve(L) as conv:
     LP = conv.lowpass(X, s)
@@ -15,7 +15,7 @@ with Convolve(L) as conv:
     HP = conv.highpass(X, s)
 # DOC_END_CODE_EXCLUDE_PLOT
 from demo_plot import plot_signal
-plot_signal(BP[0][:,0], C, 'berlin')
+plot_signal(BP, C, 'berlin')
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
 project_root = os.path.abspath(os.path.join(script_dir, '..'))

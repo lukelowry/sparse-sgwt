@@ -12,12 +12,12 @@ X  += impulse(L, n=1800)
 # Band pass filter at scale 0.1
 with Convolve(L) as conv:
 
-    Y = conv.bandpass(X, [.1])[0]
-    Y = conv.bandpass(Y, [.1])[0]
+    Y = conv.bandpass(X, .1)
+    Y = conv.bandpass(Y, .1)
 
 
 mx = sorted(abs(Y))[-10]
 norm = Normalize(-mx, mx)
-plt.scatter(C[:,0], C[:,1] , c=Y[:,0], cmap='seismic', norm=norm)
+plt.scatter(C[:,0], C[:,1] , c=Y, cmap='seismic', norm=norm)
 plt.axis('scaled')   
 plt.show()

@@ -35,6 +35,7 @@ What's Happening in This Example?
 
 2.  **Define Filter Parameters**
     - ``scales = [0.1, 1.0, 10.0]``: We specify the scales for our band-pass filter. In spectral graph filtering, the scale is inversely related to frequency. Smaller scales target high-frequency components (details, sharp changes), while larger scales target low-frequency components (smooth variations).
+    - You can also pass a single scalar value (e.g., ``scales=1.0``), in which case the output will be a single array instead of a list.
 
 3.  **Perform the Convolution**
     - ``with Convolve(L) as conv:``: This is the core of the library. We create a :class:`~sgwt.Convolve` context. Upon entry, it performs an efficient one-time symbolic factorization of the graph Laplacian ``L``. This pre-computation makes all subsequent filtering operations extremely fast. The context also manages all the low-level memory required by the CHOLMOD backend.

@@ -38,12 +38,13 @@ class TestConvolve:
             results = conv.highpass(texas_signal, SCALES)
             assert len(results) == len(SCALES)
 
-    def test_lowpass_with_bset_subset(self, texas_laplacian, texas_signal):
+    def test_lowpass_with_bset_subset(self, texas_laplacian):
         """Lowpass with Bset sparse subset runs correctly."""
         bset = csc_matrix(
             (np.ones(1), ([100], [0])), shape=(texas_laplacian.shape[0], 1)
         )
-        X_single = texas_signal[:, :1].copy(order='F')
+        # Bset requires 2D signal with single column
+        X_single = sgwt.impulse(texas_laplacian, n=100, n_timesteps=1).reshape(-1, 1).copy(order='F')
         with sgwt.Convolve(texas_laplacian) as conv:
             results = conv.lowpass(X_single, SCALES, Bset=bset)
             assert len(results) == len(SCALES)
@@ -148,14 +149,110 @@ class TestConvolve:
 
     def test_c_contiguous_input_conversion(self, texas_laplacian, texas_signal):
         """C-contiguous input is converted to Fortran (covers B conversion in _process_signal)."""
-        # Tile signal to ensure >1 columns so C and F layouts are distinct
-        c_signal = np.tile(texas_signal, (1, 2)).copy(order='C')
+        # Create 2D signal with >1 columns so C and F layouts are distinct
+        c_signal = np.column_stack([texas_signal, texas_signal]).copy(order='C')
         assert not c_signal.flags['F_CONTIGUOUS']
-        
+
         with sgwt.Convolve(texas_laplacian) as conv:
             # This calls _process_signal -> lowpass_impl
             res = conv.lowpass(c_signal, [1.0])
             assert len(res) == 1
+
+    def test_float32_input_converted(self, texas_laplacian, texas_signal):
+        """Float32 input is converted to float64 and processed correctly."""
+        X_32 = texas_signal.astype(np.float32)
+        with sgwt.Convolve(texas_laplacian) as conv:
+            # Should not raise error
+            res = conv.lowpass(X_32, SCALES)
+            assert len(res) == len(SCALES)
+            # Result should be close to float64 result
+            res_64 = conv.lowpass(texas_signal, SCALES)
+            np.testing.assert_allclose(res[0], res_64[0], atol=1e-5)
+
+    def test_int_input_converted(self, texas_laplacian, texas_signal):
+        """Integer input is converted to float64 and processed correctly."""
+        # Create integer signal (rounded)
+        X_int = np.round(texas_signal).astype(np.int32)
+        with sgwt.Convolve(texas_laplacian) as conv:
+            res = conv.lowpass(X_int, SCALES)
+            assert len(res) == len(SCALES)
+
+    def test_scalar_scale_returns_array(self, texas_laplacian, texas_signal):
+        """Passing scalar scale returns single array instead of list."""
+        with sgwt.Convolve(texas_laplacian) as conv:
+            result = conv.lowpass(texas_signal, 1.0)
+            assert isinstance(result, np.ndarray)
+            assert result.shape == texas_signal.shape
+
+    def test_scalar_scale_matches_list_scale(self, texas_laplacian, texas_signal):
+        """Scalar scale result matches first element of list scale result."""
+        scale = 1.0
+        with sgwt.Convolve(texas_laplacian) as conv:
+            scalar_result = conv.lowpass(texas_signal, scale)
+            list_result = conv.lowpass(texas_signal, [scale])
+            np.testing.assert_allclose(scalar_result, list_result[0])
+
+    def test_scalar_scale_bandpass(self, texas_laplacian, texas_signal):
+        """Scalar scale works for bandpass filter."""
+        with sgwt.Convolve(texas_laplacian) as conv:
+            result = conv.bandpass(texas_signal, 1.0)
+            assert isinstance(result, np.ndarray)
+
+    def test_scalar_scale_highpass(self, texas_laplacian, texas_signal):
+        """Scalar scale works for highpass filter."""
+        with sgwt.Convolve(texas_laplacian) as conv:
+            result = conv.highpass(texas_signal, 1.0)
+            assert isinstance(result, np.ndarray)
+
+    def test_1d_signal_lowpass(self, texas_laplacian):
+        """1D signal input returns 1D output for lowpass."""
+        signal_1d = np.random.randn(texas_laplacian.shape[0])
+        with sgwt.Convolve(texas_laplacian) as conv:
+            result = conv.lowpass(signal_1d, 1.0)
+            assert result.ndim == 1
+            assert result.shape[0] == texas_laplacian.shape[0]
+
+    def test_1d_signal_matches_2d(self, texas_laplacian):
+        """1D signal result matches 2D signal with single column."""
+        signal_1d = np.random.randn(texas_laplacian.shape[0])
+        signal_2d = signal_1d.reshape(-1, 1)
+        with sgwt.Convolve(texas_laplacian) as conv:
+            result_1d = conv.lowpass(signal_1d, 1.0)
+            result_2d = conv.lowpass(signal_2d, 1.0)
+            np.testing.assert_allclose(result_1d, result_2d.squeeze())
+
+    def test_1d_signal_bandpass(self, texas_laplacian):
+        """1D signal input works for bandpass filter."""
+        signal_1d = np.random.randn(texas_laplacian.shape[0])
+        with sgwt.Convolve(texas_laplacian) as conv:
+            result = conv.bandpass(signal_1d, 1.0)
+            assert result.ndim == 1
+
+    def test_1d_signal_highpass(self, texas_laplacian):
+        """1D signal input works for highpass filter."""
+        signal_1d = np.random.randn(texas_laplacian.shape[0])
+        with sgwt.Convolve(texas_laplacian) as conv:
+            result = conv.highpass(signal_1d, 1.0)
+            assert result.ndim == 1
+
+    def test_1d_signal_convolve(self, texas_laplacian, library_kernel):
+        """1D signal input works for convolve."""
+        signal_1d = np.random.randn(texas_laplacian.shape[0])
+        with sgwt.Convolve(texas_laplacian) as conv:
+            result = conv.convolve(signal_1d, library_kernel)
+            # Result should be 2D: (n_vertices, nDim)
+            assert result.ndim == 2
+            assert result.shape[0] == texas_laplacian.shape[0]
+
+    def test_1d_signal_list_scales(self, texas_laplacian):
+        """1D signal with list of scales returns list of 1D arrays."""
+        signal_1d = np.random.randn(texas_laplacian.shape[0])
+        with sgwt.Convolve(texas_laplacian) as conv:
+            results = conv.lowpass(signal_1d, SCALES)
+            assert isinstance(results, list)
+            assert len(results) == len(SCALES)
+            for r in results:
+                assert r.ndim == 1
 
 
 class TestConvolveVFKernel:
@@ -210,8 +307,9 @@ class TestConvolveVFKernel:
         )
         with sgwt.Convolve(texas_laplacian) as conv:
             result = conv.convolve(texas_signal, kernel)
-            lp = conv.lowpass(texas_signal, [1.0])[0]
-            expected = lp[:, :, None] + texas_signal[:, :, None] * 5.0
+            lp = conv.lowpass(texas_signal, 1.0)
+            # With 1D signal: result is (n_vertices, nDim), lp is (n_vertices,)
+            expected = lp[:, None] + texas_signal[:, None] * 5.0
             np.testing.assert_allclose(result, expected)
 
     def test_multidim_direct_term_broadcasts(self, texas_laplacian, texas_signal):
@@ -223,9 +321,10 @@ class TestConvolveVFKernel:
         )
         with sgwt.Convolve(texas_laplacian) as conv:
             result = conv.convolve(texas_signal, kernel)
-            lp = conv.lowpass(texas_signal, [1.0])[0]
-            np.testing.assert_allclose(result[:, :, 0], lp + texas_signal * 5.0)
-            np.testing.assert_allclose(result[:, :, 1], 2.0 * lp + texas_signal * 10.0)
+            lp = conv.lowpass(texas_signal, 1.0)
+            # With 1D signal: result is (n_vertices, nDim), lp is (n_vertices,)
+            np.testing.assert_allclose(result[:, 0], lp + texas_signal * 5.0)
+            np.testing.assert_allclose(result[:, 1], 2.0 * lp + texas_signal * 10.0)
 
 
 class TestDyConvolve:
@@ -252,7 +351,8 @@ class TestDyConvolve:
         with sgwt.DyConvolve(texas_laplacian, kernel) as conv:
             result = conv.convolve(texas_signal)
             lp = conv.lowpass(texas_signal)[0]
-            expected = lp[:, :, None] + texas_signal[:, :, None] * 10.0
+            # With 1D signal: result is (n_vertices, nDim), lp is (n_vertices,)
+            expected = lp[:, None] + texas_signal[:, None] * 10.0
             np.testing.assert_allclose(result, expected)
 
     def test_consistency_with_static_convolve(self, texas_laplacian, texas_signal, library_kernel):
@@ -281,6 +381,63 @@ class TestDyConvolve:
             np.testing.assert_allclose(dy_r, st_r, atol=1e-10)
         for dy_r, st_r in zip(dy_hp, st_hp):
             np.testing.assert_allclose(dy_r, st_r, atol=1e-10)
+
+    def test_float32_input_converted(self, texas_laplacian, texas_signal):
+        """Float32 input is converted to float64 in DyConvolve."""
+        X_32 = texas_signal.astype(np.float32)
+        poles = [1.0 / s for s in SCALES]
+        with sgwt.DyConvolve(texas_laplacian, poles) as conv:
+            res = conv.lowpass(X_32)
+            assert len(res) == len(poles)
+
+    def test_1d_signal_lowpass(self, texas_laplacian):
+        """1D signal input returns list of 1D outputs for lowpass."""
+        signal_1d = np.random.randn(texas_laplacian.shape[0])
+        poles = [1.0 / s for s in SCALES]
+        with sgwt.DyConvolve(texas_laplacian, poles) as conv:
+            results = conv.lowpass(signal_1d)
+            assert len(results) == len(poles)
+            for r in results:
+                assert r.ndim == 1
+                assert r.shape[0] == texas_laplacian.shape[0]
+
+    def test_1d_signal_matches_2d(self, texas_laplacian):
+        """1D signal result matches 2D signal with single column."""
+        signal_1d = np.random.randn(texas_laplacian.shape[0])
+        signal_2d = signal_1d.reshape(-1, 1)
+        poles = [1.0]
+        with sgwt.DyConvolve(texas_laplacian, poles) as conv:
+            result_1d = conv.lowpass(signal_1d)[0]
+            result_2d = conv.lowpass(signal_2d)[0]
+            np.testing.assert_allclose(result_1d, result_2d.squeeze())
+
+    def test_1d_signal_bandpass(self, texas_laplacian):
+        """1D signal input works for bandpass filter."""
+        signal_1d = np.random.randn(texas_laplacian.shape[0])
+        poles = [1.0]
+        with sgwt.DyConvolve(texas_laplacian, poles) as conv:
+            results = conv.bandpass(signal_1d)
+            for r in results:
+                assert r.ndim == 1
+
+    def test_1d_signal_highpass(self, texas_laplacian):
+        """1D signal input works for highpass filter."""
+        signal_1d = np.random.randn(texas_laplacian.shape[0])
+        poles = [1.0]
+        with sgwt.DyConvolve(texas_laplacian, poles) as conv:
+            results = conv.highpass(signal_1d)
+            for r in results:
+                assert r.ndim == 1
+
+    def test_1d_signal_convolve(self, texas_laplacian, library_kernel):
+        """1D signal input works for convolve."""
+        signal_1d = np.random.randn(texas_laplacian.shape[0])
+        vk = sgwt.VFKernel.from_dict(library_kernel)
+        with sgwt.DyConvolve(texas_laplacian, vk) as conv:
+            result = conv.convolve(signal_1d)
+            # Result should be 2D: (n_vertices, nDim)
+            assert result.ndim == 2
+            assert result.shape[0] == texas_laplacian.shape[0]
 
 
 class TestDyConvolveTopology:
@@ -327,8 +484,16 @@ class TestDyConvolveTopology:
 class TestImpulse:
     """Tests for impulse signal generator utility."""
 
+    def test_impulse_default_1d(self, texas_laplacian):
+        """Default impulse (n_timesteps=1) returns 1D array."""
+        imp = sgwt.impulse(texas_laplacian, n=5)
+        assert imp.ndim == 1
+        assert imp.shape == (texas_laplacian.shape[0],)
+        assert imp[5] == 1.0
+        assert np.sum(imp) == 1.0
+
     def test_impulse_shape_and_values(self, texas_laplacian):
-        """Impulse has correct shape and single nonzero entry."""
+        """Impulse with n_timesteps>1 has correct 2D shape."""
         imp = sgwt.impulse(texas_laplacian, n=5, n_timesteps=2)
         assert imp.shape == (texas_laplacian.shape[0], 2)
         assert imp[5, 0] == 1.0

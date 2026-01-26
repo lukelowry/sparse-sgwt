@@ -7,7 +7,10 @@ This section contains performance benchmarks and comparisons for the analytical 
    :maxdepth: 1
    :caption: Analytical Filter Performance
 
-   benchmarks/demo_benchmark
+   benchmarks/demo_benchmark_a
+   benchmarks/demo_benchmark_b
+   benchmarks/demo_benchmark_c
+   benchmarks/demo_benchmark_d
 
 .. toctree::
    :maxdepth: 1

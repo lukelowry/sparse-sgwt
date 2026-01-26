@@ -5,7 +5,6 @@ Tests for utility functions, resource loading, and data integrity.
 import numpy as np
 import pytest
 from ctypes import CDLL
-from scipy.sparse import csc_matrix
 
 import sgwt
 from sgwt.tests.conftest import requires_cholmod, requires_klu, HAS_CHOLMOD, HAS_KLU
@@ -184,15 +183,11 @@ class TestChebyKernelFromFunction:
         result = kern.evaluate(x_test)
         assert result.shape == (10, 2)
 
-    def test_order_less_than_one_raises_valueerror(self):
+    @pytest.mark.parametrize("order", [0, -5])
+    def test_invalid_order_raises_valueerror(self, order):
         """Order < 1 raises ValueError with descriptive message."""
         with pytest.raises(ValueError, match="Order must be >= 1"):
-            sgwt.ChebyKernel.from_function(lambda x: x, order=0, spectrum_bound=1.0)
-
-    def test_negative_order_raises(self):
-        """Negative order raises ValueError."""
-        with pytest.raises(ValueError, match="Order must be >= 1"):
-            sgwt.ChebyKernel.from_function(lambda x: x, order=-5, spectrum_bound=1.0)
+            sgwt.ChebyKernel.from_function(lambda x: x, order=order, spectrum_bound=1.0)
 
 
 class TestMatLoader:
@@ -393,30 +388,21 @@ end_header
 
         return str(ply_path)
 
-    def test_parse_ply_ascii(self, ascii_ply_file):
-        """_parse_ply correctly parses ASCII PLY files."""
+    @pytest.mark.parametrize("fixture_name", ["ascii_ply_file", "binary_ply_file"])
+    def test_parse_ply_formats(self, fixture_name, request):
+        """_parse_ply correctly parses both ASCII and binary PLY files."""
         from sgwt.util import _parse_ply
-        vertices, faces, vertex_count = _parse_ply(ascii_ply_file)
+        ply_file = request.getfixturevalue(fixture_name)
+        vertices, faces, vertex_count = _parse_ply(ply_file)
 
         assert vertex_count == 4
         assert len(vertices) == 4
         assert len(faces) == 2
-        # Check first vertex
-        assert vertices[0] == (0.0, 0.0, 0.0)
-        # Check first face
-        assert faces[0] == [0, 1, 2]
-
-    def test_parse_ply_binary(self, binary_ply_file):
-        """_parse_ply correctly parses binary little-endian PLY files."""
-        from sgwt.util import _parse_ply
-        vertices, faces, vertex_count = _parse_ply(binary_ply_file)
-
-        assert vertex_count == 4
-        assert len(vertices) == 4
-        assert len(faces) == 2
-        # Check vertices are close to expected (float precision)
+        # Check vertices (use allclose for float precision)
         assert np.allclose(vertices[0], (0.0, 0.0, 0.0))
         assert np.allclose(vertices[1], (1.0, 0.0, 0.0))
+        # Check first face
+        assert faces[0] == [0, 1, 2]
 
     def test_parse_ply_unsupported_format_raises(self, tmp_path):
         """_parse_ply raises ValueError for unsupported formats."""
@@ -435,10 +421,12 @@ end_header
         with pytest.raises(ValueError, match="Unsupported PLY format"):
             _parse_ply(str(ply_path))
 
-    def test_load_ply_laplacian_ascii(self, ascii_ply_file):
-        """load_ply_laplacian returns valid Laplacian from ASCII PLY."""
+    @pytest.mark.parametrize("fixture_name", ["ascii_ply_file", "binary_ply_file"])
+    def test_load_ply_laplacian(self, fixture_name, request):
+        """load_ply_laplacian returns valid Laplacian from PLY files."""
         from sgwt.util import load_ply_laplacian
-        L = load_ply_laplacian(ascii_ply_file)
+        ply_file = request.getfixturevalue(fixture_name)
+        L = load_ply_laplacian(ply_file)
 
         assert L.format == "csc"
         assert L.shape == (4, 4)  # 4 vertices
@@ -447,32 +435,17 @@ end_header
         # Diagonal should be positive (vertex degrees)
         assert np.all(L.diagonal() >= 0)
 
-    def test_load_ply_laplacian_binary(self, binary_ply_file):
-        """load_ply_laplacian returns valid Laplacian from binary PLY."""
-        from sgwt.util import load_ply_laplacian
-        L = load_ply_laplacian(binary_ply_file)
-
-        assert L.format == "csc"
-        assert L.shape == (4, 4)
-
-    def test_load_ply_xyz_ascii(self, ascii_ply_file):
-        """load_ply_xyz returns (N, 3) array from ASCII PLY."""
+    @pytest.mark.parametrize("fixture_name", ["ascii_ply_file", "binary_ply_file"])
+    def test_load_ply_xyz(self, fixture_name, request):
+        """load_ply_xyz returns (N, 3) array from PLY files."""
         from sgwt.util import load_ply_xyz
-        xyz = load_ply_xyz(ascii_ply_file)
-
-        assert isinstance(xyz, np.ndarray)
-        assert xyz.shape == (4, 3)
-        np.testing.assert_array_equal(xyz[0], [0.0, 0.0, 0.0])
-        np.testing.assert_array_equal(xyz[1], [1.0, 0.0, 0.0])
-
-    def test_load_ply_xyz_binary(self, binary_ply_file):
-        """load_ply_xyz returns (N, 3) array from binary PLY."""
-        from sgwt.util import load_ply_xyz
-        xyz = load_ply_xyz(binary_ply_file)
+        ply_file = request.getfixturevalue(fixture_name)
+        xyz = load_ply_xyz(ply_file)
 
         assert isinstance(xyz, np.ndarray)
         assert xyz.shape == (4, 3)
         assert np.allclose(xyz[0], [0.0, 0.0, 0.0])
+        assert np.allclose(xyz[1], [1.0, 0.0, 0.0])
 
     def test_laplacian_xyz_consistency(self, ascii_ply_file):
         """Laplacian and XYZ have consistent vertex counts."""
@@ -591,4 +564,225 @@ class TestMeshLaplacians:
 
         assert L.format == "csc", f"{laplacian_name} should be CSC format"
         assert L.shape[0] == L.shape[1], f"{laplacian_name} should be square"
+
+
+class TestModuleGetattr:
+    """Tests for module __getattr__ function."""
+
+    def test_invalid_attribute_raises(self):
+        """Accessing non-existent attribute raises AttributeError."""
+        import sgwt.util
+        with pytest.raises(AttributeError, match="has no attribute"):
+            _ = sgwt.util.NONEXISTENT_RESOURCE_NAME
+
+
+class TestChebyKernelCoverage:
+    """Additional tests for ChebyKernel edge cases."""
+
+    def test_from_function_all_negligible_coefficients(self):
+        """Fitting a function where all higher-order coefficients are negligible."""
+        # A constant function should result in only the constant term being kept
+        kern = sgwt.ChebyKernel.from_function(
+            lambda x: np.full_like(x, 1e-20),  # Nearly zero constant
+            order=10,
+            spectrum_bound=1.0
+        )
+        # Should keep at least the constant term
+        assert kern.C.shape[0] >= 1
+
+    @pytest.mark.parametrize("sampling", ['linear', 'quadratic', 'logarithmic'])
+    def test_from_function_sampling_strategies(self, sampling):
+        """Test from_function with various sampling strategies."""
+        kern = sgwt.ChebyKernel.from_function(
+            lambda x: np.exp(-x),
+            order=5,
+            spectrum_bound=2.0,
+            sampling=sampling
+        )
+        assert kern.C.shape[0] > 0
+        # Verify the kernel approximates reasonably well
+        x_test = np.linspace(0, 2.0, 20)
+        result = kern.evaluate(x_test)
+        expected = np.exp(-x_test)
+        np.testing.assert_allclose(result.flatten(), expected, atol=0.1)
+
+    def test_from_function_adaptive_fitting(self):
+        """Test from_function with adaptive order selection."""
+        kern = sgwt.ChebyKernel.from_function(
+            lambda x: np.exp(-x),
+            order=5,  # Starting order
+            spectrum_bound=2.0,
+            adaptive=True,
+            target_error=0.01,
+            max_order=50
+        )
+        assert kern.C.shape[0] > 0
+        # Adaptive fitting should find appropriate order
+        x_test = np.linspace(0, 2.0, 100)
+        result = kern.evaluate(x_test)
+        expected = np.exp(-x_test)
+        # Should achieve target error approximately
+        rel_error = np.max(np.abs(result.flatten() - expected) / np.maximum(np.abs(expected), 1e-15))
+        assert rel_error < 0.1  # Allow some slack in convergence
+
+    def test_from_function_adaptive_reaches_max_order(self):
+        """Test adaptive fitting that hits max_order."""
+        # Use a simple function but with impossibly tight target
+        kern = sgwt.ChebyKernel.from_function(
+            lambda x: np.exp(-x),
+            order=5,
+            spectrum_bound=2.0,
+            adaptive=True,
+            target_error=1e-20,  # Impossibly tight - will hit max_order
+            max_order=10  # Very low max to finish quickly
+        )
+        # Should still produce a valid kernel even if target not met
+        assert kern.C.shape[0] > 0
+
+
+class TestListGraphs:
+    """Tests for list_graphs utility function."""
+
+    def test_list_graphs_prints_table(self, capsys):
+        """list_graphs prints a table of available graphs including DELAY graphs."""
+        from sgwt.util import list_graphs
+        list_graphs()
+
+        captured = capsys.readouterr()
+        # Should print header
+        assert "Graph Name" in captured.out
+        assert "Vertices" in captured.out
+        assert "Edges" in captured.out
+        # Should include known graphs
+        assert "DELAY_TEXAS" in captured.out
+
+    def test_list_graphs_with_no_graphs(self, capsys):
+        """list_graphs handles case with no graphs gracefully."""
+        from unittest.mock import patch
+        from sgwt.util import list_graphs
+
+        # Mock an empty registry
+        with patch('sgwt.util._ensure_registry', return_value={}):
+            list_graphs()
+
+        captured = capsys.readouterr()
+        assert "No graphs found" in captured.out
+
+    def test_list_graphs_with_non_sparse_entry(self, capsys):
+        """list_graphs skips entries that aren't sparse matrices."""
+        from unittest.mock import patch
+        from sgwt.util import list_graphs
+
+        # Mock registry with a non-sparse matrix entry
+        mock_registry = {
+            'DELAY_FAKE': lambda: np.array([1, 2, 3])  # Not a sparse matrix
+        }
+        with patch('sgwt.util._ensure_registry', return_value=mock_registry):
+            list_graphs()
+
+        captured = capsys.readouterr()
+        # Should print header but not the fake entry (no nnz)
+        assert "Graph Name" in captured.out
+
+    def test_list_graphs_with_loader_exception(self, capsys):
+        """list_graphs handles exceptions from loaders gracefully."""
+        from unittest.mock import patch
+        from sgwt.util import list_graphs
+
+        def raise_error():
+            raise RuntimeError("Failed to load")
+
+        mock_registry = {'DELAY_BAD': raise_error}
+        with patch('sgwt.util._ensure_registry', return_value=mock_registry):
+            list_graphs()
+
+        captured = capsys.readouterr()
+        # Should still print header, skip bad entry
+        assert "Graph Name" in captured.out
+
+    def test_list_graphs_fallback_edge_calculation(self, capsys):
+        """list_graphs uses fallback edge calculation when no diagonal method."""
+        from unittest.mock import patch, MagicMock
+        from sgwt.util import list_graphs
+
+        # Create mock sparse matrix without diagonal method
+        mock_matrix = MagicMock()
+        mock_matrix.shape = (10, 10)
+        mock_matrix.nnz = 30
+        del mock_matrix.diagonal  # Remove diagonal method
+
+        mock_registry = {'DELAY_NODIAG': lambda: mock_matrix}
+        with patch('sgwt.util._ensure_registry', return_value=mock_registry):
+            list_graphs()
+
+        captured = capsys.readouterr()
+        assert "DELAY_NODIAG" in captured.out
+        # Fallback: (30 - 10) // 2 = 10 edges
+        assert "10" in captured.out
+
+
+class TestDiscoverResourcesEdgeCases:
+    """Tests for resource discovery edge cases."""
+
+    def test_discover_resources_handles_typeerror(self):
+        """_discover_resources handles TypeError on iterdir gracefully."""
+        from unittest.mock import patch, MagicMock
+        from sgwt.util import _discover_resources
+
+        # Create a mock folder that raises TypeError on iterdir
+        mock_folder = MagicMock()
+        mock_folder.iterdir.side_effect = TypeError("not iterable")
+
+        # Mock the path chain: files("sgwt") / "library" / cfg.folder
+        mock_library = MagicMock()
+        mock_library.__truediv__ = MagicMock(return_value=mock_folder)
+
+        mock_sgwt = MagicMock()
+        mock_sgwt.__truediv__ = MagicMock(return_value=mock_library)
+
+        with patch('sgwt.util.files', return_value=mock_sgwt):
+            registry = _discover_resources()
+            assert isinstance(registry, dict)
+
+    def test_discover_resources_handles_filenotfounderror(self):
+        """_discover_resources handles FileNotFoundError on iterdir gracefully."""
+        from unittest.mock import patch, MagicMock
+        from sgwt.util import _discover_resources
+
+        # Create a mock folder that raises FileNotFoundError on iterdir
+        mock_folder = MagicMock()
+        mock_folder.iterdir.side_effect = FileNotFoundError("folder not found")
+
+        mock_library = MagicMock()
+        mock_library.__truediv__ = MagicMock(return_value=mock_folder)
+
+        mock_sgwt = MagicMock()
+        mock_sgwt.__truediv__ = MagicMock(return_value=mock_library)
+
+        with patch('sgwt.util.files', return_value=mock_sgwt):
+            registry = _discover_resources()
+            assert isinstance(registry, dict)
+
+    def test_discover_resources_skips_wrong_extension(self):
+        """_discover_resources skips files with wrong extension."""
+        from unittest.mock import patch, MagicMock
+        from sgwt.util import _discover_resources
+
+        # Create mock file with wrong extension
+        mock_file = MagicMock()
+        mock_file.name = "test.txt"  # Wrong extension for any config
+
+        mock_folder = MagicMock()
+        mock_folder.iterdir.return_value = [mock_file]
+
+        mock_library = MagicMock()
+        mock_library.__truediv__ = MagicMock(return_value=mock_folder)
+
+        mock_sgwt = MagicMock()
+        mock_sgwt.__truediv__ = MagicMock(return_value=mock_library)
+
+        with patch('sgwt.util.files', return_value=mock_sgwt):
+            registry = _discover_resources()
+            # Should return empty dict since no files match expected extensions
+            assert isinstance(registry, dict)
   

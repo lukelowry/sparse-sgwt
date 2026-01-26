@@ -7,3 +7,4 @@ dist
 .benchmarks
 benchmark_*.pdf
 examples/.data_dir
+examples/.data_dir_b

@@ -1,179 +1,238 @@
 # -*- coding: utf-8 -*-
 """Chebyshev Graph Convolution for Sparse Spectral Graph Wavelet Transform (SGWT).
-
-This module provides Chebyshev polynomial approximation methods for Graph Signal 
-Processing (GSP) convolution operations.
+Optimized version with improved computational performance.
 
 Author: Luke Lowery (lukel@tamu.edu)
 """
-
 from .cholesky import CholWrapper
 from .util import ChebyKernel, estimate_spectral_bound
-
 import numpy as np
 from scipy.sparse import csc_matrix
 from ctypes import byref
 
+
 class ChebyConvolve:
     """
     Chebyshev polynomial graph convolution context.
-
+    
     Approximates spectral graph filters using Chebyshev polynomials of the
-    first kind. Given a filter :math:`g(\\lambda)`, the approximation is:
-
-    .. math::
-
-        g(\\mathbf{L}) \\approx \\sum_{k=0}^{K-1} c_k T_k(\\tilde{\\mathbf{L}})
-
-    where :math:`T_k` are Chebyshev polynomials, :math:`c_k` are the
-    coefficients, and :math:`\\tilde{\\mathbf{L}} = 2\\mathbf{L}/\\lambda_{\\max} - \\mathbf{I}`
-    maps eigenvalues to :math:`[-1, 1]`.
-
-    The polynomials are evaluated using the three-term recurrence:
-
-    .. math::
-
-        T_0(x) = 1, \\quad T_1(x) = x, \\quad T_k(x) = 2x T_{k-1}(x) - T_{k-2}(x)
-
+    first kind via the recurrence relation.
+    
     Parameters
     ----------
     L : csc_matrix
         Sparse Graph Laplacian.
-
-    See Also
-    --------
-    Convolve : Rational approximation via direct solves (often faster).
     """
-
+    
     def __init__(self, L: csc_matrix) -> None:
-        """
-        Initializes a Chebyshev convolution context.
-
-        Parameters
-        ----------
-        L : csc_matrix
-            Sparse Graph Laplacian.
-        """
         self.n_vertices = L.shape[0]
-
-        # Estimate spectral bound (lambda_max)
         self.spectrum_bound = estimate_spectral_bound(L)
-
         self.chol = CholWrapper(L)
-
+        self._cached_M_ptr = None
+        self._cached_spectrum_bound = None
+        
     def __enter__(self) -> "ChebyConvolve":
         self.chol.start()
         self.chol.sym_factor()
         return self
-
+    
     def __exit__(self, exc_type, exc_val, exc_tb):
+        if self._cached_M_ptr is not None:
+            self.chol.free_sparse(self._cached_M_ptr)
         self.chol.free_factor(self.chol.fact_ptr)
         self.chol.finish()
-
-    def _get_cheby_recurrence_matrix(self, spectrum_bound: float):
-        """Internal helper to prepare the recurrence matrix M = (2/lmax)L - I."""
-        EYE = None
+    
+    def _get_recurrence_matrix(self, spectrum_bound: float):
+        """Get cached recurrence matrix M = (2/λ_max)L - I."""
+        if self._cached_M_ptr is not None:
+            if self._cached_spectrum_bound == spectrum_bound:
+                return self._cached_M_ptr
+            self.chol.free_sparse(self._cached_M_ptr)
+        
+        EYE = self.chol.speye(self.n_vertices, self.n_vertices)
         try:
-            EYE = self.chol.speye(self.n_vertices, self.n_vertices)
-            M_ptr = self.chol.add(
-                byref(self.chol.A),
-                EYE,
-                alpha=2.0 / spectrum_bound,
-                beta=-1.0
+            self._cached_M_ptr = self.chol.add(
+                byref(self.chol.A), EYE,
+                alpha=2.0 / spectrum_bound, beta=-1.0
             )
-            return M_ptr
+            self._cached_spectrum_bound = spectrum_bound
+            return self._cached_M_ptr
         finally:
-            if EYE:
-                self.chol.free_sparse(EYE)
-
+            self.chol.free_sparse(EYE)
+    
     def convolve(self, B: np.ndarray, C: ChebyKernel) -> np.ndarray:
         """
         Performs graph convolution using Chebyshev polynomial approximation.
-
-        Computes :math:`g(\\mathbf{L})\\mathbf{B}` using Clenshaw's algorithm,
-        which evaluates the Chebyshev series via the recurrence:
-
-        .. math::
-
-            \\mathbf{Y} = \\sum_{k=0}^{K-1} c_k T_k(\\tilde{\\mathbf{L}}) \\mathbf{B}
-
-        where :math:`\\tilde{\\mathbf{L}} = 2\\mathbf{L}/\\lambda_{\\max} - \\mathbf{I}`.
-
+        
         Parameters
         ----------
         B : np.ndarray
-            Input signal array of shape ``(n_vertices,)`` or ``(n_vertices, n_signals)``.
+            Input signal of shape (n_vertices,) or (n_vertices, n_signals).
         C : ChebyKernel
-            A ``ChebyKernel`` object containing the Chebyshev coefficients
-            :math:`c_k` and the spectral bound :math:`\\lambda_{\\max}`.
-
+            Chebyshev kernel with coefficients and spectral bound.
+        
         Returns
         -------
         np.ndarray
-            The convolved signal. Shape is ``(n_vertices, n_signals, n_dims)``
-            for 2D input, or ``(n_vertices, n_dims)`` for 1D input.
+            Convolved signal of shape (n_vertices, n_signals, n_dims) or
+            (n_vertices, n_dims) for 1D input.
         """
-        # Handle complex inputs by processing real and imaginary parts separately
+        # Handle complex inputs by processing real and imaginary parts
         if np.iscomplexobj(B):
-            real_part = self.convolve(B.real, C)
-            imag_part = self.convolve(B.imag, C)
-            return real_part + 1j * imag_part
-
-        input_was_1d = False
-        if B.ndim == 1:
-            B = B[:, np.newaxis]
-            input_was_1d = True
-
-        n_vertex, n_signals = B.shape
-        n_order, n_dim = C.C.shape
-
-        W = np.zeros((n_vertex, n_signals, n_dim), dtype=np.float64)
-
-        if n_order == 0 or n_dim == 0:  # pragma: no cover
-            return W
-
+            input_1d = B.ndim == 1
+            B = B[:, np.newaxis] if input_1d else B
+            n_signals = B.shape[1]
+            # Stack real and imaginary parts: [real_cols | imag_cols]
+            B_stacked = np.column_stack([B.real, B.imag])
+            if not B_stacked.flags['F_CONTIGUOUS']:
+                B_stacked = np.asfortranarray(B_stacked)
+            W = self._convolve_real(B_stacked, C)
+            # Extract: first n_signals columns are real, next n_signals are imag
+            W_complex = W[:, :n_signals, :] + 1j * W[:, n_signals:, :]
+            return W_complex.squeeze(axis=1) if input_1d else W_complex
+        
+        input_1d = B.ndim == 1
+        B = B[:, np.newaxis] if input_1d else B
         if not B.flags['F_CONTIGUOUS']:
             B = np.asfortranarray(B)
-
+        
+        W = self._convolve_real(B, C)
+        return W.squeeze(axis=1) if input_1d else W
+    
+    def _convolve_real(self, B: np.ndarray, C: ChebyKernel) -> np.ndarray:
+        """Core convolution for real-valued signals."""
+        n_vertex, n_signals = B.shape
+        n_order, n_dim = C.C.shape
+        
+        if n_order == 0 or n_dim == 0:
+            return np.zeros((n_vertex, n_signals, n_dim), dtype=np.float64)
+        
+        # Pre-allocate output and get contiguous coefficient view
+        W = np.zeros((n_vertex, n_signals, n_dim), dtype=np.float64)
+        coeffs = np.ascontiguousarray(C.C)
+        
         B_chol = byref(self.chol.numpy_to_chol_dense(B))
-
-        M_ptr, T_km2_ptr, T_km1_ptr = None, None, None
-
+        T_km2, T_km1 = None, None
+        
         try:
-            # T_0(L)B = B (the identity)
-            T_km2_ptr = self.chol.copy_dense(B_chol)
-            Z = self.chol.chol_dense_to_numpy(T_km2_ptr)
-            W += Z[:, :, np.newaxis] * C.C[0, :]
-
-            if n_order > 1:
-                M_ptr = self._get_cheby_recurrence_matrix(C.spectrum_bound)
-
-                # T_1(L)B = M * T_0
-                T_km1_ptr = self.chol.allocate_dense(n_vertex, n_signals)
-                self.chol.sdmult(M_ptr, T_km2_ptr, T_km1_ptr, alpha=1.0, beta=0.0)
-                Z = self.chol.chol_dense_to_numpy(T_km1_ptr)
-                W += Z[:, :, np.newaxis] * C.C[1, :]
-
-                # Clenshaw's algorithm for k >= 2
-                for k in range(2, n_order):
-                    # T_k = 2 * M * T_{k-1} - T_{k-2}.
-                    # At loop start: T_km2_ptr holds T_{k-2}, T_km1_ptr holds T_{k-1}.
-                    # We calculate T_k and store it by overwriting T_km2_ptr.
-                    self.chol.sdmult(M_ptr, T_km1_ptr, T_km2_ptr, alpha=2.0, beta=-1.0)
-
-                    # Swap pointers for the next iteration.
-                    # T_km2_ptr now holds T_{k-1}, T_km1_ptr holds T_k.
-                    T_km2_ptr, T_km1_ptr = T_km1_ptr, T_km2_ptr
-
-                    # Accumulate the contribution from T_k (now in T_km1_ptr).
-                    Z = self.chol.chol_dense_to_numpy(T_km1_ptr)
-                    W += Z[:, :, np.newaxis] * C.C[k, :]
-
+            # T_0(L)B = B
+            T_km2 = self.chol.copy_dense(B_chol)
+            self._accumulate(W, self.chol.chol_dense_to_numpy(T_km2), coeffs[0])
+            
+            if n_order == 1:
+                return W
+            
+            M = self._get_recurrence_matrix(C.spectrum_bound)
+            T_km1 = self.chol.allocate_dense(n_vertex, n_signals)
+            
+            # T_1(L)B = M @ B
+            self.chol.sdmult(M, T_km2, T_km1, alpha=1.0, beta=0.0)
+            self._accumulate(W, self.chol.chol_dense_to_numpy(T_km1), coeffs[1])
+            
+            # Recurrence: T_k = 2*M*T_{k-1} - T_{k-2}
+            for k in range(2, n_order):
+                self.chol.sdmult(M, T_km1, T_km2, alpha=2.0, beta=-1.0)
+                T_km2, T_km1 = T_km1, T_km2
+                self._accumulate(W, self.chol.chol_dense_to_numpy(T_km1), coeffs[k])
         finally:
-            if T_km2_ptr: self.chol.free_dense(T_km2_ptr)
-            if T_km1_ptr: self.chol.free_dense(T_km1_ptr)
-            if M_ptr: self.chol.free_sparse(M_ptr)
-
-        if input_was_1d:
-            return W.squeeze(axis=1)
+            if T_km2: self.chol.free_dense(T_km2)
+            if T_km1: self.chol.free_dense(T_km1)
+        
         return W
+    
+    @staticmethod
+    def _accumulate(W: np.ndarray, Z: np.ndarray, c: np.ndarray):
+        """Accumulate W += Z[:,:,None] * c using optimal method."""
+        n_dim = len(c)
+        if n_dim <= 4:
+            for d in range(n_dim):
+                if c[d] != 0:
+                    W[:, :, d] += Z * c[d]
+        else:
+            # einsum avoids large temporaries for many dimensions
+            np.add(W, np.einsum('ij,k->ijk', Z, c, optimize=True), out=W)
+    
+    def convolve_multi(self, B: np.ndarray, kernels: list) -> list:
+        """
+        Apply multiple kernels efficiently by sharing Chebyshev term computation.
+        
+        Parameters
+        ----------
+        B : np.ndarray
+            Input signal.
+        kernels : list of ChebyKernel
+            Kernels to apply.
+        
+        Returns
+        -------
+        list of np.ndarray
+            Convolved signals for each kernel.
+        """
+        if not kernels:
+            return []
+        
+        # Handle complex
+        if np.iscomplexobj(B):
+            real_res = self.convolve_multi(B.real, kernels)
+            imag_res = self.convolve_multi(B.imag, kernels)
+            return [r + 1j * i for r, i in zip(real_res, imag_res)]
+        
+        input_1d = B.ndim == 1
+        B = B[:, np.newaxis] if input_1d else B
+        if not B.flags['F_CONTIGUOUS']:
+            B = np.asfortranarray(B)
+        
+        n_vertex, n_signals = B.shape
+        
+        # Group by spectrum_bound
+        from collections import defaultdict
+        groups = defaultdict(list)
+        for idx, k in enumerate(kernels):
+            groups[k.spectrum_bound].append((idx, k))
+        
+        results = [None] * len(kernels)
+        
+        for bound, group in groups.items():
+            max_order = max(k.C.shape[0] for _, k in group)
+            
+            # Stack all coefficients for this group for vectorized application
+            # Compute terms and apply via tensor contraction
+            T_terms = self._compute_terms(B, max_order, bound)
+            T_stack = np.stack(T_terms, axis=0)  # (max_order, n_vertex, n_signals)
+            
+            for idx, kernel in group:
+                n_order, n_dim = kernel.C.shape
+                # W[v,s,d] = sum_k T[k,v,s] * C[k,d]
+                W = np.einsum('kvs,kd->vsd', T_stack[:n_order], kernel.C, optimize=True)
+                results[idx] = W.squeeze(axis=1) if input_1d else W
+        
+        return results
+    
+    def _compute_terms(self, B: np.ndarray, max_order: int, bound: float) -> list:
+        """Compute Chebyshev terms T_k(L)B for k = 0..max_order-1."""
+        n_vertex, n_signals = B.shape
+        terms = []
+        
+        B_chol = byref(self.chol.numpy_to_chol_dense(B))
+        T_km2, T_km1 = None, None
+        
+        try:
+            T_km2 = self.chol.copy_dense(B_chol)
+            terms.append(self.chol.chol_dense_to_numpy(T_km2).copy())
+            
+            if max_order > 1:
+                M = self._get_recurrence_matrix(bound)
+                T_km1 = self.chol.allocate_dense(n_vertex, n_signals)
+                
+                self.chol.sdmult(M, T_km2, T_km1, alpha=1.0, beta=0.0)
+                terms.append(self.chol.chol_dense_to_numpy(T_km1).copy())
+                
+                for _ in range(2, max_order):
+                    self.chol.sdmult(M, T_km1, T_km2, alpha=2.0, beta=-1.0)
+                    T_km2, T_km1 = T_km1, T_km2
+                    terms.append(self.chol.chol_dense_to_numpy(T_km1).copy())
+        finally:
+            if T_km2: self.chol.free_dense(T_km2)
+            if T_km1: self.chol.free_dense(T_km1)
+        
+        return terms

@@ -37,34 +37,8 @@ DEFAULT_SEED = 42
 
 
 # ---------------------------------------------------------------------------
-# Helper functions for synthetic data generation
+# Helper functions for test data generation
 # ---------------------------------------------------------------------------
-def create_path_graph_laplacian(n):
-    """
-    Create an n-node path graph Laplacian.
-
-    Path graph: 0 - 1 - 2 - ... - (n-1)
-
-    Parameters
-    ----------
-    n : int
-        Number of nodes
-
-    Returns
-    -------
-    L : scipy.sparse.csc_matrix
-        Laplacian matrix of shape (n, n)
-    """
-    from scipy.sparse import diags
-
-    L = diags([2.0, -1.0, -1.0], [0, 1, -1], shape=(n, n), format='csc')
-    # Fix boundary conditions
-    L = L.tolil()
-    L[0, 0] = 1.0
-    L[n-1, n-1] = 1.0
-    return L.tocsc()
-
-
 def create_random_signal(n_nodes, n_timesteps, seed=DEFAULT_SEED):
     """
     Create a random signal for testing.
@@ -88,20 +62,8 @@ def create_random_signal(n_nodes, n_timesteps, seed=DEFAULT_SEED):
 
 
 # ---------------------------------------------------------------------------
-# Module-scoped fixtures for large graphs (expensive to create)
+# Module-scoped fixtures for real-world graphs
 # ---------------------------------------------------------------------------
-@pytest.fixture(scope='module')
-def medium_path_laplacian():
-    """Medium-sized path graph (100 nodes) for benchmarks."""
-    return create_path_graph_laplacian(100)
-
-
-@pytest.fixture(scope='module')
-def large_path_laplacian():
-    """Large path graph (1000 nodes) for benchmarks."""
-    return create_path_graph_laplacian(1000)
-
-
 @pytest.fixture(scope='module')
 def texas_laplacian():
     """Load DELAY_TEXAS Laplacian from library."""
@@ -132,17 +94,23 @@ def eastwest_laplacian():
     return sgwt.DELAY_EASTWEST
 
 
+@pytest.fixture(scope='module')
+def east_laplacian():
+    """Load DELAY_EAST Laplacian from library."""
+    return sgwt.DELAY_EAST
+
+
 # ---------------------------------------------------------------------------
 # Scaling & Performance Tests (Parametrized)
 # ---------------------------------------------------------------------------
 
 # Configuration for graphs to test: (fixture_name, id, is_slow)
+# All graphs are real-world power grid networks
 GRAPH_DEFINITIONS = [
-    ("medium_path_laplacian", "100", False),
-    ("large_path_laplacian", "1k", False),
-    ("texas_laplacian", "Texas(2k)", False),
     ("hawaii_laplacian", "Hawaii(37)", False),
-    ("wecc_laplacian", "WECC(240)", True),
+    ("wecc_laplacian", "WECC(240)", False),
+    ("texas_laplacian", "Texas(2k)", False),
+    ("east_laplacian", "East", True),
     ("eastwest_laplacian", "EastWest(65k)", True),
     ("usa_laplacian", "USA(82k)", True),
 ]
@@ -172,8 +140,8 @@ class TestScalingPerformance:
         """Benchmark static convolution (Convolve) scaling."""
         L = request.getfixturevalue(graph_name)
         n_nodes = L.shape[0]
+        benchmark.extra_info['num_nodes'] = n_nodes
         benchmark.extra_info['num_edges'] = (L.nnz - n_nodes) // 2
-        n_nodes = L.shape[0]
         X = create_random_signal(n_nodes, 1)
         scales = [1.0]
 
@@ -187,8 +155,8 @@ class TestScalingPerformance:
         """Benchmark dynamic convolution (DyConvolve) scaling."""
         L = request.getfixturevalue(graph_name)
         n_nodes = L.shape[0]
+        benchmark.extra_info['num_nodes'] = n_nodes
         benchmark.extra_info['num_edges'] = (L.nnz - n_nodes) // 2
-        n_nodes = L.shape[0]
         X = create_random_signal(n_nodes, 1)
         poles = [1.0]
 
