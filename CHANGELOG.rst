@@ -6,6 +6,21 @@ All notable changes to this project will be documented in this file.
 The format is based on `Keep a Changelog <https://keepachangelog.com/en/1.0.0/>`_,
 and this project adheres to `Semantic Versioning <https://semver.org/spec/v2.0.0.html>`_.
 
+[0.3.7] - 2026-01-25
+--------------------
+
+**Changed**
+
+- Convolve and DyConvolve can take a scalar argument for scales, and will return transformed signal instead of list in that case.
+- Convolve and DyConvolve can also take a 1D signal and will return a transformed 1D signal in that case
+- impulse function now 1D by default
+- Misc examples updated to show this feature 
+- Broke up benchmark into four seperatea performance tests
+
+**Added**
+
+- Improved Chebyshev approximator
+
 [0.3.6] - 2026-01-18
 --------------------
 
