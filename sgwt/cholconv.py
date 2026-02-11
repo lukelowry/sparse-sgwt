@@ -156,7 +156,7 @@ class Convolve:
         self.chol.free_dense(self.X2)
         self.chol.free_sparse(self.Xset)
 
-        # Free Y & E (workspacce for solve2)
+        # Free Y & E (workspace for solve2)
         self.chol.free_dense(self.Y)
         self.chol.free_dense(self.E)
 
@@ -229,7 +229,7 @@ class Convolve:
 
         return W
     
-    def lowpass(self, B: np.ndarray, scales: Union[float, List[float]] = [1], Bset: Optional[csc_matrix] = None, refactor: bool = True, order = 1) -> Union[np.ndarray, List[np.ndarray]]:
+    def lowpass(self, B: np.ndarray, scales: Union[float, List[float]] = None, Bset: Optional[csc_matrix] = None, refactor: bool = True, order = 1) -> Union[np.ndarray, List[np.ndarray]]:
         """
         Computes low-pass filtered scaling coefficients at specified scales.
 
@@ -263,7 +263,7 @@ class Convolve:
         """
         return _process_signal(self._lowpass_impl, B, scales, Bset, refactor, order)
 
-    def _lowpass_impl(self, B: np.ndarray, scales: List[float] = [1], Bset: Optional[csc_matrix] = None, refactor: bool = True, order = 1) -> List[np.ndarray]:
+    def _lowpass_impl(self, B: np.ndarray, scales: List[float] = None, Bset: Optional[csc_matrix] = None, refactor: bool = True, order = 1) -> List[np.ndarray]:
 
         # Using this requires the number of columns in f to be 1
         if Bset is not None:  # pragma: no cover
@@ -281,10 +281,10 @@ class Convolve:
 
 
         # Calculate Scaling Coefficients of 'f' for each scale
-        for i, scale in enumerate(scales):
+        for scale in scales:
 
-            # Step 1 -> Numeric Factorization 
-            # In some instances it will alreayd be factord at appropriate scale, so we allow option to skip
+            # Step 1 -> Numeric Factorization
+            # In some instances it will already be factored at appropriate scale, so we allow option to skip
             if refactor:
                 self.chol.num_factor(A_ptr, fact_ptr, 1/scale)
 
@@ -308,7 +308,7 @@ class Convolve:
             )
         return W
 
-    def bandpass(self, B: np.ndarray, scales: Union[float, List[float]] = [1], order: int = 1) -> Union[np.ndarray, List[np.ndarray]]:
+    def bandpass(self, B: np.ndarray, scales: Union[float, List[float]] = None, order: int = 1) -> Union[np.ndarray, List[np.ndarray]]:
         """
         Computes band-pass filtered wavelet coefficients at specified scales.
 
@@ -339,8 +339,8 @@ class Convolve:
         """
         return _process_signal(self._bandpass_impl, B, scales, order)
 
-    def _bandpass_impl(self, B: np.ndarray, scales: List[float] = [1], order: int = 1) -> List[np.ndarray]:
-        
+    def _bandpass_impl(self, B: np.ndarray, scales: List[float] = None, order: int = 1) -> List[np.ndarray]:
+
         # Pointer to bB (The function being convolved)
         B_chol_struct = self.chol.numpy_to_chol_dense(B)
 
@@ -353,11 +353,11 @@ class Convolve:
         fact_ptr = self.chol.fact_ptr
 
         # Calculate Scaling Coefficients of 'f' for each scale
-        for i, scale in enumerate(scales):
+        for scale in scales:
 
             # Step 1 -> Numeric Factorization
             self.chol.num_factor(A_ptr, fact_ptr, 1/scale)
-            
+
             # Solve more than once iff order > 1
             in_ptr = byref(B_chol_struct)
             for _ in range(order):
@@ -383,7 +383,7 @@ class Convolve:
 
         return W
 
-    def highpass(self, B: np.ndarray, scales: Union[float, List[float]] = [1]) -> Union[np.ndarray, List[np.ndarray]]:
+    def highpass(self, B: np.ndarray, scales: Union[float, List[float]] = None) -> Union[np.ndarray, List[np.ndarray]]:
         """
         Computes high-pass filtered coefficients at specified scales.
 
@@ -410,8 +410,8 @@ class Convolve:
             otherwise a list of arrays for each scale.
         """
         return _process_signal(self._highpass_impl, B, scales)
-      
-    def _highpass_impl(self, B: np.ndarray, scales: List[float] = [1]) -> List[np.ndarray]:
+
+    def _highpass_impl(self, B: np.ndarray, scales: List[float] = None) -> List[np.ndarray]:
         # List, malloc, numpy, etc.
         W = []
         X1, X2 = self.X1, self.X2 
@@ -504,7 +504,7 @@ class DyConvolve:
         # Make copies of the symbolic factor object
         self.factors = [
             self.chol.copy_factor(self.chol.fact_ptr)
-            for i in range(self.npoles)
+            for _ in range(self.npoles)
         ]
 
         # Now perform each unique numeric factorization A + qI
@@ -536,7 +536,7 @@ class DyConvolve:
         self.chol.free_dense(self.X2)
         self.chol.free_sparse(self.Xset)
 
-        # Free Y & E (workspacce for solve2)
+        # Free Y & E (workspace for solve2)
         self.chol.free_dense(self.Y)
         self.chol.free_dense(self.E)
 
@@ -823,7 +823,7 @@ class DyConvolve:
             vals=data
         )
 
-        # TODO we can optize performance eventually by 
+        # TODO we can optimize performance eventually by 
         # splitting updown into symbolic and numeric, since symbolic same for all
         
         # Update all factors

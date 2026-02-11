@@ -42,20 +42,25 @@ class ChebyConvolve:
         self.chol.free_factor(self.chol.fact_ptr)
         self.chol.finish()
     
-    def _get_recurrence_matrix(self, spectrum_bound: float):
-        """Get cached recurrence matrix M = (2/λ_max)L - I."""
+    def _get_recurrence_matrix(self, spectrum_bound: float, min_lambda: float = 0.0):
+        """Get cached recurrence matrix M = alpha*L + beta*I for domain [min_lambda, spectrum_bound]."""
+        cache_key = (spectrum_bound, min_lambda)
         if self._cached_M_ptr is not None:
-            if self._cached_spectrum_bound == spectrum_bound:
+            if self._cached_spectrum_bound == cache_key:
                 return self._cached_M_ptr
             self.chol.free_sparse(self._cached_M_ptr)
-        
+
+        range_ = spectrum_bound - min_lambda
+        alpha = 2.0 / range_
+        beta = -(spectrum_bound + min_lambda) / range_
+
         EYE = self.chol.speye(self.n_vertices, self.n_vertices)
         try:
             self._cached_M_ptr = self.chol.add(
                 byref(self.chol.A), EYE,
-                alpha=2.0 / spectrum_bound, beta=-1.0
+                alpha=alpha, beta=beta
             )
-            self._cached_spectrum_bound = spectrum_bound
+            self._cached_spectrum_bound = cache_key
             return self._cached_M_ptr
         finally:
             self.chol.free_sparse(EYE)
@@ -122,7 +127,7 @@ class ChebyConvolve:
             if n_order == 1:
                 return W
             
-            M = self._get_recurrence_matrix(C.spectrum_bound)
+            M = self._get_recurrence_matrix(C.spectrum_bound, C.min_lambda)
             T_km1 = self.chol.allocate_dense(n_vertex, n_signals)
             
             # T_1(L)B = M @ B
@@ -184,20 +189,20 @@ class ChebyConvolve:
         
         n_vertex, n_signals = B.shape
         
-        # Group by spectrum_bound
+        # Group by (spectrum_bound, min_lambda)
         from collections import defaultdict
         groups = defaultdict(list)
         for idx, k in enumerate(kernels):
-            groups[k.spectrum_bound].append((idx, k))
-        
+            groups[(k.spectrum_bound, k.min_lambda)].append((idx, k))
+
         results = [None] * len(kernels)
-        
-        for bound, group in groups.items():
+
+        for (bound, min_lam), group in groups.items():
             max_order = max(k.C.shape[0] for _, k in group)
-            
+
             # Stack all coefficients for this group for vectorized application
             # Compute terms and apply via tensor contraction
-            T_terms = self._compute_terms(B, max_order, bound)
+            T_terms = self._compute_terms(B, max_order, bound, min_lam)
             T_stack = np.stack(T_terms, axis=0)  # (max_order, n_vertex, n_signals)
             
             for idx, kernel in group:
@@ -208,20 +213,20 @@ class ChebyConvolve:
         
         return results
     
-    def _compute_terms(self, B: np.ndarray, max_order: int, bound: float) -> list:
+    def _compute_terms(self, B: np.ndarray, max_order: int, bound: float, min_lambda: float = 0.0) -> list:
         """Compute Chebyshev terms T_k(L)B for k = 0..max_order-1."""
         n_vertex, n_signals = B.shape
         terms = []
-        
+
         B_chol = byref(self.chol.numpy_to_chol_dense(B))
         T_km2, T_km1 = None, None
-        
+
         try:
             T_km2 = self.chol.copy_dense(B_chol)
             terms.append(self.chol.chol_dense_to_numpy(T_km2).copy())
-            
+
             if max_order > 1:
-                M = self._get_recurrence_matrix(bound)
+                M = self._get_recurrence_matrix(bound, min_lambda)
                 T_km1 = self.chol.allocate_dense(n_vertex, n_signals)
                 
                 self.chol.sdmult(M, T_km2, T_km1, alpha=1.0, beta=0.0)

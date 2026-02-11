@@ -41,6 +41,8 @@ class ChebyKernel:
     """Coefficient matrix of shape (order + 1, n_dims)."""
     spectrum_bound: float
     """Shared upper spectrum bound for all kernels."""
+    min_lambda: float = 0.0
+    """Lower bound of the approximation domain."""
     
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> 'ChebyKernel':
@@ -52,7 +54,8 @@ class ChebyKernel:
         coeffs = [np.asarray(a.get('coeffs', [])) for a in approxs]
         if any(len(c) != len(coeffs[0]) for c in coeffs):
             raise ValueError("All 'coeffs' arrays must have the same length.")
-        return cls(C=np.stack(coeffs, axis=1), spectrum_bound=bound)
+        min_lam = data.get('min_lambda', 0.0)
+        return cls(C=np.stack(coeffs, axis=1), spectrum_bound=bound, min_lambda=min_lam)
     
     @classmethod
     def from_function(
@@ -105,7 +108,7 @@ class ChebyKernel:
         coeffs = cls._ensure_2d(coeffs)
         coeffs = cls._truncate(coeffs, rtol)
         
-        return cls(C=coeffs, spectrum_bound=spectrum_bound)
+        return cls(C=coeffs, spectrum_bound=spectrum_bound, min_lambda=min_lambda)
     
     @classmethod
     def _compute_coefficients(cls, f, order, spectrum_bound, min_lambda, n_samples, sampling):
@@ -164,7 +167,7 @@ class ChebyKernel:
             )
 
             # Evaluate and compute relative error
-            x_scaled = 2.0 * test_x / spectrum_bound - 1.0
+            x_scaled = 2.0 * (test_x - min_lambda) / (spectrum_bound - min_lambda) - 1.0
             f_approx = np.polynomial.chebyshev.chebval(x_scaled, coeffs)
             f_approx = f_approx.T if f_approx.ndim > 1 else f_approx[:, None]
 
@@ -174,7 +177,7 @@ class ChebyKernel:
                 break
             order = min(int(order * 1.5) + 1, max_order)
 
-        return cls(C=cls._truncate(coeffs, rtol), spectrum_bound=spectrum_bound)
+        return cls(C=cls._truncate(coeffs, rtol), spectrum_bound=spectrum_bound, min_lambda=min_lambda)
     
     @classmethod
     def _ensure_2d(cls, arr):
@@ -198,8 +201,8 @@ class ChebyKernel:
         return cls.from_function(f, order, estimate_spectral_bound(L), **kwargs)
     
     def _scale_x(self, x: np.ndarray) -> np.ndarray:
-        """Maps points from [0, spectrum_bound] to Chebyshev domain [-1, 1]."""
-        return (2.0 / self.spectrum_bound) * x - 1.0
+        """Maps points from [min_lambda, spectrum_bound] to Chebyshev domain [-1, 1]."""
+        return 2.0 * (x - self.min_lambda) / (self.spectrum_bound - self.min_lambda) - 1.0
     
     def evaluate(self, x: np.ndarray) -> np.ndarray:
         """Evaluates the Chebyshev approximation at given points."""
