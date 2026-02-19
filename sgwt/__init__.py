@@ -16,6 +16,9 @@ from .chebyconv import ChebyConvolve
 # Spectral Graph Modal Analysis
 from .sgma import SGMA, ModeTable
 
+# Fitting models
+from .fitting import VFModel, ChebyModel
+
 # Analytical function generators
 from . import functions
 
@@ -103,6 +106,7 @@ def __dir__():  # pragma: no cover
 
 __all__ = [
     "Convolve", "ChebyConvolve", "DyConvolve", "SGMA", "ModeTable", "functions",
-    "VFKernel", "ChebyKernel", "impulse", "get_klu_dll", "get_cholmod_dll", "estimate_spectral_bound",
+    "VFKernel", "ChebyKernel", "VFModel", "ChebyModel",
+    "impulse", "get_klu_dll", "get_cholmod_dll", "estimate_spectral_bound",
     "load_ply_laplacian", "load_ply_xyz", "list_graphs"
 ] + _LAZY_RESOURCES

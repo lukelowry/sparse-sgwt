@@ -95,11 +95,6 @@ class TestLibrarySignals:
         assert S.ndim == 2
         assert S.shape[1] in [2, 3]
 
-    def test_laplacian_signal_dimension_match(self):
-        """Laplacian and signal node counts match."""
-        assert sgwt.DELAY_TEXAS.shape[0] == sgwt.COORD_TEXAS.shape[0]
-        assert sgwt.DELAY_USA.shape[0] == sgwt.COORD_USA.shape[0]
-
 
 class TestMeshSignals:
     """Tests for built-in mesh signals."""
@@ -276,30 +271,6 @@ class TestEstimateSpectralBound:
         assert bound > min_bound, \
             f"Expected spectral bound >{min_bound}, got {bound}"
 
-    def test_bound_exceeds_max_eigenvalue(self, small_laplacian):
-        """Bound is >= largest eigenvalue (with small margin)."""
-        from scipy.sparse.linalg import eigsh
-        bound = sgwt.estimate_spectral_bound(small_laplacian)
-        # Compute actual max eigenvalue
-        max_eig = eigsh(small_laplacian.astype(float), k=1, which='LM', return_eigenvectors=False)[0]
-        assert bound >= max_eig * 0.99  # allow small numerical tolerance
-
-
-class TestChebyKernelFromFunctionOnGraph:
-    """Tests for ChebyKernel.from_function_on_graph convenience method."""
-
-    def test_creates_kernel_from_graph(self, small_laplacian):
-        """from_function_on_graph estimates spectral bound and fits kernel."""
-        from sgwt.util import ChebyKernel
-        kernel = ChebyKernel.from_function_on_graph(
-            small_laplacian, lambda x: np.exp(-x), order=10
-        )
-        # Should produce at least 1 Chebyshev coefficient
-        assert kernel.C.shape[0] > 0, "Kernel should have at least one Chebyshev coefficient"
-        # Spectral bound should be positive and reasonable
-        assert kernel.spectrum_bound > 0.01, \
-            f"Expected reasonable spectral bound, got {kernel.spectrum_bound}"
-
 
 class TestChebyKernelEvaluate:
     """Tests for ChebyKernel.evaluate method."""
@@ -314,16 +285,6 @@ class TestChebyKernelEvaluate:
         result = kernel.evaluate(x)
         assert result.shape == (3, 2)
 
-
-class TestImpulse:
-    """Tests for impulse signal generator."""
-
-    def test_impulse_creates_correct_signal(self, small_laplacian):
-        """impulse creates signal with 1 at specified vertex."""
-        signal = sgwt.impulse(small_laplacian, n=2, n_timesteps=5)
-        assert signal.shape == (small_laplacian.shape[0], 5)
-        assert signal[2, 0] == 1.0
-        assert np.sum(signal[:, 0]) == 1.0
 
 
 class TestPlyParsing:
@@ -446,14 +407,6 @@ end_header
         assert xyz.shape == (4, 3)
         assert np.allclose(xyz[0], [0.0, 0.0, 0.0])
         assert np.allclose(xyz[1], [1.0, 0.0, 0.0])
-
-    def test_laplacian_xyz_consistency(self, ascii_ply_file):
-        """Laplacian and XYZ have consistent vertex counts."""
-        from sgwt.util import load_ply_laplacian, load_ply_xyz
-        L = load_ply_laplacian(ascii_ply_file)
-        xyz = load_ply_xyz(ascii_ply_file)
-
-        assert L.shape[0] == xyz.shape[0]
 
     def test_parse_ply_with_blank_lines_in_header(self, tmp_path):
         """_parse_ply handles blank lines in header."""

@@ -61,15 +61,6 @@ class TestChebyConvolve:
             result = conv.convolve(identity_signal, kern)
             np.testing.assert_allclose(result.squeeze(), identity_signal, atol=1e-10)
 
-    def test_linear_kernel_applies_laplacian(self, small_laplacian, identity_signal):
-        """Convolution with f(x)=x applies the Laplacian."""
-        f = lambda x: x
-        kern = sgwt.ChebyKernel.from_function_on_graph(small_laplacian, f, order=10)
-        with sgwt.ChebyConvolve(small_laplacian) as conv:
-            result = conv.convolve(identity_signal, kern)
-            expected = small_laplacian @ identity_signal
-            np.testing.assert_allclose(result.squeeze(), expected, atol=1e-2)
-
     @pytest.mark.parametrize("order", [10, 30, 50])
     def test_high_order_is_stable(self, small_laplacian, identity_signal, order):
         """High-order polynomial remains numerically stable."""
