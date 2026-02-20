@@ -32,7 +32,7 @@ ax1.plot(x_eval, y_true, 'k--', label='Target Filter', alpha=0.6)
 
 for order in orders:
     # Fit kernel using the module's function (uses quadratic sampling by default)
-    kernel = sgwt.ChebyKernel.from_function(f, order, ubnd, min_lambda=1e-4)
+    kernel = sgwt.ChebyModel.kernel(L, f, order, min_lambda=1e-4)
     y_approx = kernel.evaluate(x_eval)
     
     ax1.plot(x_eval, y_approx, label=f'Order {order}')

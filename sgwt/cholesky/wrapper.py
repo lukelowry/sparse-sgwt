@@ -3,7 +3,6 @@
 Sparse Spectral Graph Wavelet Transform (SGWT)
 ----------------------------------------------
 Author: Luke Lowery (lukel@tamu.edu)
-File: sgwt/cholesky/wrapper.py
 Description: Low-level Python wrapper for the CHOLMOD C library.
 """
 
@@ -34,8 +33,8 @@ CHOLMOD_SIMPLICIAL = 0  # simplicial
 CHOLMOD_SUPERNODAL = 1  # supernodal
 
 # Factor form
-CHOLMOD_L  = 0  # LLᵀ
-CHOLMOD_LT = 1  # LDLᵀ
+CHOLMOD_FACTOR_LL  = 0  # LLᵀ
+CHOLMOD_FACTOR_LDL = 1  # LDLᵀ
 
 # Up/down-date
 CHOLMOD_UPDATE   = 1  # update

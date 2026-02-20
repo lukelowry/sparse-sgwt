@@ -32,7 +32,7 @@ Below is a truncated example from the built-in ``MODIFIED_MORLET.json`` file.
 .. code-block:: json
 
     {
-        "description": "Modified Morlet Wavelet With Central Frequnecy of 2pi",
+        "description": "Modified Morlet Wavelet With Central Frequency of 2pi",
         "nfuncs": 1,
         "npoles": 14,
         "d": 0.0027966205394028575,

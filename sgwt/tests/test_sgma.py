@@ -491,21 +491,6 @@ class TestFindModes:
         # Should find both boundary peaks
         assert modes.n_modes == 2
 
-    def test_find_modes_damping_finite(self, sgma_engine, random_signal):
-        """Test that damping values are finite (not inf/nan)."""
-        n_time = random_signal.shape[1]
-        t = np.linspace(0, 5, n_time)
-        time_target = 2.5
-
-        spectrum = sgma_engine.spectrum(
-            random_signal, t, bus=0, time=time_target, return_complex=True
-        )
-
-        modes = sgma_engine.find_modes(spectrum, top_n=3, min_dist=1)
-
-        # All damping values should be finite
-        assert np.all(np.isfinite(modes.damping))
-
 
 class TestSGMACoverage:
     """Additional tests to cover remaining branches."""

@@ -131,7 +131,7 @@ def simple_chebykernel(small_laplacian):
     """Create a simple ChebyKernel approximating exp(-x)."""
     import sgwt
     f = lambda x: np.exp(-x)
-    return sgwt.ChebyKernel.from_function_on_graph(small_laplacian, f, order=10)
+    return sgwt.ChebyModel.kernel(small_laplacian, f, order=10)
 
 
 # ---------------------------------------------------------------------------

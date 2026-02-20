@@ -32,15 +32,11 @@ Basic Usage
     def f(x):
         return np.array([my_filter(x)]).T
 
-    # Initialize convolution context to get spectrum bound
-    conv = sgwt.ChebConvolve(L)
-    ubnd = conv.spectrum_bound
-
     # Create the kernel
-    kernel = sgwt.ChebyKernel.from_function(f, order=50, spectrum_bound=ubnd)
+    kernel = sgwt.ChebyModel.kernel(L, f, order=50)
 
     # Apply convolution
-    with conv:
+    with sgwt.ChebyConvolve(L) as conv:
         result = conv.convolve(signal, kernel)
 
 .. seealso::

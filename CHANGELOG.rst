@@ -15,7 +15,7 @@ and this project adheres to `Semantic Versioning <https://semver.org/spec/v2.0.0
 - Convolve and DyConvolve can also take a 1D signal and will return a transformed 1D signal in that case
 - impulse function now 1D by default
 - Misc examples updated to show this feature 
-- Broke up benchmark into four seperatea performance tests
+- Broke up benchmark into four separate performance tests
 
 **Added**
 
@@ -44,7 +44,7 @@ and this project adheres to `Semantic Versioning <https://semver.org/spec/v2.0.0
 **Changed**
 
 - Expanded test suite to full code and branch coverage, including all edge cases and defensive branches.
-- Tests to do cover KLU wrapper, because it is not used in this version.
+- Tests do not cover KLU wrapper, because it is not used in this version.
 
 [0.3.4] - 2026-01-06
 --------------------

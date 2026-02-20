@@ -25,7 +25,7 @@ def f(x):
         sgwt.functions.bandpass(x, scale=s, order=2) for s in SCALES], 
     axis=1)
 
-kernel = sgwt.ChebyKernel.from_function_on_graph(L, f, ORDER, min_lambda=XMIN)
+kernel = sgwt.ChebyModel.kernel(L, f, ORDER, min_lambda=XMIN)
 
 X = impulse(L, n=600) 
 

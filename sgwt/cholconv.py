@@ -109,9 +109,9 @@ class Convolve:
 
     Examples
     --------
-    >>> from sgwt import Convolve, LAPLACIAN_TEXAS_DELAY
+    >>> from sgwt import Convolve, DELAY_TEXAS
     >>> import numpy as np
-    >>> L = LAPLACIAN_TEXAS_DELAY
+    >>> L = DELAY_TEXAS
     >>> signal = np.random.randn(L.shape[0], 100)
     >>> with Convolve(L) as conv:
     ...     lp = conv.lowpass(signal, scales=[0.1, 1.0, 10.0])
@@ -119,6 +119,14 @@ class Convolve:
     """
 
     def __init__(self, L:csc_matrix) -> None:
+        """Initialize the static convolution context.
+
+        Parameters
+        ----------
+        L : csc_matrix
+            Sparse Graph Laplacian of shape ``(n_vertices, n_vertices)``.
+            Must be symmetric positive semi-definite.
+        """
 
         # Store number of vertices
         self.n_vertices = L.shape[0]
@@ -128,6 +136,16 @@ class Convolve:
 
     
     def __enter__(self) -> "Convolve":
+        """Start CHOLMOD and perform symbolic factorization.
+
+        Allocates workspace pointers for solve2 operations. The symbolic
+        factorization is reused across all subsequent numeric factorizations.
+
+        Returns
+        -------
+        Convolve
+            This context manager instance.
+        """
 
         # Start Cholmod
         self.chol.start()
@@ -147,6 +165,11 @@ class Convolve:
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
+        """Free all CHOLMOD resources.
+
+        Releases the factored matrix, workspace memory, and finalizes
+        the CHOLMOD common object.
+        """
 
         # Free the factored matrix object
         self.chol.free_factor(self.chol.fact_ptr)
@@ -156,7 +179,7 @@ class Convolve:
         self.chol.free_dense(self.X2)
         self.chol.free_sparse(self.Xset)
 
-        # Free Y & E (workspacce for solve2)
+        # Free Y & E (workspace for solve2)
         self.chol.free_dense(self.Y)
         self.chol.free_dense(self.E)
 
@@ -229,7 +252,7 @@ class Convolve:
 
         return W
     
-    def lowpass(self, B: np.ndarray, scales: Union[float, List[float]] = [1], Bset: Optional[csc_matrix] = None, refactor: bool = True, order = 1) -> Union[np.ndarray, List[np.ndarray]]:
+    def lowpass(self, B: np.ndarray, scales: Union[float, List[float]] = None, Bset: Optional[csc_matrix] = None, refactor: bool = True, order = 1) -> Union[np.ndarray, List[np.ndarray]]:
         """
         Computes low-pass filtered scaling coefficients at specified scales.
 
@@ -263,7 +286,7 @@ class Convolve:
         """
         return _process_signal(self._lowpass_impl, B, scales, Bset, refactor, order)
 
-    def _lowpass_impl(self, B: np.ndarray, scales: List[float] = [1], Bset: Optional[csc_matrix] = None, refactor: bool = True, order = 1) -> List[np.ndarray]:
+    def _lowpass_impl(self, B: np.ndarray, scales: List[float] = None, Bset: Optional[csc_matrix] = None, refactor: bool = True, order = 1) -> List[np.ndarray]:
 
         # Using this requires the number of columns in f to be 1
         if Bset is not None:  # pragma: no cover
@@ -281,10 +304,10 @@ class Convolve:
 
 
         # Calculate Scaling Coefficients of 'f' for each scale
-        for i, scale in enumerate(scales):
+        for scale in scales:
 
-            # Step 1 -> Numeric Factorization 
-            # In some instances it will alreayd be factord at appropriate scale, so we allow option to skip
+            # Step 1 -> Numeric Factorization
+            # In some instances it will already be factored at appropriate scale, so we allow option to skip
             if refactor:
                 self.chol.num_factor(A_ptr, fact_ptr, 1/scale)
 
@@ -308,7 +331,7 @@ class Convolve:
             )
         return W
 
-    def bandpass(self, B: np.ndarray, scales: Union[float, List[float]] = [1], order: int = 1) -> Union[np.ndarray, List[np.ndarray]]:
+    def bandpass(self, B: np.ndarray, scales: Union[float, List[float]] = None, order: int = 1) -> Union[np.ndarray, List[np.ndarray]]:
         """
         Computes band-pass filtered wavelet coefficients at specified scales.
 
@@ -339,8 +362,8 @@ class Convolve:
         """
         return _process_signal(self._bandpass_impl, B, scales, order)
 
-    def _bandpass_impl(self, B: np.ndarray, scales: List[float] = [1], order: int = 1) -> List[np.ndarray]:
-        
+    def _bandpass_impl(self, B: np.ndarray, scales: List[float] = None, order: int = 1) -> List[np.ndarray]:
+
         # Pointer to bB (The function being convolved)
         B_chol_struct = self.chol.numpy_to_chol_dense(B)
 
@@ -353,11 +376,11 @@ class Convolve:
         fact_ptr = self.chol.fact_ptr
 
         # Calculate Scaling Coefficients of 'f' for each scale
-        for i, scale in enumerate(scales):
+        for scale in scales:
 
             # Step 1 -> Numeric Factorization
             self.chol.num_factor(A_ptr, fact_ptr, 1/scale)
-            
+
             # Solve more than once iff order > 1
             in_ptr = byref(B_chol_struct)
             for _ in range(order):
@@ -383,7 +406,7 @@ class Convolve:
 
         return W
 
-    def highpass(self, B: np.ndarray, scales: Union[float, List[float]] = [1]) -> Union[np.ndarray, List[np.ndarray]]:
+    def highpass(self, B: np.ndarray, scales: Union[float, List[float]] = None) -> Union[np.ndarray, List[np.ndarray]]:
         """
         Computes high-pass filtered coefficients at specified scales.
 
@@ -410,8 +433,8 @@ class Convolve:
             otherwise a list of arrays for each scale.
         """
         return _process_signal(self._highpass_impl, B, scales)
-      
-    def _highpass_impl(self, B: np.ndarray, scales: List[float] = [1]) -> List[np.ndarray]:
+
+    def _highpass_impl(self, B: np.ndarray, scales: List[float] = None) -> List[np.ndarray]:
         # List, malloc, numpy, etc.
         W = []
         X1, X2 = self.X1, self.X2 
@@ -466,11 +489,23 @@ class DyConvolve:
     L : csc_matrix
         Sparse Graph Laplacian of shape ``(n_vertices, n_vertices)``.
     poles : list[float] | VFKernel
-        Predetermined set of poles (equivalent to 1/scale for analytical filters).
+        Predetermined set of poles (``q = 1/s`` for analytical filters,
+        where ``s`` is the corresponding scale).
 
     """
 
     def __init__(self, L:csc_matrix, poles: Union[List[float], VFKernel]) -> None:
+        """Initialize the dynamic convolution context.
+
+        Parameters
+        ----------
+        L : csc_matrix
+            Sparse Graph Laplacian of shape ``(n_vertices, n_vertices)``.
+        poles : list[float] | VFKernel
+            Predetermined set of poles. For analytical filters, these are
+            the inverse of the desired scales (``q = 1/s``). If a VFKernel
+            is passed, its poles, residues, and direct term are extracted.
+        """
 
         # Store number of vertices
         self.n_vertices = L.shape[0]
@@ -494,6 +529,18 @@ class DyConvolve:
 
     # Context Manager for using CHOLMOD
     def __enter__(self) -> "DyConvolve":
+        """Start CHOLMOD, perform symbolic factorization, and pre-factor all poles.
+
+        Creates copies of the symbolic factor and performs numeric
+        factorization for each pole ``(L + qI)``. This pre-computation
+        allows subsequent topology updates via rank-1 Cholesky updates
+        without full re-factorization.
+
+        Returns
+        -------
+        DyConvolve
+            This context manager instance.
+        """
 
         # Start Cholmod
         self.chol.start()
@@ -504,7 +551,7 @@ class DyConvolve:
         # Make copies of the symbolic factor object
         self.factors = [
             self.chol.copy_factor(self.chol.fact_ptr)
-            for i in range(self.npoles)
+            for _ in range(self.npoles)
         ]
 
         # Now perform each unique numeric factorization A + qI
@@ -523,6 +570,7 @@ class DyConvolve:
         return self
 
     def __exit__(self, exc_type: Optional[Type[BaseException]], exc_val: Optional[BaseException], exc_tb: Optional[TracebackType]) -> Optional[bool]:
+        """Free all CHOLMOD resources including per-pole factor copies."""
 
         # Free the factored matrix object
         self.chol.free_factor(self.chol.fact_ptr)
@@ -536,7 +584,7 @@ class DyConvolve:
         self.chol.free_dense(self.X2)
         self.chol.free_sparse(self.Xset)
 
-        # Free Y & E (workspacce for solve2)
+        # Free Y & E (workspace for solve2)
         self.chol.free_dense(self.Y)
         self.chol.free_dense(self.E)
 
@@ -595,13 +643,14 @@ class DyConvolve:
         """
         Computes low-pass filtered scaling coefficients.
 
-        Applies the spectral filter:
+        Applies the spectral filter at each pre-defined scale:
 
         .. math::
 
-            \\phi_q(\\mathbf{L}) = \\left( \\frac{q\\mathbf{I}}{\\mathbf{L} + q\\mathbf{I}} \\right)^n
+            \\phi_s(\\mathbf{L}) = \\left( \\frac{\\mathbf{I}}{s\\mathbf{L} + \\mathbf{I}} \\right)^n
 
-        where :math:`q` is the pre-defined pole and :math:`n` is the filter order.
+        where :math:`s` is the scale and :math:`n` is the filter order.
+        Internally, the solve uses pole :math:`q = 1/s`.
 
         Parameters
         ----------
@@ -615,7 +664,7 @@ class DyConvolve:
         Returns
         -------
         list[np.ndarray]
-            Filtered signals for each pre-defined pole.
+            Filtered signals, one per pre-defined scale.
         """
         return _process_signal(self._lowpass_impl, B, None, Bset, order)
 
@@ -663,13 +712,14 @@ class DyConvolve:
         """
         Computes band-pass filtered wavelet coefficients.
 
-        Applies the spectral wavelet kernel:
+        Applies the spectral wavelet kernel at each pre-defined scale:
 
         .. math::
 
-            \\Psi_q(\\mathbf{L}) = \\left( \\frac{4q\\mathbf{L}}{(\\mathbf{L} + q\\mathbf{I})^2} \\right)^n
+            \\Psi_s(\\mathbf{L}) = \\left( \\frac{4\\mathbf{L}/s}{(\\mathbf{L} + \\mathbf{I}/s)^2} \\right)^n
 
-        where :math:`q` is the pre-defined pole and :math:`n` is the filter order.
+        where :math:`s` is the scale and :math:`n` is the filter order.
+        Internally, the solve uses pole :math:`q = 1/s`.
 
         Parameters
         ----------
@@ -681,7 +731,7 @@ class DyConvolve:
         Returns
         -------
         list[np.ndarray]
-            Filtered signals for each pre-defined pole.
+            Filtered signals, one per pre-defined scale.
         """
         return _process_signal(self._bandpass_impl, B, None, order)
 
@@ -727,13 +777,14 @@ class DyConvolve:
         """
         Computes high-pass filtered coefficients.
 
-        Applies the spectral filter:
+        Applies the spectral filter at each pre-defined scale:
 
         .. math::
 
-            \\mu_q(\\mathbf{L}) = \\frac{\\mathbf{L}}{\\mathbf{L} + q\\mathbf{I}}
+            \\mu_s(\\mathbf{L}) = \\frac{s\\mathbf{L}}{s\\mathbf{L} + \\mathbf{I}}
 
-        where :math:`q` is the pre-defined pole.
+        where :math:`s` is the scale. Internally, the solve uses
+        pole :math:`q = 1/s`.
 
         Parameters
         ----------
@@ -743,7 +794,7 @@ class DyConvolve:
         Returns
         -------
         list[np.ndarray]
-            Filtered signals for each pre-defined pole.
+            Filtered signals, one per pre-defined scale.
         """
         return _process_signal(self._highpass_impl, B, None)
       
@@ -823,7 +874,7 @@ class DyConvolve:
             vals=data
         )
 
-        # TODO we can optize performance eventually by 
+        # TODO we can optimize performance eventually by 
         # splitting updown into symbolic and numeric, since symbolic same for all
         
         # Update all factors
