@@ -25,6 +25,14 @@ class ChebyConvolve:
     """
     
     def __init__(self, L: csc_matrix) -> None:
+        """Initialize the Chebyshev convolution context.
+
+        Parameters
+        ----------
+        L : csc_matrix
+            Sparse Graph Laplacian. The spectral bound is estimated
+            automatically via :func:`~sgwt.util.estimate_spectral_bound`.
+        """
         self.n_vertices = L.shape[0]
         self.spectrum_bound = estimate_spectral_bound(L)
         self.chol = CholWrapper(L)
@@ -32,11 +40,19 @@ class ChebyConvolve:
         self._cached_spectrum_bound = None
         
     def __enter__(self) -> "ChebyConvolve":
+        """Start CHOLMOD and perform symbolic factorization.
+
+        Returns
+        -------
+        ChebyConvolve
+            This context manager instance.
+        """
         self.chol.start()
         self.chol.sym_factor()
         return self
     
     def __exit__(self, exc_type, exc_val, exc_tb):
+        """Free CHOLMOD resources and cached recurrence matrix."""
         if self._cached_M_ptr is not None:
             self.chol.free_sparse(self._cached_M_ptr)
         self.chol.free_factor(self.chol.fact_ptr)

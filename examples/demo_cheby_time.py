@@ -31,7 +31,7 @@ X = impulse(L, n=1200)
 def f(x): return np.stack([sgwt.functions.bandpass(x, scale=s, order=1) for s in SCALES], axis=1)
 
 lbnd = 1e-3
-kernel = sgwt.ChebyKernel.from_function_on_graph(L, f, ORDER, min_lambda=lbnd)
+kernel = sgwt.ChebyModel.kernel_on_graph(L, f, ORDER, min_lambda=lbnd)
 
 print(f"Benchmarking on {L.shape[0]} nodes...")
 

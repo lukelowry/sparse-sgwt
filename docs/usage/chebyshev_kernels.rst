@@ -37,7 +37,7 @@ Basic Usage
     ubnd = conv.spectrum_bound
 
     # Create the kernel
-    kernel = sgwt.ChebyKernel.from_function(f, order=50, spectrum_bound=ubnd)
+    kernel = sgwt.ChebyModel.kernel(f, order=50, spectrum_bound=ubnd)
 
     # Apply convolution
     with conv:

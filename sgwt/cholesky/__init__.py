@@ -3,7 +3,6 @@
 Sparse Spectral Graph Wavelet Transform (SGWT)
 ----------------------------------------------
 Author: Luke Lowery (lukel@tamu.edu)
-File: sgwt/cholesky/__init__.py
 Description: Cholesky factorization module initialization.
 """
 

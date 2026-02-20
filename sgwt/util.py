@@ -1,6 +1,6 @@
 """General Utilities
 
-Description: Utilities for accessing built-in data, VFKern, and impulse helper function.
+Description: Utilities for accessing built-in data, VFKernel, and impulse helper function.
 
 Author: Luke Lowery (lukel@tamu.edu)
 """
@@ -56,149 +56,6 @@ class ChebyKernel:
             raise ValueError("All 'coeffs' arrays must have the same length.")
         min_lam = data.get('min_lambda', 0.0)
         return cls(C=np.stack(coeffs, axis=1), spectrum_bound=bound, min_lambda=min_lam)
-    
-    @classmethod
-    def from_function(
-        cls,
-        f: Callable[[np.ndarray], np.ndarray],
-        order: int,
-        spectrum_bound: float,
-        n_samples: int = None,
-        sampling: str = 'chebyshev',
-        min_lambda: float = 0.0,
-        rtol: float = 1e-12,
-        adaptive: bool = False,
-        max_order: int = 500,
-        target_error: float = 1e-10
-    ) -> 'ChebyKernel':
-        """Creates a ChebyKernel by fitting a vectorized function.
-        
-        Parameters
-        ----------
-        f : Callable[[np.ndarray], np.ndarray]
-            The vectorized function to approximate.
-        order : int
-            Order of the Chebyshev polynomial to fit.
-        spectrum_bound : float
-            Upper bound of the function's domain.
-        n_samples : int, optional
-            Number of sample points (only used for non-Chebyshev sampling).
-        sampling : str, default 'chebyshev'
-            Sampling strategy: 'chebyshev' (optimal), 'linear', 'quadratic', 'logarithmic'.
-        min_lambda : float, default 0.0
-            Lower bound of the sampling range.
-        rtol : float, default 1e-12
-            Relative tolerance for truncating negligible coefficients.
-        adaptive : bool, default False
-            If True, automatically determines optimal order to achieve target_error.
-        max_order : int, default 500
-            Maximum order for adaptive mode.
-        target_error : float, default 1e-10
-            Target approximation error for adaptive mode.
-        """
-        if order < 1:
-            raise ValueError("Order must be >= 1")
-        
-        if adaptive:
-            return cls._adaptive_fit(f, order, spectrum_bound, min_lambda, 
-                                     sampling, rtol, max_order, target_error)
-        
-        coeffs = cls._compute_coefficients(f, order, spectrum_bound, min_lambda, 
-                                           n_samples, sampling)
-        coeffs = cls._ensure_2d(coeffs)
-        coeffs = cls._truncate(coeffs, rtol)
-        
-        return cls(C=coeffs, spectrum_bound=spectrum_bound, min_lambda=min_lambda)
-    
-    @classmethod
-    def _compute_coefficients(cls, f, order, spectrum_bound, min_lambda, n_samples, sampling):
-        """Compute Chebyshev coefficients using optimal or fallback method."""
-        lambda_range = spectrum_bound - min_lambda
-        lambda_mid = (spectrum_bound + min_lambda) / 2.0
-        
-        if sampling == 'chebyshev':
-            # Chebyshev-Gauss-Lobatto nodes: optimal for polynomial interpolation
-            n = order + 1
-            k = np.arange(n)
-            x_cheb = np.cos(np.pi * k / order)  # Nodes in [-1, 1]
-            sample_x = lambda_mid + (lambda_range / 2.0) * x_cheb
-            f_values = cls._ensure_2d(f(sample_x))
-            
-            # Compute coefficients via discrete orthogonality (DCT-like)
-            coeffs = np.zeros((n, f_values.shape[1]))
-            w = np.ones(n); w[0] = w[-1] = 0.5  # Endpoint weights
-            
-            for j in range(n):
-                T_j = np.cos(j * np.pi * k / order)
-                scale = 2.0 / order if 0 < j < order else 1.0 / order
-                coeffs[j] = scale * np.sum(w[:, None] * f_values * T_j[:, None], axis=0)
-            
-            return coeffs
-        
-        # Fallback: least-squares fitting for other sampling strategies
-        n_samples = n_samples or max(4 * (order + 1), 1000)
-        t = np.linspace(0, 1, n_samples)
-        
-        if sampling == 'quadratic':
-            sample_x = min_lambda + lambda_range * (t ** 2)
-        elif sampling == 'logarithmic':
-            eps = max(min_lambda * 0.001, 1e-10)
-            sample_x = np.exp(np.log(min_lambda + eps) + t * np.log(spectrum_bound / (min_lambda + eps)))
-        else:  # linear
-            sample_x = min_lambda + lambda_range * t
-        
-        x_scaled = 2.0 * (sample_x - min_lambda) / lambda_range - 1.0
-        
-        # Chebyshev-weighted least squares
-        weights = 1.0 / np.sqrt(1.0 - np.clip(x_scaled ** 2, 0, 0.9999))
-        return np.polynomial.chebyshev.chebfit(x_scaled, f(sample_x), order, w=weights)
-    
-    @classmethod
-    def _adaptive_fit(cls, f, start_order, spectrum_bound, min_lambda,
-                      sampling, rtol, max_order, target_error):
-        """Adaptively determine optimal polynomial order."""
-        test_x = np.linspace(min_lambda, spectrum_bound, 1000)
-        f_exact = cls._ensure_2d(f(test_x))
-        order = max(start_order, 8)
-
-        while True:
-            coeffs = cls._ensure_2d(
-                cls._compute_coefficients(f, order, spectrum_bound, min_lambda, None, sampling)
-            )
-
-            # Evaluate and compute relative error
-            x_scaled = 2.0 * (test_x - min_lambda) / (spectrum_bound - min_lambda) - 1.0
-            f_approx = np.polynomial.chebyshev.chebval(x_scaled, coeffs)
-            f_approx = f_approx.T if f_approx.ndim > 1 else f_approx[:, None]
-
-            rel_error = np.max(np.abs(f_exact - f_approx) / np.maximum(np.abs(f_exact), 1e-15))
-
-            if rel_error <= target_error or order >= max_order:
-                break
-            order = min(int(order * 1.5) + 1, max_order)
-
-        return cls(C=cls._truncate(coeffs, rtol), spectrum_bound=spectrum_bound, min_lambda=min_lambda)
-    
-    @classmethod
-    def _ensure_2d(cls, arr):
-        """Ensure array is 2D with shape (n, dims)."""
-        arr = np.atleast_1d(arr)
-        return arr[:, None] if arr.ndim == 1 else arr
-    
-    @classmethod
-    def _truncate(cls, coeffs, rtol):
-        """Truncate negligible higher-order coefficients."""
-        threshold = rtol * np.max(np.abs(coeffs))
-        row_max = np.max(np.abs(coeffs), axis=1)
-        significant = np.where(row_max > threshold)[0]
-        last_idx = significant[-1] + 1 if significant.size > 0 else 1
-        return coeffs[:last_idx]
-    
-    @classmethod
-    def from_function_on_graph(cls, L: csc_matrix, f: Callable[[np.ndarray], np.ndarray], 
-                               order: int, **kwargs) -> 'ChebyKernel':
-        """Creates a ChebyKernel fitted to a graph's spectrum."""
-        return cls.from_function(f, order, estimate_spectral_bound(L), **kwargs)
     
     def _scale_x(self, x: np.ndarray) -> np.ndarray:
         """Maps points from [min_lambda, spectrum_bound] to Chebyshev domain [-1, 1]."""
@@ -273,13 +130,13 @@ class VFKernel:
         )
 
 
-def impulse(lap: csc_matrix, n: int = 0, n_timesteps: int = 1) -> np.ndarray:
+def impulse(L: csc_matrix, n: int = 0, n_timesteps: int = 1) -> np.ndarray:
     """
     Generates a Dirac impulse signal at a specified vertex.
 
     Parameters
     ----------
-    lap : csc_matrix
+    L : csc_matrix
         Graph Laplacian defining the number of vertices.
     n : int
         Index of the vertex where the impulse is applied.
@@ -293,10 +150,10 @@ def impulse(lap: csc_matrix, n: int = 0, n_timesteps: int = 1) -> np.ndarray:
         (n_vertices, n_timesteps) with 1.0 at index n and 0.0 elsewhere.
     """
     if n_timesteps == 1:
-        b: np.ndarray = np.zeros(lap.shape[0])
+        b: np.ndarray = np.zeros(L.shape[0])
         b[n] = 1.0
     else:
-        b = np.zeros((lap.shape[0], n_timesteps), order='F')
+        b = np.zeros((L.shape[0], n_timesteps), order='F')
         b[n] = 1.0
 
     return b
@@ -377,7 +234,7 @@ def _mat_loader(path: str, to_csc: bool = False) -> Union[np.ndarray, csc_matrix
     return res.T if (res.ndim == 2 and res.shape[0] == 1) else res
 
 def _json_kern_loader(path: str) -> Dict[str, Any]:
-    """Loads a VFKern from a JSON file."""
+    """Loads a VFKernel dictionary from a JSON file."""
     with open(path, "r") as f:
         return jsonload(f)
 

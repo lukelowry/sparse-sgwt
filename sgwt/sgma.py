@@ -21,7 +21,25 @@ except ImportError:
     def _peak_local_max_fallback(
         image: np.ndarray, min_distance: int = 1, num_peaks: int = np.inf, exclude_border: bool = False
     ) -> np.ndarray:
-        """Fallback for skimage peak_local_max using scipy maximum_filter."""
+        """Fallback for skimage peak_local_max using scipy maximum_filter.
+
+        Parameters
+        ----------
+        image : np.ndarray
+            2D array in which to find local maxima.
+        min_distance : int, default: 1
+            Minimum index distance between detected peaks.
+        num_peaks : int, default: np.inf
+            Maximum number of peaks to return.
+        exclude_border : bool, default: False
+            Unused; kept for API compatibility with skimage.
+
+        Returns
+        -------
+        np.ndarray
+            Array of shape ``(n_peaks, 2)`` with row, column indices of peaks,
+            sorted by descending magnitude.
+        """
         min_distance = max(1, min_distance)
         size = 2 * min_distance + 1
         local_max = (image == maximum_filter(image, size=size, mode="constant")) & (image > 0)
@@ -47,13 +65,26 @@ from .cholconv import DyConvolve
 from .functions import gaussian_wavelet
 from .util import impulse
 
-NetworkAnalysisResult = NamedTuple('NetworkAnalysisResult', [('peaks', Dict), ('clusters', Dict)])
+class NetworkAnalysisResult(NamedTuple):
+    """Result container for multi-bus SGMA analysis.
+
+    Attributes
+    ----------
+    peaks : dict
+        Aggregated peak data with keys: Wavelength, Frequency, Magnitude, Bus_ID.
+    clusters : dict
+        Density-based cluster data with keys: Wavelength, Frequency, Density.
+    """
+    peaks: Dict
+    clusters: Dict
 
 class ModeTable:
     """
     Container for identified oscillatory modes with tabular display.
+
     Stores mode parameters (frequency, damping ratio, wavelength, magnitude)
     and provides a formatted string representation for easy inspection.
+
     Attributes
     ----------
     frequency : ndarray

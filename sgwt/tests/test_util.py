@@ -156,34 +156,6 @@ class TestChebyKernelFromDict:
             sgwt.ChebyKernel.from_dict(data)
 
 
-class TestChebyKernelFromFunction:
-    """Tests for ChebyKernel.from_function edge cases."""
-
-    def test_zero_function_keeps_constant_term(self):
-        """Fitting a zero function keeps at least the constant term."""
-        kern = sgwt.ChebyKernel.from_function(lambda x: np.zeros_like(x), order=5, spectrum_bound=1.0)
-        assert kern.C.shape[0] >= 1
-
-    def test_multioutput_function_preserves_2d_coeffs(self):
-        """Fitting a multi-output function preserves 2D coefficient structure."""
-        # Function returning 2D array (multi-output)
-        def multi_func(x):
-            return np.column_stack([np.exp(-x), np.sin(x)])
-        
-        kern = sgwt.ChebyKernel.from_function(multi_func, order=5, spectrum_bound=4.0)
-        # Should have 2 dimensions (one per output)
-        assert kern.C.shape[1] == 2
-        # Verify evaluation works for both outputs
-        x_test = np.linspace(0, 4, 10)
-        result = kern.evaluate(x_test)
-        assert result.shape == (10, 2)
-
-    @pytest.mark.parametrize("order", [0, -5])
-    def test_invalid_order_raises_valueerror(self, order):
-        """Order < 1 raises ValueError with descriptive message."""
-        with pytest.raises(ValueError, match="Order must be >= 1"):
-            sgwt.ChebyKernel.from_function(lambda x: x, order=order, spectrum_bound=1.0)
-
 
 class TestMatLoader:
     """Tests for _mat_loader edge cases."""
@@ -527,70 +499,6 @@ class TestModuleGetattr:
         import sgwt.util
         with pytest.raises(AttributeError, match="has no attribute"):
             _ = sgwt.util.NONEXISTENT_RESOURCE_NAME
-
-
-class TestChebyKernelCoverage:
-    """Additional tests for ChebyKernel edge cases."""
-
-    def test_from_function_all_negligible_coefficients(self):
-        """Fitting a function where all higher-order coefficients are negligible."""
-        # A constant function should result in only the constant term being kept
-        kern = sgwt.ChebyKernel.from_function(
-            lambda x: np.full_like(x, 1e-20),  # Nearly zero constant
-            order=10,
-            spectrum_bound=1.0
-        )
-        # Should keep at least the constant term
-        assert kern.C.shape[0] >= 1
-
-    @pytest.mark.parametrize("sampling", ['linear', 'quadratic', 'logarithmic'])
-    def test_from_function_sampling_strategies(self, sampling):
-        """Test from_function with various sampling strategies."""
-        kern = sgwt.ChebyKernel.from_function(
-            lambda x: np.exp(-x),
-            order=5,
-            spectrum_bound=2.0,
-            sampling=sampling
-        )
-        assert kern.C.shape[0] > 0
-        # Verify the kernel approximates reasonably well
-        x_test = np.linspace(0, 2.0, 20)
-        result = kern.evaluate(x_test)
-        expected = np.exp(-x_test)
-        np.testing.assert_allclose(result.flatten(), expected, atol=0.1)
-
-    def test_from_function_adaptive_fitting(self):
-        """Test from_function with adaptive order selection."""
-        kern = sgwt.ChebyKernel.from_function(
-            lambda x: np.exp(-x),
-            order=5,  # Starting order
-            spectrum_bound=2.0,
-            adaptive=True,
-            target_error=0.01,
-            max_order=50
-        )
-        assert kern.C.shape[0] > 0
-        # Adaptive fitting should find appropriate order
-        x_test = np.linspace(0, 2.0, 100)
-        result = kern.evaluate(x_test)
-        expected = np.exp(-x_test)
-        # Should achieve target error approximately
-        rel_error = np.max(np.abs(result.flatten() - expected) / np.maximum(np.abs(expected), 1e-15))
-        assert rel_error < 0.1  # Allow some slack in convergence
-
-    def test_from_function_adaptive_reaches_max_order(self):
-        """Test adaptive fitting that hits max_order."""
-        # Use a simple function but with impossibly tight target
-        kern = sgwt.ChebyKernel.from_function(
-            lambda x: np.exp(-x),
-            order=5,
-            spectrum_bound=2.0,
-            adaptive=True,
-            target_error=1e-20,  # Impossibly tight - will hit max_order
-            max_order=10  # Very low max to finish quickly
-        )
-        # Should still produce a valid kernel even if target not met
-        assert kern.C.shape[0] > 0
 
 
 class TestListGraphs:

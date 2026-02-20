@@ -53,4 +53,4 @@ For testing and examples, the library provides the :func:`~sgwt.util.impulse` he
     X_impulse = impulse(L, n=600)
 
     print(X_impulse.shape)
-    # Output: (2000, 1)
+    # Output: (2000,)
