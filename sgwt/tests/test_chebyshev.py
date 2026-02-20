@@ -11,18 +11,17 @@ import sgwt
 class TestChebyKernel:
     """Tests for ChebyKernel construction and fitting via ChebyModel."""
 
-    def test_kernel_approximates_linear(self):
+    def test_kernel_approximates_linear(self, small_laplacian):
         """ChebyModel.kernel approximates f(x)=x correctly."""
-        bound = 4.0
         f = lambda x: x
-        kern = sgwt.ChebyModel.kernel(f, order=5, spectrum_bound=bound)
-        x_eval = np.linspace(0, bound, 20)
+        kern = sgwt.ChebyModel.kernel(small_laplacian, f, order=5)
+        x_eval = np.linspace(0, kern.spectrum_bound, 20)
         np.testing.assert_allclose(kern.evaluate(x_eval).flatten(), f(x_eval), atol=1e-2)
 
-    def test_kernel_on_graph_estimates_bound(self, small_laplacian):
-        """kernel_on_graph estimates spectral bound and creates valid kernel."""
+    def test_kernel_estimates_bound(self, small_laplacian):
+        """kernel estimates spectral bound from L and creates valid kernel."""
         f = lambda x: np.exp(-x)
-        kern = sgwt.ChebyModel.kernel_on_graph(small_laplacian, f, order=10)
+        kern = sgwt.ChebyModel.kernel(small_laplacian, f, order=10)
         assert isinstance(kern, sgwt.ChebyKernel)
         # Spectral bound should be positive and reasonable
         assert kern.spectrum_bound > 0.01, \
@@ -33,7 +32,7 @@ class TestChebyKernel:
     def test_kernel_respects_order(self, small_laplacian, order):
         """Kernel C matrix has at most (order+1) rows (may be truncated for efficiency)."""
         f = lambda x: np.exp(-x)
-        kern = sgwt.ChebyModel.kernel_on_graph(small_laplacian, f, order=order)
+        kern = sgwt.ChebyModel.kernel(small_laplacian, f, order=order)
         # Coefficients may be truncated if high-order terms are negligible
         assert kern.C.shape[0] <= order + 1
         assert kern.C.shape[0] >= 1
@@ -65,7 +64,7 @@ class TestChebyConvolve:
     def test_high_order_is_stable(self, small_laplacian, identity_signal, order):
         """High-order polynomial remains numerically stable."""
         f = lambda x: np.exp(-x)
-        kern = sgwt.ChebyModel.kernel_on_graph(small_laplacian, f, order=order)
+        kern = sgwt.ChebyModel.kernel(small_laplacian, f, order=order)
         with sgwt.ChebyConvolve(small_laplacian) as conv:
             result = conv.convolve(identity_signal, kern)
             assert not np.any(np.isnan(result))
@@ -74,7 +73,7 @@ class TestChebyConvolve:
     def test_convolve_with_random_signal(self, small_laplacian, random_signal):
         """Convolution works with multi-column random signal."""
         f = lambda x: 1.0 / (x + 1.0)  # lowpass-like
-        kern = sgwt.ChebyModel.kernel_on_graph(small_laplacian, f, order=15)
+        kern = sgwt.ChebyModel.kernel(small_laplacian, f, order=15)
         with sgwt.ChebyConvolve(small_laplacian) as conv:
             result = conv.convolve(random_signal, kern)
             assert result.shape[0] == random_signal.shape[0]
@@ -83,7 +82,7 @@ class TestChebyConvolve:
     def test_convolve_with_1d_input(self, small_laplacian, identity_signal):
         """Convolution works with 1D input signal and returns squeezed output."""
         f = lambda x: np.exp(-x)
-        kern = sgwt.ChebyModel.kernel_on_graph(small_laplacian, f, order=10)
+        kern = sgwt.ChebyModel.kernel(small_laplacian, f, order=10)
         # Ensure signal is 1D
         signal_1d = identity_signal.flatten()
         assert signal_1d.ndim == 1
@@ -100,7 +99,7 @@ class TestChebyConvolve:
         
         # Simple kernel f(x) = x
         f = lambda x: x
-        kern = sgwt.ChebyModel.kernel_on_graph(small_laplacian, f, order=5)
+        kern = sgwt.ChebyModel.kernel(small_laplacian, f, order=5)
         
         with sgwt.ChebyConvolve(small_laplacian) as conv:
             result = conv.convolve(complex_signal, kern)
@@ -119,7 +118,7 @@ class TestChebyConvolve:
 
         # Simple kernel
         f = lambda x: np.exp(-x)
-        kern = sgwt.ChebyModel.kernel_on_graph(small_laplacian, f, order=5)
+        kern = sgwt.ChebyModel.kernel(small_laplacian, f, order=5)
 
         with sgwt.ChebyConvolve(small_laplacian) as conv:
             # Should not raise error
@@ -130,8 +129,8 @@ class TestChebyConvolve:
         """convolve_multi applies multiple kernels efficiently."""
         f1 = lambda x: np.exp(-x)
         f2 = lambda x: 1.0 / (x + 1.0)
-        kern1 = sgwt.ChebyModel.kernel_on_graph(small_laplacian, f1, order=10)
-        kern2 = sgwt.ChebyModel.kernel_on_graph(small_laplacian, f2, order=10)
+        kern1 = sgwt.ChebyModel.kernel(small_laplacian, f1, order=10)
+        kern2 = sgwt.ChebyModel.kernel(small_laplacian, f2, order=10)
 
         with sgwt.ChebyConvolve(small_laplacian) as conv:
             results = conv.convolve_multi(identity_signal, [kern1, kern2])
@@ -153,7 +152,7 @@ class TestChebyConvolve:
         """convolve_multi handles complex inputs."""
         complex_signal = identity_signal + 1j * identity_signal
         f = lambda x: np.exp(-x)
-        kern = sgwt.ChebyModel.kernel_on_graph(small_laplacian, f, order=10)
+        kern = sgwt.ChebyModel.kernel(small_laplacian, f, order=10)
 
         with sgwt.ChebyConvolve(small_laplacian) as conv:
             results = conv.convolve_multi(complex_signal, [kern])
@@ -164,7 +163,7 @@ class TestChebyConvolve:
         """convolve_multi handles 1D input signal."""
         signal_1d = np.ones(small_laplacian.shape[0])
         f = lambda x: np.exp(-x)
-        kern = sgwt.ChebyModel.kernel_on_graph(small_laplacian, f, order=10)
+        kern = sgwt.ChebyModel.kernel(small_laplacian, f, order=10)
 
         with sgwt.ChebyConvolve(small_laplacian) as conv:
             results = conv.convolve_multi(signal_1d, [kern])
@@ -197,7 +196,7 @@ class TestChebyConvolve:
     def test_cache_hit_same_spectrum_bound(self, small_laplacian, identity_signal):
         """Test that recurrence matrix is cached when spectrum_bound is same."""
         f = lambda x: np.exp(-x)
-        kern = sgwt.ChebyModel.kernel_on_graph(small_laplacian, f, order=10)
+        kern = sgwt.ChebyModel.kernel(small_laplacian, f, order=10)
 
         with sgwt.ChebyConvolve(small_laplacian) as conv:
             # First convolution creates cache
@@ -228,7 +227,7 @@ class TestChebyConvolve:
         assert signal.flags['F_CONTIGUOUS']
 
         f = lambda x: np.exp(-x)
-        kern = sgwt.ChebyModel.kernel_on_graph(small_laplacian, f, order=5)
+        kern = sgwt.ChebyModel.kernel(small_laplacian, f, order=5)
 
         with sgwt.ChebyConvolve(small_laplacian) as conv:
             result = conv.convolve(signal, kern)
